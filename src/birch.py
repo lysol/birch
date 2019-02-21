@@ -13,6 +13,7 @@ size = 800, 600
 speed = [2, 2]
 black = 0, 0, 0
 camera = 0, 0
+cursor = 0, 0
 screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
 ballrect = textures["r"].get_rect()
 
@@ -33,4 +34,5 @@ while 1:
         for x, cell in enumerate(row):
             coords = (x * 32, y * 32)
             screen.blit(textures[cells[y][x]], coords)
+    screen.blit(textures["cursor"], cursor)
     pygame.display.flip()
