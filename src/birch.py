@@ -5,11 +5,14 @@ textures = {}
 for name in names.values():
     textures[name] = pygame.transform.scale2x(pygame.image.load("../assets/%s.png" % name))
 
+cells = [["dirt"] * 25] * 25
+print(cells)
 pygame.init()
 
 size = 800, 600
 speed = [2, 2]
 black = 0, 0, 0
+camera = 0, 0
 screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
 ballrect = textures["r"].get_rect()
 
@@ -26,5 +29,8 @@ while 1:
         speed[1] = -speed[1]
 
     screen.fill(black)
-    screen.blit(textures["r"], ballrect)
+    for y, row in enumerate(cells):
+        for x, cell in enumerate(row):
+            coords = (x * 32, y * 32)
+            screen.blit(textures[cells[y][x]], coords)
     pygame.display.flip()
