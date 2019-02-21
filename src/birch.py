@@ -3,8 +3,7 @@ import sys, pygame, json
 names = json.load(open('../assets/names.json'))
 textures = {}
 for name in names.values():
-    textures[name] = pygame.image.load("../assets/%s.png" % name)
-
+    textures[name] = pygame.transform.scale2x(pygame.image.load("../assets/%s.png" % name))
 
 pygame.init()
 
