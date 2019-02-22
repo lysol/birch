@@ -4,10 +4,9 @@ from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
 from time import sleep
 import math
 
-names = json.load(open('../assets/names.json'))
-textures = {}
-for name in names.values():
-    textures[name] = pygame.transform.scale2x(pygame.image.load("../assets/%s.png" % name))
+from texture_store import TextureStore
+
+textures = TextureStore('../assets/');
 
 cells = [["dirt"] * 25] * 25
 keys = [];
