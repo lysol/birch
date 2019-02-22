@@ -5,14 +5,27 @@ from time import sleep
 import math
 
 from texture_store import TextureStore
-from cell import Cell
+from cells.cell import Cell
+from cells.uranium import Uranium
+from engine import Engine
+from random import randint
 
 textures = TextureStore('../assets/');
 cells = []
 for y in range(25):
     cells.append([])
     for x in range(25):
-        cells[y].append(Cell("dirt", textures, (x, y)))
+        if randint(0,100) < 3:
+            cells[y].append(Uranium(textures, (x, y)))
+        else:
+            cells[y].append(Cell("dirt", textures, (x, y)))
+
+engine = Engine({
+    "cells": cells,
+    "money": 10000,
+    "population": 0,
+    "speed": 1,
+    })
 
 keys = [];
 pygame.init()
@@ -35,14 +48,16 @@ sleeptime = 1 / fps
 font = pygame.font.Font(None, 24)
 
 def drawPos(pos):
-    text = font.render("%d, %d" % (pos[0], pos[1]), 1, BLACK)
+    message = "Cursor: %d, %d   Ticks: %d" % (pos[0], pos[1], engine.ticks)
+    text = font.render(message, 1, BLACK)
     screen.blit(text, (5, 5))
-    text = font.render("%d, %d" % (pos[0], pos[1]), 1, RED)
+    text = font.render(message, 1, RED)
     screen.blit(text, (4, 4))
 
 pygame.mouse.set_visible(False)
 
 while 1:
+    engine.tick()
     for event in pygame.event.get():
         if event.type == QUIT: sys.exit()
         if event.type == VIDEORESIZE:
@@ -81,9 +96,9 @@ while 1:
     ];
 
     screen.fill(BLACK)
-    for y, row in enumerate(cells):
-        for x, cell in enumerate(row):
-            cells[y][x].draw(camera, screen)
+    for row in engine.state['cells']:
+        for cell in row:
+            cell.draw(camera, screen)
     screen.blit(textures["cursor"], real_cursor)
     drawPos(cursor_game_position)
     pygame.display.flip()

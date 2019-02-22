@@ -1,3 +1,5 @@
+from cells import *
+
 class Cell:
 
     def __init__(self, texture_name, textures, position):
@@ -11,3 +13,6 @@ class Cell:
             self.position[1] * 32 + camera[1]
         )
         screen.blit(self.textures[self.texture_name], coords)
+
+    def tick(self, ticks):
+        pass
