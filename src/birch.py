@@ -1,6 +1,6 @@
 import sys, pygame, json
 from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
-    KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q
+    KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 from time import sleep
 import math
 
@@ -29,6 +29,7 @@ engine = Engine({
     })
 
 keys = [];
+mouse_down = [False, False]
 pygame.init()
 
 size = 800, 600
@@ -71,6 +72,10 @@ while 1:
             keys.append(event.key)
         if event.type == KEYUP and event.key in keys:
             keys.remove(event.key)
+        if event.type == MOUSEBUTTONDOWN and not mouse_down[0]:
+            mouse_down[0] = True
+        if event.type == MOUSEBUTTONUP and mouse_down[0]:
+            mouse_down[0] = False
     ballrect = ballrect.move(speed)
     if ballrect.left < 0 or ballrect.right > size[0]:
         speed[0] = -speed[0]
@@ -105,6 +110,8 @@ while 1:
             cell.draw(camera, screen)
     if toolbox.in_bounds(pos):
         pygame.mouse.set_visible(True)
+        if mouse_down[0]:
+            toolbox.selected = toolbox.hover_icon(pos)
     else:
         pygame.mouse.set_visible(False)
     screen.blit(textures["cursor"], real_cursor)
