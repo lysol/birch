@@ -5,10 +5,15 @@ from time import sleep
 import math
 
 from texture_store import TextureStore
+from cell import Cell
 
 textures = TextureStore('../assets/');
+cells = []
+for y in range(25):
+    cells.append([])
+    for x in range(25):
+        cells[y].append(Cell("dirt", textures, (x, y)))
 
-cells = [["dirt"] * 25] * 25
 keys = [];
 pygame.init()
 
@@ -78,8 +83,7 @@ while 1:
     screen.fill(BLACK)
     for y, row in enumerate(cells):
         for x, cell in enumerate(row):
-            coords = (x * 32 + camera[0], y * 32 + camera[1])
-            screen.blit(textures[cells[y][x]], coords)
+            cells[y][x].draw(camera, screen)
     screen.blit(textures["cursor"], real_cursor)
     drawPos(cursor_game_position)
     pygame.display.flip()
