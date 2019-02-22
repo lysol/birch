@@ -15,7 +15,9 @@ pygame.init()
 
 size = 800, 600
 speed = [2, 2]
-black = 0, 0, 0
+BLACK = 0, 0, 0
+RED = 255, 0, 0
+WHITE = 255, 255, 255
 camera = [0, 0]
 cursor = [0, 0]
 camera_speed = 8
@@ -25,6 +27,14 @@ ballrect = textures["r"].get_rect()
 
 fps = 30
 sleeptime = 1 / fps
+
+font = pygame.font.Font(None, 24)
+
+def drawPos(pos):
+    text = font.render("%d, %d" % (pos[0], pos[1]), 1, BLACK)
+    screen.blit(text, (5, 5))
+    text = font.render("%d, %d" % (pos[0], pos[1]), 1, RED)
+    screen.blit(text, (4, 4))
 
 pygame.mouse.set_visible(False)
 
@@ -66,11 +76,12 @@ while 1:
         math.floor(math.floor(cursor[1] / 32)) - math.floor(camera[1] / 32)
     ];
 
-    screen.fill(black)
+    screen.fill(BLACK)
     for y, row in enumerate(cells):
         for x, cell in enumerate(row):
             coords = (x * 32 + camera[0], y * 32 + camera[1])
             screen.blit(textures[cells[y][x]], coords)
     screen.blit(textures["cursor"], real_cursor)
+    drawPos(cursor_game_position)
     pygame.display.flip()
     sleep(sleeptime)
