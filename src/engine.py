@@ -13,9 +13,11 @@ class Engine:
         self.ticks += self.state["speed"]
         changed = []
         for row in self.state["cells"]:
-            for cell in row:
+            for cell in filter(lambda c: c.next_tick <= self.ticks, row):
                 if cell.tick(self.ticks, self):
-                    changed.append(cell)
+                    # Use the state reference because otherwise if the cell
+                    # was destroyed, this will be the old one.
+                    changed.append(cell.position)
         return changed
 
     def get_cell(self, x, y):

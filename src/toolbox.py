@@ -14,10 +14,9 @@ class Toolbox:
         self.tools = tools
         self.selected = 0
         self.textures = textures
-        self.surface = Surface(self.get_bounds()[2:])
-        self.cache_draw()
+        self.surface = Surface(self.get_rect()[2:])
 
-    def get_bounds(self):
+    def get_rect(self):
         bounds = (
             self.position[0], self.position[1],
             self.padding + self.icon_spacing * 2,
@@ -25,7 +24,7 @@ class Toolbox:
         return bounds
 
     def in_bounds(self, pos):
-        bounds = self.get_bounds()
+        bounds = self.get_rect()
         return pos[0] >= bounds[0] and pos[0] <= bounds[0] + bounds[2] and \
             pos[1] >= bounds[1] and pos[1] <= bounds[1] + bounds[3]
 
@@ -35,12 +34,10 @@ class Toolbox:
         return x + y * 2
 
     def draw(self, screen):
-        screen.blit(self.surface, self.position)
-
-    def cache_draw(self):
-        bounds = list(self.get_bounds())
+        bounds = list(self.get_rect())
         bounds[0] = 0
         bounds[1] = 0
+        self.surface.fill(BLACK)
         draw.rect(self.surface, WHITE, Rect(*bounds))
         draw.rect(self.surface, BLACK, Rect(*bounds), 2)
 
@@ -52,3 +49,4 @@ class Toolbox:
             self.surface.blit(self.textures[tool], icon_position)
             if i == self.selected:
                 self.surface.blit(self.textures["cursor"], icon_position)
+        return screen.blit(self.surface, self.position)
