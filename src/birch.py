@@ -2,6 +2,7 @@ import sys, pygame, json
 from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
     KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q
 from time import sleep
+import math
 
 names = json.load(open('../assets/names.json'))
 textures = {}
@@ -17,12 +18,15 @@ speed = [2, 2]
 black = 0, 0, 0
 camera = [0, 0]
 cursor = [0, 0]
-cursor_speed = 2
+camera_speed = 8
+cursor_speed = 8
 screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
 ballrect = textures["r"].get_rect()
 
 fps = 30
 sleeptime = 1 / fps
+
+pygame.mouse.set_visible(False)
 
 while 1:
     for event in pygame.event.get():
@@ -43,21 +47,30 @@ while 1:
     for key in keys:
         if key == K_q:
             sys.exit()
-        elif key == K_UP and cursor[1] > 0:
-            cursor[1] -= cursor_speed
-        elif key == K_DOWN and cursor[1] < len(cells) * 32:
-            cursor[1] += cursor_speed
-        elif key == K_LEFT and cursor[0] > 0:
-            cursor[0] -= cursor_speed
-        elif key == K_RIGHT and cursor[0] < len(cells[0]) * 32:
-            cursor[0] += cursor_speed
-
+        elif key == K_DOWN:
+            camera[1] -= camera_speed
+        elif key == K_UP:
+            camera[1] += camera_speed
+        elif key == K_RIGHT:
+            camera[0] -= camera_speed
+        elif key == K_LEFT:
+            camera[0] += camera_speed
+    pos = pygame.mouse.get_pos()
+    real_cursor = [
+        math.floor(pos[0] / 32) * 32 + camera[0] % 32,
+        math.floor(pos[1] / 32) * 32 + camera[1] % 32
+    ]
+    cursor = list(pos)
+    cursor_game_position = [
+        math.floor(math.floor(cursor[0] / 32)) - math.floor(camera[0] / 32),
+        math.floor(math.floor(cursor[1] / 32)) - math.floor(camera[1] / 32)
+    ];
 
     screen.fill(black)
     for y, row in enumerate(cells):
         for x, cell in enumerate(row):
-            coords = (x * 32, y * 32)
+            coords = (x * 32 + camera[0], y * 32 + camera[1])
             screen.blit(textures[cells[y][x]], coords)
-    screen.blit(textures["cursor"], cursor)
+    screen.blit(textures["cursor"], real_cursor)
     pygame.display.flip()
     sleep(sleeptime)
