@@ -30,7 +30,6 @@ class Toolbox:
     def hover_icon(self, pos):
         x = math.floor((pos[0] - self.padding - self.position[0]) / self.icon_spacing)
         y = math.floor((pos[1] - self.padding - self.position[1]) / self.icon_spacing)
-        print("hey %d %d" % (x, y))
         return x + y * 2
 
     def draw(self, screen):

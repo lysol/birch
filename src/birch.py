@@ -26,7 +26,7 @@ engine = Engine({
     "money": 10000,
     "population": 0,
     "speed": 1,
-    })
+    }, textures)
 
 keys = [];
 mouse_down = [False, False]
@@ -114,6 +114,9 @@ while 1:
             toolbox.selected = toolbox.hover_icon(pos)
     else:
         pygame.mouse.set_visible(False)
+        if mouse_down[0]:
+            engine.use_tool(toolbox.tools[toolbox.selected],
+                cursor_game_position)
     screen.blit(textures["cursor"], real_cursor)
     toolbox.draw(screen)
     drawPos(cursor_game_position)
