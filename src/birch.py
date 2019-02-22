@@ -9,9 +9,9 @@ from texture_store import TextureStore
 from toolbox import Toolbox
 from cells.cell import Cell
 from cells.uranium import Uranium
+from cells.tree import PineTree
 from engine import Engine
 from random import randint
-
 dimensions = 100, 100
 
 textures = TextureStore('../assets/');
@@ -19,8 +19,10 @@ cells = []
 for y in range(dimensions[1]):
     cells.append([])
     for x in range(dimensions[0]):
-        if randint(0,100) < 3:
+        if randint(0, 100) < 3:
             cells[y].append(Uranium(textures, (x, y)))
+        elif randint(0, 100) < 5:
+            cells[y].append(PineTree(textures, (x, y)))
         else:
             cells[y].append(Cell("dirt", textures, (x, y)))
 
