@@ -5,6 +5,7 @@ from time import sleep
 import math
 
 from texture_store import TextureStore
+from toolbox import Toolbox
 from cells.cell import Cell
 from cells.uranium import Uranium
 from engine import Engine
@@ -47,6 +48,10 @@ sleeptime = 1 / fps
 
 font = pygame.font.Font(None, 24)
 
+toolbox = Toolbox([
+    "bulldoze", "r", "c", "i"
+    ], textures)
+
 def drawPos(pos):
     message = "Cursor: %d, %d   Ticks: %d" % (pos[0], pos[1], engine.ticks)
     text = font.render(message, 1, BLACK)
@@ -54,7 +59,6 @@ def drawPos(pos):
     text = font.render(message, 1, RED)
     screen.blit(text, (4, 4))
 
-pygame.mouse.set_visible(False)
 
 while 1:
     engine.tick()
@@ -99,7 +103,12 @@ while 1:
     for row in engine.state['cells']:
         for cell in row:
             cell.draw(camera, screen)
+    if toolbox.in_bounds(pos):
+        pygame.mouse.set_visible(True)
+    else:
+        pygame.mouse.set_visible(False)
     screen.blit(textures["cursor"], real_cursor)
+    toolbox.draw(screen)
     drawPos(cursor_game_position)
     pygame.display.flip()
     sleep(sleeptime)
