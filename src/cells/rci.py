@@ -7,7 +7,7 @@ class RCell(Cell):
         super().__init__("r", textures, position)
         self.ticks = 0
 
-    def tick(self, ticks):
+    def tick(self, ticks, engine):
         self.ticks = ticks
 
 class CCell(Cell):
@@ -16,7 +16,7 @@ class CCell(Cell):
         super().__init__("c", textures, position)
         self.ticks = 0
 
-    def tick(self, ticks):
+    def tick(self, ticks, engine):
         self.ticks = ticks
 
 class ICell(Cell):
@@ -25,6 +25,6 @@ class ICell(Cell):
         super().__init__("i", textures, position)
         self.ticks = 0
 
-    def tick(self, ticks):
+    def tick(self, ticks, engine):
         self.ticks = ticks
 

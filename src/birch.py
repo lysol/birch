@@ -11,11 +11,13 @@ from cells.uranium import Uranium
 from engine import Engine
 from random import randint
 
+dimensions = 100, 100
+
 textures = TextureStore('../assets/');
 cells = []
-for y in range(25):
+for y in range(dimensions[1]):
     cells.append([])
-    for x in range(25):
+    for x in range(dimensions[0]):
         if randint(0,100) < 3:
             cells[y].append(Uranium(textures, (x, y)))
         else:
@@ -44,10 +46,11 @@ cursor_speed = 8
 screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
 ballrect = textures["r"].get_rect()
 
-fps = 30
+fps = 60
 sleeptime = 1 / fps
 
 font = pygame.font.Font(None, 24)
+damage = True
 
 toolbox = Toolbox([
     "bulldoze", "r", "c", "i"
@@ -62,7 +65,7 @@ def drawPos(pos):
 
 
 while 1:
-    engine.tick()
+    changed_cells = engine.tick()
     for event in pygame.event.get():
         if event.type == QUIT: sys.exit()
         if event.type == VIDEORESIZE:
@@ -73,27 +76,32 @@ while 1:
         if event.type == KEYUP and event.key in keys:
             keys.remove(event.key)
         if event.type == MOUSEBUTTONDOWN and not mouse_down[0]:
+            damage = True
             mouse_down[0] = True
         if event.type == MOUSEBUTTONUP and mouse_down[0]:
+            damage = True
             mouse_down[0] = False
-    ballrect = ballrect.move(speed)
-    if ballrect.left < 0 or ballrect.right > size[0]:
-        speed[0] = -speed[0]
-    if ballrect.top < 0 or ballrect.bottom > size[1]:
-        speed[1] = -speed[1]
 
     for key in keys:
         if key == K_q:
             sys.exit()
         elif key == K_DOWN:
             camera[1] -= camera_speed
+            damage = True
         elif key == K_UP:
             camera[1] += camera_speed
+            damage = True
         elif key == K_RIGHT:
             camera[0] -= camera_speed
+            damage = True
         elif key == K_LEFT:
             camera[0] += camera_speed
+            damage = True
     pos = pygame.mouse.get_pos()
+    rel = pygame.mouse.get_rel()
+    print(rel)
+    if rel[0] != 0 or rel[1] != 0:
+        damage = True
     real_cursor = [
         math.floor(pos[0] / 32) * 32 + camera[0] % 32,
         math.floor(pos[1] / 32) * 32 + camera[1] % 32
@@ -104,10 +112,18 @@ while 1:
         math.floor(math.floor(cursor[1] / 32)) - math.floor(camera[1] / 32)
     ];
 
-    screen.fill(BLACK)
-    for row in engine.state['cells']:
-        for cell in row:
-            cell.draw(camera, screen)
+    size = screen.get_size()
+    cellw = math.ceil(size[0] / 32.0)
+    cellh = math.ceil(size[1] / 32.0)
+    min_x = max(math.floor(-camera[0] / 32.0 - 1), 0)
+    min_y = max(math.floor(-camera[1] / 32.0 - 1), 0)
+    max_x = min_x + cellw + 2
+    max_y = min_y + cellh + 2
+    for c in changed_cells:
+        if c.position[0] >= min_x and c.position[0] <= max_x and \
+            c.position[1] >= min_y and c.position[1] <= max_y:
+            damage = True
+            break
     if toolbox.in_bounds(pos):
         pygame.mouse.set_visible(True)
         if mouse_down[0]:
@@ -117,8 +133,17 @@ while 1:
         if mouse_down[0]:
             engine.use_tool(toolbox.tools[toolbox.selected],
                 cursor_game_position)
-    screen.blit(textures["cursor"], real_cursor)
-    toolbox.draw(screen)
-    drawPos(cursor_game_position)
-    pygame.display.flip()
+            damage = True
+    if damage:
+        print("B A T T L E   D A M A G E")
+        toolbox.cache_draw()
+        screen.fill(BLACK)
+        for row in engine.state['cells'][min_y:max_y]:
+            for cell in row[min_x:max_x]:
+                cell.draw(camera, screen)
+        screen.blit(textures["cursor"], real_cursor)
+        toolbox.draw(screen)
+        drawPos(cursor_game_position)
+        pygame.display.flip()
+    damage = False
     sleep(sleeptime)

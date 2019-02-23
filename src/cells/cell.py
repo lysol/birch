@@ -17,5 +17,5 @@ class Cell:
         )
         screen.blit(self.textures[self.texture_name], coords)
 
-    def tick(self, ticks):
-        pass
+    def tick(self, ticks, engine):
+        return False

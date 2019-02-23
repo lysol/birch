@@ -9,10 +9,14 @@ class Engine:
         self.textures = textures
 
     def tick(self):
+        damage = False
         self.ticks += self.state["speed"]
+        changed = []
         for row in self.state["cells"]:
             for cell in row:
-                cell.tick(self.ticks)
+                if cell.tick(self.ticks, self):
+                    changed.append(cell)
+        return changed
 
     def get_cell(self, x, y):
         return self.state["cells"][y][x]
