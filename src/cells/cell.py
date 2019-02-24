@@ -12,6 +12,9 @@ class Cell:
         self.position = position
         self.next_tick = 0
 
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
+
     def draw(self, camera, screen):
         coords = self.get_rect(camera)
         return screen.blit(self.textures[self.texture_name], coords)

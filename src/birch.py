@@ -1,19 +1,28 @@
-import sys, pygame, json
+import sys, pygame, math, json
 from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
     KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q, MOUSEBUTTONDOWN, MOUSEBUTTONUP, \
-    Rect
+    Rect, K_d
 from time import sleep
-import math
+from random import randint
 
 from texture_store import TextureStore
 from toolbox import Toolbox
 from cells.cell import Cell
 from cells.uranium import Uranium
-from cells.tree import PineTree
+from cells.tree import PineTree, BirchTree
 from engine import Engine
-from random import randint
-dimensions = 100, 100
 
+
+class ObjectEncoder(json.JSONEncoder):
+    def default(self, o):
+        if hasattr(o, '__dict__'):
+            return o.__dict__
+        else:
+            return repr(o)
+
+jsonenc = ObjectEncoder()
+
+dimensions = 100, 100
 textures = TextureStore('../assets/');
 cells = []
 for y in range(dimensions[1]):
@@ -23,6 +32,8 @@ for y in range(dimensions[1]):
             cells[y].append(Uranium(textures, (x, y)))
         elif randint(0, 100) < 5:
             cells[y].append(PineTree(textures, (x, y)))
+        elif randint(0, 100) < 5:
+            cells[y].append(BirchTree(textures, (x, y)))
         else:
             cells[y].append(Cell("dirt", textures, (x, y)))
 
@@ -36,6 +47,7 @@ engine = Engine({
 keys = [];
 mouse_down = [False, False]
 pygame.init()
+pygame.display.set_caption('birch')
 
 size = 800, 600
 speed = [2, 2]
@@ -47,7 +59,6 @@ cursor = [0, 0]
 camera_speed = 8
 cursor_speed = 8
 screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
-ballrect = textures["r"].get_rect()
 
 fps = 60
 sleeptime = 1 / fps
@@ -59,7 +70,7 @@ font = pygame.font.Font(None, 24)
 damage = True
 edged = -1
 toolbox = Toolbox([
-    "bulldoze", "r", "c", "i"
+    "bulldoze", "r_0_0", "c_0_0", "i_0_0"
     ], textures)
 
 def drawPos(pos):
@@ -86,7 +97,8 @@ while 1:
         next_kf = engine.ticks + kf_interval
         damage = True
     for event in pygame.event.get():
-        if event.type == QUIT: sys.exit()
+        if event.type == QUIT:
+            sys.exit()
         if event.type == VIDEORESIZE:
             screen = pygame.display.set_mode(event.dict['size'], HWSURFACE | DOUBLEBUF | RESIZABLE)
             size = event.dict['size']
@@ -98,6 +110,8 @@ while 1:
             mouse_down[0] = True
         if event.type == MOUSEBUTTONUP and mouse_down[0]:
             mouse_down[0] = False
+        if event.type == KEYDOWN and event.key == K_d:
+            print("engine state", jsonenc.encode(engine.state))
 
     for key in keys:
         if key in (K_DOWN, K_UP, K_RIGHT, K_LEFT):
@@ -189,7 +203,9 @@ while 1:
 
     # draw map first
     for c in changed_cells:
-        update_rects.append(engine.get_cell(*c).draw(camera, screen))
+        cell = engine.get_cell(*c)
+        if cell is not None:
+            update_rects.append(cell.draw(camera, screen))
     if draw_cursor:
         update_rects.append(screen.blit(textures["cursor"], real_cursor))
     update_rects.append(toolbox.draw(screen))
