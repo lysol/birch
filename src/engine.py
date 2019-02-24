@@ -49,7 +49,7 @@ class Engine:
     def _rci(self):
         rci = ['r','c','i']
         workcells = {k: [] for k in rci}
-        self.population = 0
+        self.state["population"] = 0
         for row in self.state["cells"]:
             for cell in row:
                 if type(cell) is RCell:
@@ -58,8 +58,8 @@ class Engine:
                     workcells['c'].append(cell)
                 elif type(cell) is ICell:
                     workcells['i'].append(cell)
-            if hasattr(cell, 'population'):
-                self.population += cell.population
+                if hasattr(cell, 'population'):
+                    self.state["population"] += cell.population
         for ct in rci:
             for cell in workcells[ct]:
                 if randint(0, 100) < 25:

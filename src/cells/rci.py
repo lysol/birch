@@ -15,7 +15,7 @@ class PopCell(Cell):
     def __init__(self, base_texture_name, textures, position):
         super().__init__(base_texture_name, textures, position)
         self.level = 0
-        self.type = 0
+        self.type = randint(0,1)
         self.population = 0
         self.demand = 0
 
@@ -24,6 +24,8 @@ class PopCell(Cell):
             return
         amount = randint(0, self.demand) if self.demand > 0 else randint(self.demand, 0)
         self.population += amount
+        if self.population < 0:
+            self.population = 0
 
     def _levelclamp(self, l):
         return clamp(l, 0, self.max_level)

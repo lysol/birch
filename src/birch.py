@@ -7,6 +7,7 @@ from random import randint
 
 from texture_store import TextureStore
 from toolbox import Toolbox
+from statusbox import Statusbox
 from cells.cell import Cell
 from cells.uranium import Uranium
 from cells.tree import PineTree, BirchTree
@@ -72,6 +73,7 @@ edged = -1
 toolbox = Toolbox([
     "bulldoze", "r_0_0", "c_0_0", "i_0_0"
     ], textures)
+statusbox = Statusbox(textures, engine)
 
 def drawPos(pos):
     message = "Cursor: %d, %d   Ticks: %d" % (pos[0], pos[1], engine.ticks)
@@ -111,7 +113,10 @@ while 1:
         if event.type == MOUSEBUTTONUP and mouse_down[0]:
             mouse_down[0] = False
         if event.type == KEYDOWN and event.key == K_d:
-            print("engine state", jsonenc.encode(engine.state))
+            for row in engine.state["cells"]:
+                for cell in row:
+                    if hasattr(cell, 'population'):
+                        print("cell", cell.position, cell.name, cell.population, cell.level)
 
     for key in keys:
         if key in (K_DOWN, K_UP, K_RIGHT, K_LEFT):
@@ -178,6 +183,7 @@ while 1:
             for x in range(min_x, max_x):
                 changed_cells.append((x, y))
         update_rects.append(toolbox.draw(screen))
+        update_rects.append(statusbox.draw(screen))
         draw_cursor = True
     if cursor_damage and (cursor_game_position[0] != last_cursor[0] or cursor_game_position[1] != last_cursor[1]):
         changed_cells.append(last_cursor)
@@ -209,6 +215,7 @@ while 1:
     if draw_cursor:
         update_rects.append(screen.blit(textures["cursor"], real_cursor))
     update_rects.append(toolbox.draw(screen))
+    update_rects.append(statusbox.draw(screen))
     if damage:
         pygame.display.flip()
     else:
