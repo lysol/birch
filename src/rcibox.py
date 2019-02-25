@@ -23,7 +23,11 @@ class RCIbox:
     def _dims_padded(self):
         return list(map(lambda x: x + self.padding * 2, self.dimensions))
 
-    def draw(self, screen, r, c, i):
+    def draw(self, screen):
+        return screen.blit(self.surface,
+            (self.padding + 4, screen.get_size()[1] - self.padding - self.dimensions[1] - 4))
+
+    def cache_draw(self, r, c, i):
         vals = [r, c, i]
         padding = self.padding
         dims = self.dimensions
@@ -66,4 +70,3 @@ class RCIbox:
         self.surface.blit(itext, (padding + 2, padding + 2 + maxh * 2 - 2))
         draw.rect(self.surface, BLACK, Rect(padding + 4 + maxw, padding + 1 + maxh * 2,
             bars[2], maxh - 2))
-        screen.blit(self.surface, (padding + 4, screen.get_size()[1] - padding - self.dimensions[1] - 4))

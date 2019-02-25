@@ -2,20 +2,22 @@ from random import choice, randint
 from math import sin, pi
 from cells.rci import RCell, CCell, ICell
 from cells.cell import Cell
-from util import clamp
+from util import clamp, pi2
 
 class Engine:
 
     freqs = {
-        "r": 1000,
-        "c": 800,
-        "i": 500
+        "r": 10000,
+        "c": 8000,
+        "i": 5000
         }
 
+    freq_factor = 0.25
+
     demand_offset = {
-        "r": 500,
+        "r": 5000,
         "c": 0,
-        "i": 250
+        "i": 2500
         }
 
     ratios = {
@@ -36,10 +38,13 @@ class Engine:
         }
     }
 
+    rci_interval = 20
+
     def __init__(self, state, textures):
         self.state = state
         self.ticks = 0
         self.textures = textures
+        self._next_rci = 0
 
     def tick(self):
         damage = False
@@ -55,8 +60,18 @@ class Engine:
         for ckey in self.freqs:
             # use a sine wave to express demand waves
             self.state["demand"][ckey] = \
-                (sin(self.ticks % self.freqs[ckey] / float(self.freqs[ckey]) * 2.0 * pi) + 1.0) / 2.0
-        self._rci()
+                (sin(
+                    # current time mod celltype frequency to get cycle 0 - 1
+                    self.ticks % self.freqs[ckey] / float(self.freqs[ckey]) * \
+                    # additional modifier to change speed as a whole
+                    self.freq_factor * \
+                    # it's like pi, but twice as much
+                    pi2) + \
+                    # shift it positive, rescale it 0 - 1
+                    1.0) / 2.0
+        if self._next_rci <= self.ticks:
+            self._rci()
+            self._next_rci = self.ticks + self.rci_interval
         return changed
 
     def _rci(self):

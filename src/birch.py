@@ -64,10 +64,14 @@ screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
 
 fps = 60
 sleeptime = 1 / fps
-kf_interval = 30
-next_kf = 200
+time_spent = 0
+kf_interval = 0.5
+next_kf = 0.5
+rci_refresh = 0
+last_speed_change = 0
+speed_delay = 0.1
 
-edge_delay = 20
+edge_delay = 0.5
 font = pygame.font.Font(None, 24)
 damage = True
 edged = -1
@@ -94,11 +98,35 @@ pygame.mixer.quit()
 last_cursor = (None, None)
 cursor_damage = False
 
+orig_cursor = pygame.mouse.get_cursor()
+
+_pointer = (
+"     ..         ",
+"    .XX.        ",
+"    .XX.        ",
+"    .XX.        ",
+"    .XX.....    ",
+"    .XX.XX.X..  ",
+" .. .XX.XX.X.X. ",
+".XX..XXXXXXXXX. ",
+".XXX.XXXXXXXXX. ",
+" .XXXXXXXXXXXX. ",
+"  .XXXXXXXXXXX. ",
+"  .XXXXXXXXXX.  ",
+"   .XXXXXXXXX.  ",
+"    .XXXXXXX.   ",
+"     ........   ",
+"     ........   ")
+_hcurs, _hmask = pygame.cursors.compile(_pointer, ".", "X")
+pointer_cursor = ((16, 16), (5, 1), _hcurs, _hmask)
+
+cursor_changed = False
+
 while 1:
     update_rects = []
     changed_cells = engine.tick()
-    if next_kf <= engine.ticks:
-        next_kf = engine.ticks + kf_interval
+    if next_kf <= time_spent:
+        next_kf = time_spent + kf_interval
         damage = True
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -139,26 +167,26 @@ while 1:
 
     if pos[0] <= 16:
         if edged == -1:
-            edged = engine.ticks
-        if engine.ticks - edged > edge_delay:
+            edged = time_spent
+        if time_spent - edged > edge_delay:
             camera[0] += camera_speed
             damage = True
     elif pos[0] >= size[0] - 16:
         if edged == -1:
-            edged = engine.ticks
-        if engine.ticks - edged > edge_delay:
+            edged = time_spent
+        if time_spent - edged > edge_delay:
             camera[0] -= camera_speed
             damage = True
     elif pos[1] <= 16:
         if edged == -1:
-            edged = engine.ticks
-        if engine.ticks - edged > edge_delay:
+            edged = time_spent
+        if time_spent - edged > edge_delay:
             camera[1] += camera_speed
             damage = True
     elif pos[1] >= size[1] - 16:
         if edged == -1:
-            edged = engine.ticks
-        if engine.ticks - edged > edge_delay:
+            edged = time_spent
+        if time_spent - edged > edge_delay:
             camera[1] -= camera_speed
             damage = True
     else:
@@ -180,15 +208,16 @@ while 1:
     max_y = min_y + cellh + 2
     rcivals = list(map(lambda k: engine.state["demand"][k],
         ['r', 'c', 'i']))
+    if time_spent >= rci_refresh:
+        rcibox.cache_draw(*rcivals)
+        update_rects.append(rcibox.draw(screen))
+        rci_refresh = time_spent + kf_interval
     if damage:
         screen.fill(BLACK)
         changed_cells = []
         for y in range(min_y, max_y):
             for x in range(min_x, max_x):
                 changed_cells.append((x, y))
-        update_rects.append(toolbox.draw(screen))
-        update_rects.append(rcibox.draw(screen, *rcivals))
-        update_rects.append(statusbox.draw(screen))
         draw_cursor = True
     if cursor_damage and (cursor_game_position[0] != last_cursor[0] or cursor_game_position[1] != last_cursor[1]):
         changed_cells.append(last_cursor)
@@ -200,6 +229,21 @@ while 1:
         pygame.mouse.set_visible(True)
         if mouse_down[0]:
             toolbox.selected = toolbox.hover_icon(pos)
+        draw_cursor = False
+    elif statusbox.in_bounds(pos):
+        pygame.mouse.set_visible(True)
+        if statusbox.speed_icon_hover(pos):
+            if not cursor_changed:
+                pygame.mouse.set_cursor(*pointer_cursor)
+                cursor_changed = True
+            if mouse_down[0] and time_spent >= last_speed_change + speed_delay:
+                engine.state["speed"] = (engine.state["speed"] + 1) % len(statusbox.speeds)
+                last_speed_change = time_spent
+                next_kf = time_spent
+        elif cursor_changed:
+            pygame.mouse.set_cursor(*orig_cursor)
+            cursor_changed = False
+        draw_cursor = False
     else:
         pygame.mouse.set_visible(False)
         if mouse_down[0]:
@@ -220,8 +264,8 @@ while 1:
     if draw_cursor:
         update_rects.append(screen.blit(textures["cursor"], real_cursor))
     update_rects.append(toolbox.draw(screen))
-    update_rects.append(rcibox.draw(screen, *rcivals))
-    update_rects.append(statusbox.draw(screen))
+    update_rects.append(statusbox.draw(screen, engine.state["speed"]))
+    update_rects.append(rcibox.draw(screen))
     if damage:
         pygame.display.flip()
     else:
@@ -230,3 +274,4 @@ while 1:
     draw_cursor = False
     last_cursor = cursor_game_position
     sleep(sleeptime)
+    time_spent += sleeptime

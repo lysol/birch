@@ -7,6 +7,9 @@ BLACK = 0, 0, 0
 
 class Statusbox:
 
+    speeds = "pause", "slow", "normal", "fast"
+    speed_icon_dims = 24, 22
+
     position = 100, 20
     dimensions = 682, 32
     padding = 4
@@ -17,6 +20,34 @@ class Statusbox:
         self.surface = Surface(self.get_bounds()[2:])
         self.font = Font(None, 24)
         self.engine = engine
+        self.bounds = Rect(
+            self.position[0],
+            self.position[1],
+            self.dimensions[0],
+            self.dimensions[1]
+            )
+
+    def in_bounds(self, pos):
+        return self.bounds.collidepoint(pos)
+
+    @property
+    def speed_icon_position(self):
+        return (
+            self.dimensions[0] - self.speed_icon_dims[0] - 6,
+            self.dimensions[1] - self.speed_icon_dims[1] - \
+                (self.dimensions[1] - self.speed_icon_dims[1]) / 2)
+
+    @property
+    def speed_icon_rect(self):
+        return Rect(
+            self.speed_icon_position[0] + self.position[0],
+            self.speed_icon_position[1] + self.position[1],
+            self.speed_icon_dims[0],
+            self.speed_icon_dims[1]
+            )
+
+    def speed_icon_hover(self, pos):
+        return self.speed_icon_rect.collidepoint(pos)
 
     def get_bounds(self):
         return (
@@ -31,7 +62,7 @@ class Statusbox:
         return pos[0] >= bounds[0] and pos[0] <= bounds[0] + bounds[2] and \
             pos[1] >= bounds[1] and pos[1] <= bounds[1] + bounds[3]
 
-    def draw(self, screen):
+    def draw(self, screen, speed):
         bounds = list(self.get_bounds())
         bounds[0] = 0
         bounds[1] = 0
@@ -40,4 +71,9 @@ class Statusbox:
         message = "$%d   Population: %d" % (self.engine.state["money"], self.engine.state["population"])
         text = self.font.render(message, 1, BLACK)
         self.surface.blit(text, (3, 3))
+        self.surface.blit(self.textures[self.speeds[speed]], (
+            self.dimensions[0] - self.speed_icon_dims[0] - 6,
+            self.dimensions[1] - self.speed_icon_dims[1] - \
+                (self.dimensions[1] - self.speed_icon_dims[1]) / 2)
+                )
         screen.blit(self.surface, self.position)
