@@ -7,8 +7,8 @@ BLACK = 0, 0, 0
 
 class Statusbox:
 
-    position = 92, 20
-    dimensions = 688, 32
+    position = 100, 20
+    dimensions = 682, 32
     padding = 4
 
     def __init__(self, textures, engine):
@@ -36,7 +36,7 @@ class Statusbox:
         bounds[0] = 0
         bounds[1] = 0
         draw.rect(self.surface, WHITE, Rect(*bounds))
-        draw.rect(self.surface, BLACK, Rect(*bounds), 2)
+        draw.rect(self.surface, BLACK, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
         message = "$%d   Population: %d" % (self.engine.state["money"], self.engine.state["population"])
         text = self.font.render(message, 1, BLACK)
         self.surface.blit(text, (3, 3))

@@ -39,7 +39,7 @@ class Toolbox:
         bounds[1] = 0
         self.surface.fill(BLACK)
         draw.rect(self.surface, WHITE, Rect(*bounds))
-        draw.rect(self.surface, BLACK, Rect(*bounds), 2)
+        draw.rect(self.surface, BLACK, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
 
         for i, tool in enumerate(self.tools):
             icon_position = (
