@@ -8,6 +8,7 @@ from random import randint
 from texture_store import TextureStore
 from toolbox import Toolbox
 from statusbox import Statusbox
+from rcibox import RCIbox
 from cells.cell import Cell
 from cells.uranium import Uranium
 from cells.tree import PineTree, BirchTree
@@ -63,7 +64,7 @@ screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
 
 fps = 60
 sleeptime = 1 / fps
-kf_interval = 200
+kf_interval = 30
 next_kf = 200
 
 edge_delay = 20
@@ -73,6 +74,7 @@ edged = -1
 toolbox = Toolbox([
     "bulldoze", "r_0_0", "c_0_0", "i_0_0"
     ], textures)
+rcibox = RCIbox()
 statusbox = Statusbox(textures, engine)
 
 def drawPos(pos):
@@ -176,6 +178,8 @@ while 1:
     min_y = max(math.floor(-camera[1] / 32.0 - 1), 0)
     max_x = min_x + cellw + 2
     max_y = min_y + cellh + 2
+    rcivals = list(map(lambda k: engine.state["demand"][k],
+        ['r', 'c', 'i']))
     if damage:
         screen.fill(BLACK)
         changed_cells = []
@@ -183,6 +187,7 @@ while 1:
             for x in range(min_x, max_x):
                 changed_cells.append((x, y))
         update_rects.append(toolbox.draw(screen))
+        update_rects.append(rcibox.draw(screen, *rcivals))
         update_rects.append(statusbox.draw(screen))
         draw_cursor = True
     if cursor_damage and (cursor_game_position[0] != last_cursor[0] or cursor_game_position[1] != last_cursor[1]):
@@ -215,6 +220,7 @@ while 1:
     if draw_cursor:
         update_rects.append(screen.blit(textures["cursor"], real_cursor))
     update_rects.append(toolbox.draw(screen))
+    update_rects.append(rcibox.draw(screen, *rcivals))
     update_rects.append(statusbox.draw(screen))
     if damage:
         pygame.display.flip()

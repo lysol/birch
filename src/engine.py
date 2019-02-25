@@ -1,25 +1,38 @@
 from random import choice, randint
+from math import sin, pi
 from cells.rci import RCell, CCell, ICell
 from cells.cell import Cell
 from util import clamp
 
 class Engine:
 
+    freqs = {
+        "r": 1000,
+        "c": 800,
+        "i": 500
+        }
+
+    demand_offset = {
+        "r": 500,
+        "c": 0,
+        "i": 250
+        }
+
     ratios = {
         "r": {
-            "r": 2,
+            "r": 0,
             "c": 1,
-            "i": -1
+            "i": -5
         },
         "c": {
             "r": 2,
-            "c": 2,
+            "c": 0,
             "i": 1
         },
         "i": {
-            "r": 2,
-            "c": 2,
-            "i": 1
+            "r": 5,
+            "c": 1,
+            "i": 0
         }
     }
 
@@ -27,11 +40,6 @@ class Engine:
         self.state = state
         self.ticks = 0
         self.textures = textures
-        self.state["demand"] = {
-            "r": 1,
-            "c": 1,
-            "i": 1
-        };
 
     def tick(self):
         damage = False
@@ -43,6 +51,11 @@ class Engine:
                     # Use the state reference because otherwise if the cell
                     # was destroyed, this will be the old one.
                     changed.append(cell.position)
+        self.state["demand"] = {}
+        for ckey in self.freqs:
+            # use a sine wave to express demand waves
+            self.state["demand"][ckey] = \
+                (sin(self.ticks % self.freqs[ckey] / float(self.freqs[ckey]) * 2.0 * pi) + 1.0) / 2.0
         self._rci()
         return changed
 
@@ -62,6 +75,12 @@ class Engine:
                     self.state["population"] += cell.population
         for ct in rci:
             for cell in workcells[ct]:
+                if type(cell) is RCell:
+                    ckey = 'r'
+                elif type(cell) is CCell:
+                    ckey = 'c'
+                elif type(cell) is ICell:
+                    ckey = 'i'
                 if randint(0, 100) < 25:
                     cell.populate()
                     cell.level_check()
@@ -93,7 +112,7 @@ class Engine:
                         clamp(populations[ct] / 10, -10, 10)
                 if demand == 0 and randint(0, 100) < 3:
                     demand = 1
-                demand = round(demand)
+                demand = int(round(demand) + self.state["demand"][ckey] * 10)
                 cell.demand = demand
 
     def get_surrounding(self, x, y):
