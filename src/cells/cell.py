@@ -1,5 +1,6 @@
 from pygame import Rect
 from cells import *
+from uuid import uuid4
 
 class Cell:
 
@@ -11,6 +12,7 @@ class Cell:
         self.textures = textures
         self.position = position
         self.next_tick = 0
+        self.id = uuid4()
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)

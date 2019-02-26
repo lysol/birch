@@ -38,6 +38,8 @@ class Engine:
         }
     }
 
+    overall_factor = 0.2
+
     rci_interval = 20
 
     def __init__(self, state, textures):
@@ -112,6 +114,8 @@ class Engine:
                     }
                 demand = 0
                 for n in neighbors:
+                    if n.id == cell.id:
+                        pass
                     if type(n) is RCell:
                         counts['r'] += 1
                         populations['r'] += n.population
@@ -124,10 +128,8 @@ class Engine:
                 for ct in counts:
                     demand += counts[ct] * \
                         self.ratios[cell.base_texture_name][ct] * \
-                        clamp(populations[ct] / 10, -10, 10)
-                if demand == 0 and randint(0, 100) < 3:
-                    demand = 1
-                demand = int(round(demand) + self.state["demand"][ckey] * 10)
+                        clamp(populations[ct] / 100, -1, 1)
+                demand = clamp(round(demand + self.state["demand"][ckey] * self.overall_factor), -1, 1)
                 cell.demand = demand
 
     def get_surrounding(self, x, y):
