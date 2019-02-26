@@ -1,7 +1,7 @@
 import sys, pygame, math, json
 from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
     KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q, MOUSEBUTTONDOWN, MOUSEBUTTONUP, \
-    Rect, K_d
+    Rect, K_d, K_LSHIFT, K_RSHIFT
 from time import sleep
 from random import randint
 
@@ -13,6 +13,7 @@ from cells.cell import Cell
 from cells.uranium import Uranium
 from cells.tree import PineTree, BirchTree
 from engine import Engine
+import cursor
 
 
 class ObjectEncoder(json.JSONEncoder):
@@ -57,7 +58,6 @@ BLACK = 0, 0, 0
 RED = 255, 0, 0
 WHITE = 255, 255, 255
 camera = [0, 0]
-cursor = [0, 0]
 camera_speed = 8
 cursor_speed = 8
 screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
@@ -88,43 +88,27 @@ def drawPos(pos):
     text = font.render(message, 1, RED)
     screen.blit(text, (4, 4))
 
-def cursor_to_cell(cursor, camera):
+def pos_to_cell(pos, camera):
     return [
-        math.floor(math.floor(cursor[0] / 32)) - math.floor(camera[0] / 32),
-        math.floor(math.floor(cursor[1] / 32)) - math.floor(camera[1] / 32)
+        math.floor(math.floor(pos[0] / 32)) - math.floor(camera[0] / 32),
+        math.floor(math.floor(pos[1] / 32)) - math.floor(camera[1] / 32)
     ];
 
 pygame.mixer.quit()
 last_cursor = (None, None)
 cursor_damage = False
 
-orig_cursor = pygame.mouse.get_cursor()
-
-_pointer = (
-"     ..         ",
-"    .XX.        ",
-"    .XX.        ",
-"    .XX.        ",
-"    .XX.....    ",
-"    .XX.XX.X..  ",
-" .. .XX.XX.X.X. ",
-".XX..XXXXXXXXX. ",
-".XXX.XXXXXXXXX. ",
-" .XXXXXXXXXXXX. ",
-"  .XXXXXXXXXXX. ",
-"  .XXXXXXXXXX.  ",
-"   .XXXXXXXXX.  ",
-"    .XXXXXXX.   ",
-"     ........   ",
-"     ........   ")
-_hcurs, _hmask = pygame.cursors.compile(_pointer, ".", "X")
-pointer_cursor = ((16, 16), (5, 1), _hcurs, _hmask)
-
+scrolling = False
+scroll_pos = 0, 0
 cursor_changed = False
 
 while 1:
+    size = screen.get_size()
+    pos = pygame.mouse.get_pos()
+    rel = pygame.mouse.get_rel()
     update_rects = []
     changed_cells = engine.tick()
+    pygame.mouse.set_visible(False)
     if next_kf <= time_spent:
         next_kf = time_spent + kf_interval
         damage = True
@@ -151,6 +135,12 @@ while 1:
     for key in keys:
         if key in (K_DOWN, K_UP, K_RIGHT, K_LEFT):
             damage = True
+        if key in (K_LSHIFT, K_RSHIFT):
+            if not scrolling:
+                scroll_pos = pos
+                cursor.set_cursor("scroll")
+            scrolling = True
+            cursor_changed = True
         if key == K_q:
             sys.exit()
         elif key == K_DOWN:
@@ -161,34 +151,47 @@ while 1:
             camera[0] -= camera_speed
         elif key == K_LEFT:
             camera[0] += camera_speed
-    size = screen.get_size()
-    pos = pygame.mouse.get_pos()
-    rel = pygame.mouse.get_rel()
 
-    if pos[0] <= 16:
-        if edged == -1:
-            edged = time_spent
-        if time_spent - edged > edge_delay:
-            camera[0] += camera_speed
-            damage = True
-    elif pos[0] >= size[0] - 16:
-        if edged == -1:
-            edged = time_spent
-        if time_spent - edged > edge_delay:
-            camera[0] -= camera_speed
-            damage = True
-    elif pos[1] <= 16:
-        if edged == -1:
-            edged = time_spent
-        if time_spent - edged > edge_delay:
-            camera[1] += camera_speed
-            damage = True
-    elif pos[1] >= size[1] - 16:
-        if edged == -1:
-            edged = time_spent
-        if time_spent - edged > edge_delay:
-            camera[1] -= camera_speed
-            damage = True
+    if scrolling:
+        if K_LSHIFT not in keys and K_RSHIFT not in keys:
+            scrolling = False
+            scroll_pos = (0, 0)
+            cursor_changed = False
+            cursor.set_cursor("arrow")
+        else:
+            pygame.mouse.set_visible(True)
+
+    if pygame.mouse.get_focused() and not scrolling:
+        if pos[0] <= 16:
+            if edged == -1:
+                edged = time_spent
+            if time_spent - edged > edge_delay:
+                camera[0] += camera_speed
+                damage = True
+        elif pos[0] >= size[0] - 16:
+            if edged == -1:
+                edged = time_spent
+            if time_spent - edged > edge_delay:
+                camera[0] -= camera_speed
+                damage = True
+        elif pos[1] <= 16:
+            if edged == -1:
+                edged = time_spent
+            if time_spent - edged > edge_delay:
+                camera[1] += camera_speed
+                damage = True
+        elif pos[1] >= size[1] - 16:
+            if edged == -1:
+                edged = time_spent
+            if time_spent - edged > edge_delay:
+                camera[1] -= camera_speed
+                damage = True
+        else:
+            edged = -1
+    if pygame.mouse.get_focused() and scrolling:
+        camera[0] += rel[0]
+        camera[1] += rel[1]
+        damage = True
     else:
         edged = -1
 
@@ -196,9 +199,8 @@ while 1:
         math.floor(pos[0] / 32) * 32 + camera[0] % 32,
         math.floor(pos[1] / 32) * 32 + camera[1] % 32
     ]
-    cursor = list(pos)
-    cursor_game_position = cursor_to_cell(cursor, camera)
-    last_game_position = cursor_to_cell((cursor[0] + rel[0], cursor[1] + rel[1]), camera)
+    cursor_game_position = pos_to_cell(pos, camera)
+    last_game_position = pos_to_cell((pos[0] + rel[0], pos[1] + rel[1]), camera)
 
     cellw = math.ceil(size[0] / 32.0)
     cellh = math.ceil(size[1] / 32.0)
@@ -234,18 +236,17 @@ while 1:
         pygame.mouse.set_visible(True)
         if statusbox.speed_icon_hover(pos):
             if not cursor_changed:
-                pygame.mouse.set_cursor(*pointer_cursor)
+                cursor.set_cursor("pointer")
                 cursor_changed = True
             if mouse_down[0] and time_spent >= last_speed_change + speed_delay:
                 engine.state["speed"] = (engine.state["speed"] + 1) % len(statusbox.speeds)
                 last_speed_change = time_spent
                 next_kf = time_spent
-        elif cursor_changed:
-            pygame.mouse.set_cursor(*orig_cursor)
+        elif cursor_changed and not scrolling:
+            cursor.set_cursor("arrow")
             cursor_changed = False
         draw_cursor = False
     else:
-        pygame.mouse.set_visible(False)
         if mouse_down[0]:
             engine.use_tool(toolbox.tools[toolbox.selected],
                 cursor_game_position)
@@ -261,7 +262,7 @@ while 1:
         cell = engine.get_cell(*c)
         if cell is not None:
             update_rects.append(cell.draw(camera, screen))
-    if draw_cursor:
+    if draw_cursor and not scrolling:
         update_rects.append(screen.blit(textures["cursor"], real_cursor))
     update_rects.append(toolbox.draw(screen))
     update_rects.append(statusbox.draw(screen, engine.state["speed"]))
