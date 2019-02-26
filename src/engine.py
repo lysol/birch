@@ -12,19 +12,19 @@ class Engine:
         "i": 5000
         }
 
-    freq_factor = 0.25
+    freq_mod = 0.1
 
     demand_offset = {
-        "r": 5000,
-        "c": 0,
-        "i": 2500
+        "r": 1500,
+        "c": 5000,
+        "i": 850
         }
 
     ratios = {
         "r": {
-            "r": 0,
+            "r": 3000,
             "c": 1,
-            "i": -5
+            "i": 1000
         },
         "c": {
             "r": 2,
@@ -38,7 +38,7 @@ class Engine:
         }
     }
 
-    overall_factor = 0.2
+    overall_factor = 1.0
 
     rci_interval = 20
 
@@ -47,6 +47,7 @@ class Engine:
         self.ticks = 0
         self.textures = textures
         self._next_rci = 0
+        self._demand_calc()
 
     def tick(self):
         damage = False
@@ -58,23 +59,21 @@ class Engine:
                     # Use the state reference because otherwise if the cell
                     # was destroyed, this will be the old one.
                     changed.append(cell.position)
-        self.state["demand"] = {}
-        for ckey in self.freqs:
-            # use a sine wave to express demand waves
-            self.state["demand"][ckey] = \
-                (sin(
-                    # current time mod celltype frequency to get cycle 0 - 1
-                    self.ticks % self.freqs[ckey] / float(self.freqs[ckey]) * \
-                    # additional modifier to change speed as a whole
-                    self.freq_factor * \
-                    # it's like pi, but twice as much
-                    pi2) + \
-                    # shift it positive, rescale it 0 - 1
-                    1.0) / 2.0
         if self._next_rci <= self.ticks:
+            self._demand_calc()
             self._rci()
             self._next_rci = self.ticks + self.rci_interval
         return changed
+
+    def _demand_calc(self):
+        self.state["demand"] = {}
+        for ckey in self.freqs:
+            # use a sine wave to express demand waves
+            curticks = round(self.freq_mod * self.ticks) + self.demand_offset[ckey]
+            ratio = curticks % self.freqs[ckey] / float(self.freqs[ckey])
+            point = sin(ratio * pi2)
+            self.state["demand"][ckey] = \
+                (point + 1.0) / 2.0
 
     def _rci(self):
         rci = ['r','c','i']
@@ -98,7 +97,7 @@ class Engine:
                     ckey = 'c'
                 elif type(cell) is ICell:
                     ckey = 'i'
-                if randint(0, 100) < 25:
+                if randint(0, 100) < 25 * abs(cell.demand):
                     cell.populate()
                     cell.level_check()
                 neighbors = self.get_surrounding(*cell.position)
@@ -129,7 +128,7 @@ class Engine:
                     demand += counts[ct] * \
                         self.ratios[cell.base_texture_name][ct] * \
                         clamp(populations[ct] / 100, -1, 1)
-                demand = clamp(round(demand + self.state["demand"][ckey] * self.overall_factor), -1, 1)
+                demand = clamp(demand + (self.state["demand"][ckey] - 0.5) * self.overall_factor, -1, 1)
                 cell.demand = demand
 
     def get_surrounding(self, x, y):

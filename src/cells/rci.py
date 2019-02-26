@@ -20,10 +20,12 @@ class PopCell(Cell):
         self.demand = 0
 
     def populate(self):
-        if self.demand == 0:
-            return
-        amount = randint(0, self.demand) if self.demand > 0 else randint(self.demand, 0)
-        self.population += amount
+        if randint(0, 1000) < 2:
+            self.population += randint(-1, 1)
+        if self.demand > 0:
+            self.population += 1
+        elif self.demand < 0:
+            self.population -= 1
         if self.population < 0:
             self.population = 0
 
