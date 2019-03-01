@@ -4,7 +4,8 @@ from uuid import uuid4
 
 class Cell:
 
-    def __init__(self, name, textures, position, texture_name=None):
+    def __init__(self, name, textures, position, texture_name=None,
+            size=None):
         self.name = name
         if texture_name is None:
             texture_name = name
@@ -13,6 +14,11 @@ class Cell:
         self.position = position
         self.next_tick = 0
         self.id = uuid4()
+        # use the texture to get the size if it is None
+        if size is not None:
+            self.size = size
+        else:
+            self.size = self.textures[self.texture_name].get_size()
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)

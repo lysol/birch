@@ -11,7 +11,7 @@ class Tree(Cell):
 
     @property
     def texture_name(self):
-        return self.base_texture_name if self.age > 50 else '%s_sapling' % self.base_texture_name
+        return self.base_texture_name if hasattr(self, 'age') and self.age > 50 else '%s_sapling' % self.base_texture_name
 
     @texture_name.setter
     def texture_name(self, value):

@@ -13,7 +13,7 @@ class PopCell(Cell):
     max_level = 2
 
     def __init__(self, base_texture_name, textures, position):
-        super().__init__(base_texture_name, textures, position)
+        super().__init__(base_texture_name, textures, position, size=(32, 32))
         self.level = 0
         self.type = randint(0,1)
         self.population = 0
