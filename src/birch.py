@@ -60,6 +60,7 @@ WHITE = 255, 255, 255
 camera = [0, 0]
 camera_speed = 8
 cursor_speed = 8
+cursor_size = 32
 screen = pygame.display.set_mode(size, HWSURFACE | DOUBLEBUF | RESIZABLE)
 
 fps = 60
@@ -196,14 +197,14 @@ while 1:
         edged = -1
 
     real_cursor = [
-        math.floor(pos[0] / 32) * 32 + camera[0] % 32,
-        math.floor(pos[1] / 32) * 32 + camera[1] % 32
+        math.floor(pos[0] / cursor_size) * cursor_size + camera[0] % cursor_size,
+        math.floor(pos[1] / cursor_size) * cursor_size + camera[1] % cursor_size
     ]
     cursor_game_position = pos_to_cell(pos, camera)
     last_game_position = pos_to_cell((pos[0] + rel[0], pos[1] + rel[1]), camera)
 
-    cellw = math.ceil(size[0] / 32.0)
-    cellh = math.ceil(size[1] / 32.0)
+    cellw = math.ceil(size[0] / float(cursor_size))
+    cellh = math.ceil(size[1] / float(cursor_size))
     min_x = max(math.floor(-camera[0] / 32.0 - 1), 0)
     min_y = max(math.floor(-camera[1] / 32.0 - 1), 0)
     max_x = min_x + cellw + 2
@@ -263,7 +264,7 @@ while 1:
         if cell is not None:
             update_rects.append(cell.draw(camera, screen))
     if draw_cursor and not scrolling:
-        update_rects.append(screen.blit(textures["cursor"], real_cursor))
+        update_rects.append(screen.blit(textures["cursor_32"], real_cursor))
     update_rects.append(toolbox.draw(screen))
     update_rects.append(statusbox.draw(screen, engine.state["speed"]))
     update_rects.append(rcibox.draw(screen))

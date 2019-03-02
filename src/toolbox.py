@@ -69,5 +69,5 @@ class Toolbox:
         for i, tool in enumerate(self.tools):
             self.surface.blit(self.textures[tool], self.tool_rects[i])
             if i == self.selected:
-                self.surface.blit(self.textures["cursor"], self.tool_rects[i])
+                self.surface.blit(self.textures["cursor_32"], self.tool_rects[i])
         return screen.blit(self.surface, self.position)

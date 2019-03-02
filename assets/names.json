@@ -19,7 +19,7 @@
         "size": 16,
         "position": [64, 0]
     },
-    "cursor": {
+    "cursor_32": {
         "size": 16,
         "position": [80, 0]
     },
@@ -166,5 +166,9 @@
     "rail_br": {
         "size": 8,
         "position": [104, 56]
+    },
+    "cursor_16": {
+        "size": 8,
+        "position": [112, 56]
     }
 }

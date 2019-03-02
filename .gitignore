@@ -1,2 +1,4 @@
 *.pyc
 __pycache__/*
+assets/*.png
+!assets/spritesheet.png
