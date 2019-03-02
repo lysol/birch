@@ -27,13 +27,17 @@ class Cell:
         coords = self.get_rect(camera)
         return screen.blit(self.textures[self.texture_name], coords)
 
-    def get_rect(self, camera):
+    @property
+    def rect(self):
         return Rect(
-            self.position[0] * 32 + camera[0],
-            self.position[1] * 32 + camera[1],
-            32,
-            32
-        )
+            self.position[0],
+            self.position[1],
+            self.size[0],
+            self.size[1]
+            )
+
+    def get_rect(self, camera):
+        rect = self.rect.move(*camera)
 
     def tick(self, ticks, engine):
         return False
