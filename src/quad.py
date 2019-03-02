@@ -2,7 +2,7 @@ from pygame import Rect
 
 class Quad:
 
-    def __init__(self, rect, threshold=8, max_items=16):
+    def __init__(self, rect, threshold=32, max_items=16):
         self.threshold = threshold
         self.max_items = max_items
         self.rect = rect
@@ -13,23 +13,27 @@ class Quad:
         self.items = []
         self.quarters = []
 
+    @property
+    def leaf(self):
+        return len(self.quarters) == 0
+
     def dump(self, prefixlen=0):
         print(' ' * prefixlen, 'Quad', self.rect, self.halves)
         if len(self.items) > 0:
             print(' ' * (prefixlen + 2), 'items:')
             for pos, item in self.items:
                 print(' ' * (prefixlen + 4), pos, item)
-        if len(self.quarters) > 0:
+        if not self.leaf:
             print(' ' * (prefixlen + 2), 'quarters:')
             for i, q in enumerate(self.quarters):
                 q.dump(prefixlen=4 + prefixlen)
 
     def insert(self, pos, item):
         maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
-        if not maxed and len(self.quarters) == 0:
+        if not maxed and self.leaf:
             self.items.append([pos, item])
             return
-        elif maxed and len(self.quarters) == 0:
+        elif maxed and self.leaf:
             self.split()
         self.subinsert(pos, item)
 
@@ -43,7 +47,7 @@ class Quad:
         self.quarters[self.pos_quarter(pos)].insert(pos, item)
 
     def split(self):
-        if len(self.quarters) == 0:
+        if self.leaf:
             wh = [self.rect.width / 2, self.rect.height / 2]
             self.quarters = [
                 Quad(Rect(self.rect[0], self.rect[1],
@@ -60,7 +64,7 @@ class Quad:
         self.items = []
 
     def get(self, pos):
-        if len(self.quarters) > 0:
+        if not self.leaf:
             return self.quarters[self.pos_quarter(pos)].get(pos)
         result = []
         for ipos, item in self.items:
@@ -69,7 +73,7 @@ class Quad:
         return result
 
     def get_region(self, rect):
-        if len(self.quarters) > 0:
+        if not self.leaf:
             indices = set(map(lambda xy: self.pos_quarter(xy),
                 [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]))
             results = []
