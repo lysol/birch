@@ -33,7 +33,8 @@ class Game:
         "r_0_0",
         "c_0_0",
         "i_0_0",
-        "road_h"
+        "road_h",
+        "rail_h"
         )
 
     damage_keys = K_DOWN, K_UP, K_RIGHT, K_LEFT

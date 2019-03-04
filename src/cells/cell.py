@@ -1,7 +1,7 @@
 from pygame import Rect, draw
 from cells import *
 from uuid import uuid4
-from util import negate, WHITE
+from util import negate, BG_COLOR
 
 class Cell:
 
@@ -27,7 +27,7 @@ class Cell:
 
     def draw(self, camera, screen):
         coords = self.get_rect(camera)
-        screen.fill(WHITE, coords)
+        screen.fill(BG_COLOR, coords)
         return screen.blit(self.textures[self.texture_name], coords)
 
     def draw_box(self, camera, screen, color):

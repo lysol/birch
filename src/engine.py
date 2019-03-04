@@ -3,6 +3,9 @@ from math import sin, pi
 from pygame import Rect
 from cells.rci import RCell, CCell, ICell
 from cells.cell import Cell
+from cells.connectable import ConnectableCell
+from cells.road import RoadCell
+from cells.rail import RailCell
 from util import clamp, pi2
 from quad import Quad
 
@@ -192,6 +195,16 @@ class Engine:
                 new_cell = CCell(self.textures, pos)
             elif name == "i_0_0":
                 new_cell = ICell(self.textures, pos)
+            elif name == "road_h":
+                new_cell = RoadCell(self.textures, pos)
+            elif name == "rail_h":
+                new_cell = RailCell(self.textures, pos)
         if new_cell is not None:
             self.set_cell(new_cell)
+            if issubclass(type(new_cell), ConnectableCell):
+                surrounding = self.quad.get(
+                    new_cell.rect.inflate((new_cell.height, new_cell.width)))
+                for cell in surrounding:
+                    if type(cell) == type(new_cell):
+                        cell.cache_texture(surrounding)
 
