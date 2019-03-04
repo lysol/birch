@@ -121,7 +121,8 @@ class Quad:
         else:
             removed = False
             for index in self.rect_indices(item.rect):
-                removed = removed or self.quarters[index].remove_item(item)
+                devomer = self.quarters[index].remove(item)
+                removed = devomer or removed
             return removed
 
     def remove_rect(self, rect):
@@ -200,9 +201,10 @@ class Quad:
         return p1[0] <= p2[0] and p1[1] <= p2[1]
 
     def _intersect(self, r1, r2):
-        ri1 = Polygon(self._rect_points(r1))
-        ri2 = Polygon(self._rect_points(r2))
-        return ri1.intersects(ri2)
+        return r1.colliderect(r2)
+        #ri1 = Polygon(self._rect_points(r1))
+        #ri2 = Polygon(self._rect_points(r2))
+        #return ri1.intersects(ri2)
 
     def get(self, rect):
         if not self.leaf:
@@ -210,7 +212,11 @@ class Quad:
             results = []
             for i in indices:
                 results = results + self.quarters[i].get(rect)
-            return results
+            uniq = []
+            for result in results:
+                if result not in uniq:
+                    uniq.append(result)
+            return uniq
 
         #results = list(filter(lambda p: rect.colliderect(p.rect), self.items))
         results = list(filter(lambda p: self._intersect(rect, p.rect), self.items))

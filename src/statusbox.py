@@ -1,9 +1,7 @@
 from pygame import draw, Rect, Surface
 from pygame.font import Font
+from util import FG_COLOR, BG_COLOR
 import math
-
-WHITE = 255, 255, 255
-BLACK = 0, 0, 0
 
 class Statusbox:
 
@@ -57,23 +55,18 @@ class Statusbox:
             self.dimensions[1]
             )
 
-    def in_bounds(self, pos):
-        bounds = self.get_bounds()
-        return pos[0] >= bounds[0] and pos[0] <= bounds[0] + bounds[2] and \
-            pos[1] >= bounds[1] and pos[1] <= bounds[1] + bounds[3]
-
     def draw(self, screen, speed):
         bounds = list(self.get_bounds())
         bounds[0] = 0
         bounds[1] = 0
-        draw.rect(self.surface, WHITE, Rect(*bounds))
-        draw.rect(self.surface, BLACK, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
+        draw.rect(self.surface, BG_COLOR, Rect(*bounds))
+        draw.rect(self.surface, FG_COLOR, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
         message = "$%d   Population: %d" % (self.engine.state["money"], self.engine.state["population"])
-        text = self.font.render(message, 1, BLACK)
+        text = self.font.render(message, 1, FG_COLOR)
         self.surface.blit(text, (3, 3))
         self.surface.blit(self.textures[self.speeds[speed]], (
             self.dimensions[0] - self.speed_icon_dims[0] - 6,
             self.dimensions[1] - self.speed_icon_dims[1] - \
                 (self.dimensions[1] - self.speed_icon_dims[1]) / 2)
                 )
-        screen.blit(self.surface, self.position)
+        return screen.blit(self.surface, self.position)

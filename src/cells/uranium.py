@@ -8,8 +8,7 @@ class Uranium(Cell):
         self.next_tick = randint(200, 300)
 
     def tick(self, ticks, engine):
-        engine.set_cell(self.position[0], self.position[1], Cell(
-            "dirt", self.textures, self.position))
+        engine.del_cell(self)
         damage = True
         self.ticks = ticks
         return damage

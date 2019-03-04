@@ -29,15 +29,17 @@ class Cell:
 
     @property
     def rect(self):
-        return Rect(
+        r = Rect(
             self.position[0],
             self.position[1],
             self.size[0],
             self.size[1]
             )
+        return r
 
     def get_rect(self, camera):
         rect = self.rect.move(*camera)
+        return rect
 
     def tick(self, ticks, engine):
         return False

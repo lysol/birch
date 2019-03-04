@@ -1,9 +1,7 @@
 from pygame import draw, Rect, Surface
 from pygame.font import Font
+from util import FG_COLOR, BG_COLOR
 import math
-
-WHITE = 255, 255, 255
-BLACK = 0, 0, 0
 
 class RCIbox:
 
@@ -20,6 +18,10 @@ class RCIbox:
         return max(0, math.floor(maxbar * v))
 
     @property
+    def rect(self):
+        return self.surface.get_rect()
+
+    @property
     def _dims_padded(self):
         return list(map(lambda x: x + self.padding * 2, self.dimensions))
 
@@ -27,17 +29,20 @@ class RCIbox:
         return screen.blit(self.surface,
             (self.padding + 4, screen.get_size()[1] - self.padding - self.dimensions[1] - 4))
 
+    def in_bounds(self, pos):
+        return self.rect.collidepoint(pos)
+
     def cache_draw(self, r, c, i):
         vals = [r, c, i]
         padding = self.padding
         dims = self.dimensions
         dims_padded = self._dims_padded
-        draw.rect(self.surface, WHITE, Rect(0, 0, *dims_padded))
-        draw.rect(self.surface, BLACK, Rect(0, 0, dims_padded[0] - 1, dims_padded[1] - 1), 2)
+        draw.rect(self.surface, BG_COLOR, Rect(0, 0, *dims_padded))
+        draw.rect(self.surface, FG_COLOR, Rect(0, 0, dims_padded[0] - 1, dims_padded[1] - 1), 2)
 
-        rtext = self.font.render("R", 1, BLACK)
-        ctext = self.font.render("C", 1, BLACK)
-        itext = self.font.render("I", 1, BLACK)
+        rtext = self.font.render("R", 1, FG_COLOR)
+        ctext = self.font.render("C", 1, FG_COLOR)
+        itext = self.font.render("I", 1, FG_COLOR)
         widths = []
         heights = []
         widths.append(rtext.get_width())
@@ -57,16 +62,16 @@ class RCIbox:
 
         half = (self.dimensions[0] - 4 - maxw) / 2
         draw.line(self.surface,
-                BLACK,
+                FG_COLOR,
                 (maxw + 2 + padding + half, 0),
                 (maxw + 2 + padding + half, 2 + maxh * 3))
 
         self.surface.blit(rtext, (padding + 2, padding + 2))
-        draw.rect(self.surface, BLACK, Rect(padding + 4 + maxw, padding + 1,
+        draw.rect(self.surface, FG_COLOR, Rect(padding + 4 + maxw, padding + 1,
             bars[0], maxh - 2))
         self.surface.blit(ctext, (padding + 2, padding + 2 + maxh - 1))
-        draw.rect(self.surface, BLACK, Rect(padding + 4 + maxw, padding + 1 + maxh,
+        draw.rect(self.surface, FG_COLOR, Rect(padding + 4 + maxw, padding + 1 + maxh,
             bars[1], maxh - 2))
         self.surface.blit(itext, (padding + 2, padding + 2 + maxh * 2 - 2))
-        draw.rect(self.surface, BLACK, Rect(padding + 4 + maxw, padding + 1 + maxh * 2,
+        draw.rect(self.surface, FG_COLOR, Rect(padding + 4 + maxw, padding + 1 + maxh * 2,
             bars[2], maxh - 2))

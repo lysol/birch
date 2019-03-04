@@ -1,8 +1,6 @@
 from pygame import draw, Rect, Surface
+from util import FG_COLOR, BG_COLOR
 import math
-
-WHITE = 255, 255, 255
-BLACK = 0, 0, 0
 
 class Toolbox:
 
@@ -62,9 +60,9 @@ class Toolbox:
         bounds = list(self.get_rect())
         bounds[0] = 0
         bounds[1] = 0
-        self.surface.fill(BLACK)
-        draw.rect(self.surface, WHITE, Rect(*bounds))
-        draw.rect(self.surface, BLACK, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
+        self.surface.fill(FG_COLOR)
+        draw.rect(self.surface, BG_COLOR, Rect(*bounds))
+        draw.rect(self.surface, FG_COLOR, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
 
         for i, tool in enumerate(self.tools):
             self.surface.blit(self.textures[tool], self.tool_rects[i])
