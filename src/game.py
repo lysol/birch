@@ -80,6 +80,12 @@ class Game:
         for cell in cells:
             self.engine.set_cell(cell)
 
+    def aliased_camera(self, cursor_size):
+        return (
+            self.camera[0] - self.camera[0] % cursor_size,
+            self.camera[1] - self.camera[1] % cursor_size
+            )
+
     def init(self):
         self.init_cells(self.initial_dims)
         pygame.init()
@@ -109,18 +115,20 @@ class Game:
         keys = []
         mouse_down = self.get_mouse_pressed()
         scrolling = False
-        cursor_changed = False
         edged = -1
-        cursor_rect = Rect(0, 0, 32, 32)
+
         cursor_size = 32
-        rci_refresh = 0
+        cursor_changed = False
         cursor_damage = False
-        last_cursor = 0, 0
-        last_cursor_rect = cursor_rect.copy()
+        screen_cursor_rect = Rect(0, 0, 32, 32)
+        game_cursor_rect = screen_cursor_rect.copy()
+        last_cursor_rect = screen_cursor_rect.copy()
+
         last_speed_change = 0
         last_kf = 0
         next_kf = 0
         last_tool_time = 0 # uuuaaauuggh
+        last_rci_time = 0
         while True:
             mouse_pos = pygame.mouse.get_pos()
             mouse_rel = pygame.mouse.get_rel()
@@ -162,13 +170,13 @@ class Game:
                 if key == K_q:
                     sys.exit()
                 elif key == K_DOWN:
-                    self.camera[1] -= self.camera_speed
-                elif key == K_UP:
                     self.camera[1] += self.camera_speed
+                elif key == K_UP:
+                    self.camera[1] -= self.camera_speed
                 elif key == K_RIGHT:
-                    self.camera[0] -= self.camera_speed
-                elif key == K_LEFT:
                     self.camera[0] += self.camera_speed
+                elif key == K_LEFT:
+                    self.camera[0] -= self.camera_speed
 
             if scrolling:
                 if K_LSHIFT not in keys and K_RSHIFT not in keys:
@@ -184,24 +192,24 @@ class Game:
                     if edged == -1:
                         edged = self.time_spent
                     if self.time_spent - edged > self.edge_delay:
-                        self.camera[0] += self.camera_speed
+                        self.camera[0] -= self.camera_speed
                         damage = True
                 elif mouse_pos[0] >= size[0] - self.edge_scroll_width:
                     if edged == -1:
                         edged = self.time_spent
                     if self.time_spent - edged > self.edge_delay:
-                        self.camera[0] -= self.camera_speed
+                        self.camera[0] += self.camera_speed
                 elif mouse_pos[1] <= self.edge_scroll_width:
                     if edged == -1:
                         edged = self.time_spent
                     if self.time_spent - edged > self.edge_delay:
-                        self.camera[1] += self.camera_speed
+                        self.camera[1] -= self.camera_speed
                         damage = True
                 elif mouse_pos[1] >= size[1] - self.edge_scroll_width:
                     if edged == -1:
                         edged = self.time_spent
                     if self.time_spent - edged > self.edge_delay:
-                        self.camera[1] -= self.camera_speed
+                        self.camera[1] += self.camera_speed
                 else:
                     edged = -1
 
@@ -212,35 +220,55 @@ class Game:
             else:
                 edged = -1
 
-            cursor_rect = Rect(
-                math.floor(mouse_pos[0] / cursor_size) * cursor_size + self.camera[0] % cursor_size,
-                math.floor(mouse_pos[1] / cursor_size) * cursor_size + self.camera[1] % cursor_size,
+            aliased_mouse_pos = (
+                mouse_pos[0] - mouse_pos[0] % cursor_size,
+                mouse_pos[1] - mouse_pos[1] % cursor_size
+                )
+
+            aliased_camera_pos = self.aliased_camera(cursor_size)
+            game_cursor_rect = Rect(
+                aliased_mouse_pos[0] + aliased_camera_pos[0],
+                aliased_mouse_pos[1] + aliased_camera_pos[1],
                 cursor_size,
                 cursor_size
                 )
 
+            screen_cursor_rect = Rect(
+                aliased_mouse_pos[0] + cursor_size - self.camera[0] % cursor_size,
+                aliased_mouse_pos[1] + cursor_size - self.camera[1] % cursor_size,
+                cursor_size,
+                cursor_size
+                )
+
+            game_cursor_rect = screen_cursor_rect.move(*self.camera)
+
             rcivals = list(map(lambda k: self.engine.state["demand"][k],
                 ('r', 'c', 'i')))
 
-            if self.time_spent >= rci_refresh:
+            if self.time_spent >= last_rci_time:
                 self.rcibox.cache_draw(*rcivals)
                 rect = self.rcibox.draw(self.screen)
                 update_rects.append(rect)
-                rci_refresh = self.time_spent + self.kf_interval
+                last_rci_time = self.time_spent + self.kf_interval
 
             if damage:
                 self.screen.fill(BG_COLOR)
                 srect = self.screen.get_rect()
-                nrect = srect.move([-self.camera[0], -self.camera[1]])
-                changed_cells.extend(self.engine.quad.get(nrect))
+                nr = Rect(
+                    srect.topleft[0] + self.camera[0],
+                    srect.topleft[1] + self.camera[1],
+                    srect.width,
+                    srect.height)
+                changed_cells.extend(self.engine.quad.get(nr))
                 draw_cursor = True
 
             if cursor_damage and (
-                cursor_rect[0] != last_cursor_rect.topleft[0] or \
-                cursor_rect[1] != last_cursor_rect.topleft[1]):
-                update_rects.append(cursor_rect)
+                screen_cursor_rect[0] != last_cursor_rect.topleft[0] or \
+                screen_cursor_rect[1] != last_cursor_rect.topleft[1]):
+                update_rects.append(screen_cursor_rect)
                 update_rects.append(last_cursor_rect)
-                changed_cells.extend(self.engine.quad.get(last_cursor_rect))
+                splash = game_cursor_rect.inflate([cursor_size * 2] * 2)
+                changed_cells.extend(self.engine.quad.get(splash))
                 cursor_damage = False
 
             if mouse_rel[0] != 0 or mouse_rel[1] != 0:
@@ -272,15 +300,10 @@ class Game:
                     draw_cursor = False
             else:
                 if mouse_down[0] and last_tool_time < self.time_spent:
-                    self.engine.use_tool(self.toolbox.tools[self.toolbox.selected], cursor_rect)
-                    r = Rect(
-                        mouse_pos[0] - cursor_size,
-                        mouse_pos[1] - cursor_size,
-                        cursor_size * 2,
-                        cursor_size * 2
-                        )
-                    changed_cells.extend(self.engine.quad.get(r))
-                    update_rects.append(r)
+                    self.engine.use_tool(self.toolbox.tools[self.toolbox.selected], game_cursor_rect)
+                    splash = game_cursor_rect.inflate([cursor_size * 2] * 2)
+                    changed_cells.extend(self.engine.quad.get(splash))
+                    update_rects.append(screen_cursor_rect)
                     draw_cursor = True
                     last_tool_time = self.time_spent + self.kf_interval / 4
 
@@ -295,7 +318,8 @@ class Game:
 
             if draw_cursor and not scrolling:
                 update_rects.append(
-                    self.screen.blit(self.textures["cursor_%d" % cursor_size], cursor_rect))
+                    self.screen.blit(self.textures["cursor_%d" % cursor_size], screen_cursor_rect))
+
             update_rects.append(self.statusbox.draw(self.screen, self.engine.state["speed"]))
             update_rects.append(self.toolbox.draw(self.screen))
             update_rects.append(self.rcibox.draw(self.screen))
@@ -307,6 +331,6 @@ class Game:
 
             damage = False
             draw_cursor = False
-            last_cursor_rect = cursor_rect
+            last_cursor_rect = screen_cursor_rect
             sleep(self.sleeptime)
             self.time_spent += self.sleeptime

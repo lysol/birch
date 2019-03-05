@@ -1,6 +1,7 @@
 from pygame import Rect
 from cells import *
 from uuid import uuid4
+from util import negate
 
 class Cell:
 
@@ -38,7 +39,7 @@ class Cell:
         return r
 
     def get_rect(self, camera):
-        rect = self.rect.move(*camera)
+        rect = self.rect.move(*negate(camera))
         return rect
 
     def tick(self, ticks, engine):

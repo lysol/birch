@@ -3,6 +3,9 @@ from math import pi
 def clamp(i, mini, maxi):
     return min(max(i, mini), maxi)
 
+def negate(stuff):
+    return tuple(map(lambda x: -x, stuff))
+
 pi2 = pi * 2
 
 BLACK = 0, 0, 0

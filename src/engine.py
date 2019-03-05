@@ -161,7 +161,7 @@ class Engine:
         self.state['cells'].remove(cell)
 
     def alias_rect(self, rect):
-        offset = [rect[0] % rect.width, rect[1] % rect.height]
+        offset = [-(rect[0] % rect.width), -(rect[1] % rect.height)]
         return rect.move(offset)
 
     def alias_pos(self, x, y, size=16):
@@ -174,7 +174,6 @@ class Engine:
         tool_size = self.textures[name].get_size()
         effect_rect = self.alias_rect(Rect(pos[0], pos[1], tool_size[0], tool_size[1]))
         cells = self.get_cell(effect_rect)
-        print('affected', cells)
         new_cell = None
         if name == "bulldoze":
             for cell in cells:
