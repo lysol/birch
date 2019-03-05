@@ -98,18 +98,20 @@ class Quad:
             for i, q in enumerate(self.quarters):
                 q.dump(prefixlen=4 + prefixlen)
 
-    def check_item(self, item):
-        atleastone = not self.point_outside(item.rect.topleft) or \
-            not self.point_outside(item.rect.topright) or \
-            not self.point_outside(item.rect.bottomleft) or \
-            not self.point_outside(item.rect.bottomright)
+    def item_outside(self, item):
+        return self.point_outside(item.rect.topleft) and \
+            self.point_outside(item.rect.topright) and \
+            self.point_outside(item.rect.bottomleft) and \
+            self.point_outside(item.rect.bottomright)
+
+    def _check_item(self, item):
         if not hasattr(item, 'rect'):
             raise MalformedQuadTreeItemException(item)
-        elif not atleastone:
+        elif self.item_outside(item):
             raise OutOfBoundsException(item.rect, self.rect)
 
     def remove(self, item):
-        self.check_item(item)
+        self._check_item(item)
         if self.leaf:
             if item in self.items:
                 self.items.remove(item)
@@ -149,7 +151,7 @@ class Quad:
         return removed
 
     def insert(self, item):
-        self.check_item(item)
+        self._check_item(item)
         maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
         if not maxed and self.leaf:
             self.items.append(item)
@@ -165,7 +167,7 @@ class Quad:
         return index
 
     def subinsert(self, item):
-        self.check_item(item)
+        self._check_item(item)
         ri = self.rect_indices(item.rect)
         #print('me', self._rect_points(self.rect), 'item insert', item.rect, ri)
         for index in ri:

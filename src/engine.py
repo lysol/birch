@@ -156,6 +156,8 @@ class Engine:
         apos = self.alias_pos(cell.rect[0], cell.rect[1])
         cell.rect[0] = apos[0]
         cell.rect[1] = apos[1]
+        while self.quad.item_outside(cell):
+            self.quad = self.quad.grow(cell.topleft)
         self.quad.insert(cell)
         self.state['cells'].append(cell)
 
