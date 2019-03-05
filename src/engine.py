@@ -104,7 +104,7 @@ class Engine:
                 if randint(0, 100) < 25 * abs(cell.demand):
                     cell.populate()
                     cell.level_check()
-                neighbors = self.get_surrounding(*cell.position)
+                neighbors = self.get_surrounding(cell)
                 counts = {
                     "r": 0,
                     "c": 0,
@@ -136,7 +136,7 @@ class Engine:
                 cell.demand = demand
 
     def get_surrounding(self, cell):
-        zone = cell.rect.copy().grow(cell.width * 2, cell.height * 2)
+        zone = cell.rect.copy().inflate(cell.width * 2, cell.height * 2)
         return self.quad.get(Rect(zone))
 
     # a way to cheat here is to make the quadtree leaf size 32.
@@ -178,7 +178,7 @@ class Engine:
         if name == "bulldoze":
             for cell in cells:
                 self.del_cell(cell)
-        elif len(cell) == 0:
+        elif len(cells) == 0:
             if name == "r_0_0":
                 new_cell = RCell(self.textures, pos)
             elif name == "c_0_0":

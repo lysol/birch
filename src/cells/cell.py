@@ -29,6 +29,30 @@ class Cell:
         return screen.blit(self.textures[self.texture_name], coords)
 
     @property
+    def topleft(self):
+        return self.rect.topleft
+
+    @property
+    def topright(self):
+        return self.rect.topright
+
+    @property
+    def bottomleft(self):
+        return self.rect.bottomleft
+
+    @property
+    def bottomright(self):
+        return self.rect.bottomright
+
+    @property
+    def width(self):
+        return self.rect.width
+
+    @property
+    def height(self):
+        return self.rect.height
+
+    @property
     def rect(self):
         r = Rect(
             self.position[0],
