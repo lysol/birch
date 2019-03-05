@@ -18,6 +18,7 @@ class PopCell(Cell):
         self.type = randint(0,1)
         self.population = 0
         self.demand = 0
+        self.impassible = True
 
     def populate(self):
         if randint(0, 1000) < 2:

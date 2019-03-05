@@ -1,7 +1,7 @@
-from pygame import Rect
+from pygame import Rect, draw
 from cells import *
 from uuid import uuid4
-from util import negate
+from util import negate, WHITE
 
 class Cell:
 
@@ -14,6 +14,7 @@ class Cell:
         self.textures = textures
         self.position = position
         self.next_tick = 0
+        self.impassible = False
         self.id = uuid4()
         # use the texture to get the size if it is None
         if size is not None:
@@ -26,7 +27,12 @@ class Cell:
 
     def draw(self, camera, screen):
         coords = self.get_rect(camera)
+        screen.fill(WHITE, coords)
         return screen.blit(self.textures[self.texture_name], coords)
+
+    def draw_box(self, camera, screen, color):
+        coords = self.get_rect(camera)
+        return draw.rect(screen, color, coords, 1)
 
     @property
     def topleft(self):

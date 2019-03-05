@@ -8,6 +8,7 @@ class Tree(Cell):
         self.age = age if age is not None else randint(0, 100)
         self.base_texture_name = texture_name
         self.next_tick = randint(25, 50)
+        self.impassible = True
 
     @property
     def texture_name(self):

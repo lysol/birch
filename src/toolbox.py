@@ -56,6 +56,12 @@ class Toolbox:
                 return i
         return None
 
+    @property
+    def tool_size(self):
+        if self.tools[self.selected] == 'bulldoze':
+            return 16
+        return self.tool_rects[self.selected].width
+
     def draw(self, screen):
         bounds = list(self.get_rect())
         bounds[0] = 0
@@ -67,5 +73,6 @@ class Toolbox:
         for i, tool in enumerate(self.tools):
             self.surface.blit(self.textures[tool], self.tool_rects[i])
             if i == self.selected:
-                self.surface.blit(self.textures["cursor_32"], self.tool_rects[i])
+                self.surface.blit(self.textures["cursor_%d" % self.textures[tool].get_rect().width],
+                    self.tool_rects[i])
         return screen.blit(self.surface, self.position)

@@ -172,13 +172,20 @@ class Engine:
 
     def use_tool(self, name, pos):
         tool_size = self.textures[name].get_size()
+        rect32 = self.alias_rect(Rect(pos[0], pos[1], 32, 32))
         effect_rect = self.alias_rect(Rect(pos[0], pos[1], tool_size[0], tool_size[1]))
-        cells = self.get_cell(effect_rect)
+        intersected = self.get_cell(effect_rect)
+        cells = list(filter(lambda c: c.impassible, intersected))
+
         new_cell = None
         if name == "bulldoze":
             for cell in cells:
                 self.del_cell(cell)
+            self.set_cell(Cell('dirt', self.textures, rect32))
         elif len(cells) == 0:
+            for cell in intersected:
+                if not cell.impassible:
+                    self.del_cell(cell)
             if name == "r_0_0":
                 new_cell = RCell(self.textures, pos)
             elif name == "c_0_0":

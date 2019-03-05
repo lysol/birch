@@ -14,7 +14,7 @@ from engine import Engine
 from cells.cell import Cell
 from cells.uranium import Uranium
 from cells.tree import PineTree, BirchTree
-from util import RED, FG_COLOR, BG_COLOR
+from util import RED, BLUE, FG_COLOR, BG_COLOR
 import cursor
 
 
@@ -122,18 +122,19 @@ class Game:
         cursor_damage = False
         screen_cursor_rect = Rect(0, 0, 32, 32)
         game_cursor_rect = screen_cursor_rect.copy()
-        last_cursor_rect = screen_cursor_rect.copy()
+        last_screen_cursor_rect = screen_cursor_rect.copy()
+        last_game_cursor_rect = screen_cursor_rect.copy()
 
         last_speed_change = 0
         last_kf = 0
         next_kf = 0
         last_tool_time = 0 # uuuaaauuggh
         last_rci_time = 0
+        debug = False
         while True:
             mouse_pos = pygame.mouse.get_pos()
             mouse_rel = pygame.mouse.get_rel()
             update_rects = []
-
             changed_cells = self.engine.tick()
             pygame.mouse.set_visible(False)
             draw_cursor = False
@@ -154,6 +155,7 @@ class Game:
                     keys.append(event.key)
                 if K_d in keys:
                     self.console_dump()
+                    debug = not debug
                 if event.type in (MOUSEBUTTONDOWN, MOUSEBUTTONUP):
                     mouse_down = self.get_mouse_pressed()
 
@@ -263,12 +265,16 @@ class Game:
                 draw_cursor = True
 
             if cursor_damage and (
-                screen_cursor_rect[0] != last_cursor_rect.topleft[0] or \
-                screen_cursor_rect[1] != last_cursor_rect.topleft[1]):
+                screen_cursor_rect[0] != last_screen_cursor_rect.topleft[0] or \
+                screen_cursor_rect[1] != last_screen_cursor_rect.topleft[1]):
                 update_rects.append(screen_cursor_rect)
-                update_rects.append(last_cursor_rect)
-                splash = game_cursor_rect.inflate([cursor_size * 2] * 2)
-                changed_cells.extend(self.engine.quad.get(splash))
+                update_rects.append(last_screen_cursor_rect)
+                cell_damage = game_cursor_rect.copy()
+                last_cell_damage = last_game_cursor_rect.copy()
+                self.screen.fill(BG_COLOR, last_screen_cursor_rect)
+                self.screen.fill(BG_COLOR, screen_cursor_rect)
+                changed_cells.extend(self.engine.quad.get(cell_damage))
+                changed_cells.extend(self.engine.quad.get(last_cell_damage))
                 cursor_damage = False
 
             if mouse_rel[0] != 0 or mouse_rel[1] != 0:
@@ -278,7 +284,11 @@ class Game:
             if self.toolbox.in_bounds(mouse_pos):
                 pygame.mouse.set_visible(True)
                 if mouse_down[0]:
-                    self.toolbox.selected = self.toolbox.hover_icon(mouse_pos)
+                    hovered = self.toolbox.hover_icon(mouse_pos)
+                    if hovered is not None:
+                        self.toolbox.selected = hovered
+                        cursor_size = self.toolbox.tool_size
+
                 draw_cursor = False
             elif self.rcibox.in_bounds(mouse_pos):
                 draw_cursor = False
@@ -299,21 +309,23 @@ class Game:
                         cursor_changed = False
                     draw_cursor = False
             else:
-                if mouse_down[0] and last_tool_time < self.time_spent:
+                if mouse_down[0] and self.toolbox.selected is not None:
                     self.engine.use_tool(self.toolbox.tools[self.toolbox.selected], game_cursor_rect)
                     splash = game_cursor_rect.inflate([cursor_size * 2] * 2)
                     changed_cells.extend(self.engine.quad.get(splash))
                     update_rects.append(screen_cursor_rect)
                     draw_cursor = True
-                    last_tool_time = self.time_spent + self.kf_interval / 4
 
             # draw map first
             drawn = []
-            for cell in changed_cells:
+            for cell in filter(lambda c: self.screen.get_rect().colliderect(
+                c.get_rect(self.camera)), changed_cells):
                 if cell not in drawn:
                     if type(cell) == tuple:
                         print(cell)
                     update_rects.append(cell.draw(self.camera, self.screen))
+                    if debug:
+                        cell.draw_box(self.camera, self.screen, BLUE)
                     drawn.append(cell)
 
             if draw_cursor and not scrolling:
@@ -324,6 +336,11 @@ class Game:
             update_rects.append(self.toolbox.draw(self.screen))
             update_rects.append(self.rcibox.draw(self.screen))
 
+            if debug:
+                #for update_rect in update_rects:
+                #    pygame.draw.rect(self.screen, RED, update_rect, 1)
+                damage = True
+
             if damage:
                 pygame.display.flip()
             else:
@@ -331,6 +348,7 @@ class Game:
 
             damage = False
             draw_cursor = False
-            last_cursor_rect = screen_cursor_rect
+            last_screen_cursor_rect = screen_cursor_rect
+            last_game_cursor_rect = game_cursor_rect
             sleep(self.sleeptime)
             self.time_spent += self.sleeptime
