@@ -203,8 +203,8 @@ class Engine:
             self.set_cell(new_cell)
             if issubclass(type(new_cell), ConnectableCell):
                 surrounding = self.quad.get(
-                    new_cell.rect.inflate((new_cell.height, new_cell.width)))
+                    new_cell.rect.inflate((new_cell.height * 2, new_cell.width * 2)))
                 for cell in surrounding:
                     if type(cell) == type(new_cell):
-                        cell.cache_texture(surrounding)
+                        cell.cache_texture(self.get_surrounding(cell))
 

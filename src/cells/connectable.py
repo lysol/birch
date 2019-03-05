@@ -12,7 +12,7 @@ _masks = {
     '_tr': ['1010'],
     '_bl': ['0101'],
     '_br': ['0011'],
-    '_x': ['1111']
+    '_x': ['1111', '1011', '0111', '1101','1110']
     }
 
 _connection_masks = {}
@@ -43,10 +43,10 @@ class ConnectableCell(Cell):
             map(lambda item, i: comparison[i] == item, enumerate(connections)), True)
 
     # expects order to be [top, left, right, bottom]
-    def cache_texture(self, surrounding=[]):
+    def cache_texture(self, surrounding):
         mask = [False, False, False, False]
         for cell in surrounding:
-            if type(cell) != type(self):
+            if type(cell) != type(self) or cell == self:
                 continue
             same_x = self.rect.topleft[0] == cell.rect.topleft[0]
             same_y = self.rect.topleft[1] == cell.rect.topleft[1]
