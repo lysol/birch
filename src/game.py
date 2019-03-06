@@ -11,9 +11,6 @@ from toolbox import Toolbox
 from statusbox import Statusbox
 from rcibox import RCIbox
 from engine import Engine
-from cells.cell import Cell
-from cells.uranium import Uranium
-from cells.tree import PineTree, BirchTree
 from util import RED, BLUE, FG_COLOR, BG_COLOR
 import cursor
 
@@ -41,20 +38,20 @@ class Game:
     screen_flags = (HWSURFACE | DOUBLEBUF | RESIZABLE)
     edge_scroll_width = 16
 
-    def __init__(self, initial_dims):
+    def __init__(self, initial_rect):
         self.textures = TextureStore('../assets/')
-        self.initial_dims = initial_dims
+        self.initial_rect = initial_rect
         self.engine = Engine({
             "cells": [],
             "money": 10000,
             "population": 0,
             "speed": 1
-            }, self.textures, dimensions=initial_dims)
+            }, self.textures, initial_rect)
         self.mouse_down = [False, False]
         self.size = 800, 600
         self.scroll_speed = [2, 2]
-        self.camera = [0, 0]
-        self.camera_speed = 8
+        self.camera = [-400, -300]
+        self.camera_speed = 12
         self.cursor_speed = 8
         self.screen = None
         self.fps = 60
@@ -66,21 +63,6 @@ class Game:
         self.scroll_pos = 0, 0
         self.jsonenc = ObjectEncoder()
 
-    def init_cells(self, dimensions):
-        cells = []
-        for y in range(0, dimensions[1], 32):
-            for x in range(0, dimensions[0], 32):
-                if randint(0, 100) < 3:
-                    cells.append(Uranium(self.textures, (x, y)))
-                elif randint(0, 100) < 5:
-                    cells.append(PineTree(self.textures, (x, y)))
-                elif randint(0, 100) < 5:
-                    cells.append(BirchTree(self.textures, (x, y)))
-                elif randint(0, 100) < 20:
-                    cells.append(Cell('dirt', self.textures, (x, y)))
-        for cell in cells:
-            self.engine.set_cell(cell)
-
     def aliased_camera(self, cursor_size):
         return (
             self.camera[0] - self.camera[0] % cursor_size,
@@ -88,7 +70,7 @@ class Game:
             )
 
     def init(self):
-        self.init_cells(self.initial_dims)
+        self.engine.seed()
         pygame.init()
         pygame.display.set_caption('birch')
         self.screen = pygame.display.set_mode(self.size, self.screen_flags)
@@ -139,6 +121,12 @@ class Game:
             changed_cells = self.engine.tick()
             pygame.mouse.set_visible(False)
             draw_cursor = False
+
+            camera_rect = Rect(self.camera[0], self.camera[1], self.size[0], self.size[1])
+            for point in (camera_rect.topleft, camera_rect.topright,
+                camera_rect.bottomleft, camera_rect.bottomright):
+                self.engine.grow_check(point)
+
             if next_kf <= self.time_spent:
                 next_kf = self.time_spent + self.kf_interval
                 damage = True

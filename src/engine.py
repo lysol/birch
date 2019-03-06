@@ -6,6 +6,8 @@ from cells.cell import Cell
 from cells.connectable import ConnectableCell
 from cells.road import RoadCell
 from cells.rail import RailCell
+from cells.uranium import Uranium
+from cells.tree import PineTree, BirchTree
 from util import clamp, pi2
 from quad import Quad
 
@@ -49,14 +51,15 @@ class Engine:
 
     cell_minimum = 16
 
-    def __init__(self, state, textures, dimensions=(128, 128)):
-        self.dimensions = dimensions
+    def __init__(self, state, textures, initial_rect):
+        self.initial_rect = initial_rect
         self.state = state
         self.ticks = 0
         self.textures = textures
         self._next_rci = 0
         self._demand_calc()
-        self.quad = Quad(Rect(0, 0, *self.dimensions))
+        self.state['seeded'] = []
+        self.quad = Quad(initial_rect)
 
     def tick(self):
         damage = False
@@ -157,7 +160,8 @@ class Engine:
         cell.rect[0] = apos[0]
         cell.rect[1] = apos[1]
         while self.quad.item_outside(cell):
-            self.quad = self.quad.grow(cell.topleft)
+            for point in (cell.topleft, cell.topright, cell.bottomleft, cell.bottomright):
+                self.grow_check(point)
         self.quad.insert(cell)
         self.state['cells'].append(cell)
 
@@ -210,3 +214,61 @@ class Engine:
                     if type(cell) == type(new_cell):
                         cell.cache_texture(self.get_surrounding(cell))
 
+    def is_seeded(self, quad):
+        return quad.id in self.state['seeded']
+
+    def seed(self, quad=None):
+        if quad is None:
+            quad = self.quad
+        if quad.meta_is('seeded'):
+            return
+        elif not quad.leaf:
+            seeded = []
+            for qu in quad.quarters:
+                seeded.append(self.seed(qu))
+            if seeded == True:
+                self.set_meta('seeded', True)
+
+        rect = quad.rect
+        cells = []
+
+        def freq(perc):
+            maxcell = (rect.width / 32) * (rect.width / 32) / 10
+            res = int(maxcell * perc)
+            print('seeding with max cell', res)
+            return res
+
+        def xy():
+            x = randint(rect.left, rect.right)
+            y = randint(rect.left, rect.right)
+            x = x - x % 32
+            y = y - y % 32
+            return (
+                randint(rect.left, rect.right),
+                randint(rect.top, rect.bottom)
+                )
+
+        uranium_freq = freq(.03)
+        pine_freq = freq(.05)
+        birch_freq = freq(.05)
+        dirt_freq = freq(.2)
+
+        for i in range(uranium_freq):
+            cells.append(Uranium(self.textures, xy()))
+        for i in range(pine_freq):
+            cells.append(PineTree(self.textures, xy()))
+        for i in range(birch_freq):
+            cells.append(BirchTree(self.textures, xy()))
+        for i in range(dirt_freq):
+            cells.append(Cell('dirt', self.textures, xy()))
+
+        for cell in cells:
+            self.set_cell(cell)
+        self.state['seeded'].append(quad.id)
+        quad.set_meta('seeded', True)
+        return True
+
+    def grow_check(self, point):
+        while self.quad.point_outside(point):
+            self.quad = self.quad.grow(point)
+            self.seed(self.quad)

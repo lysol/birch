@@ -1,6 +1,7 @@
 from shapely.geometry import Polygon
 from pygame import Rect
 from exceptions import *
+from uuid import uuid4
 
 class Quad:
 
@@ -15,6 +16,8 @@ class Quad:
             ]
         self.items = []
         self.quarters = []
+        self.id = uuid4()
+        self.meta = {}
 
     @property
     def leaf(self):
@@ -44,6 +47,18 @@ class Quad:
     def height(self):
         return self.rect.height
 
+    def set_meta(self, key, val):
+        self.meta[key] = val
+
+    def del_meta(self, key, val):
+        del(self.meta[key])
+
+    def meta_is(self, key):
+        return key in self.meta and self.meta[key]
+
+    def meta_not(self, key):
+        return key not in self.meta or not self.meta[key]
+
     def point_outside(self, point):
         return point[0] < self.topleft[0] or point[1] < self.topleft[1] or \
             point[0] > self.bottomright[0] or point[1] > self.bottomright[1]
@@ -53,20 +68,20 @@ class Quad:
 
     def grow(self, point):
         newindex = 0
-        tl = [None, None]
+        tl = [self.rect.left, self.rect.top]
         if point[0] < self.rect.topleft[0]:
             tl[0] = self.rect.topleft[0] - self.rect.width
             newindex += 1
         elif point[0] > self.rect.bottomright[0]:
             tl[0] = self.rect.topleft[1] + self.rect.width
-        else:
-            raise GrowPointException(point, self.rect)
+
         if point[1] < self.rect.topleft[1]:
             tl[1] = self.rect.topleft[1] - self.rect.height
             newindex += 2
         elif point[1] > self.rect.bottomright[1]:
             tl[1] = self.rect.topleft[1] + self.rect.height
-        else:
+
+        if tl == self.rect.topleft:
             raise GrowPointException(point, self.rect)
 
         newquad = Quad(Rect(tl[0], tl[1], self.rect.width * 2, self.rect.height * 2))
