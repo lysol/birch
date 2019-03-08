@@ -181,7 +181,7 @@ class Engine:
 
     def use_tool(self, name, pos):
         tool_size = self.textures[name].get_size()
-        rect32 = self.alias_rect(Rect(pos[0], pos[1], 32, 32))
+        rect32 = self.alias_rect(Rect(pos[0], pos[1], 16, 16))
         effect_rect = self.alias_rect(Rect(pos[0], pos[1], tool_size[0], tool_size[1]))
         intersected = self.get_cell(effect_rect)
         cells = list(filter(lambda c: c.impassible, intersected))

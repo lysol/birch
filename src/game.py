@@ -212,11 +212,11 @@ class Game:
                 edged = -1
 
             aliased_mouse_pos = (
-                mouse_pos[0] - mouse_pos[0] % cursor_size,
-                mouse_pos[1] - mouse_pos[1] % cursor_size
+                mouse_pos[0] - mouse_pos[0] % 16,
+                mouse_pos[1] - mouse_pos[1] % 16
                 )
 
-            aliased_camera_pos = self.aliased_camera(cursor_size)
+            aliased_camera_pos = self.aliased_camera(16)
             game_cursor_rect = Rect(
                 aliased_mouse_pos[0] + aliased_camera_pos[0],
                 aliased_mouse_pos[1] + aliased_camera_pos[1],
