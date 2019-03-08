@@ -179,32 +179,31 @@ class Engine:
             y - y % size
             ]
 
-    def use_tool(self, name, pos):
+    def use_tool(self, name, rect):
         tool_size = self.textures[name].get_size()
-        rect32 = self.alias_rect(Rect(pos[0], pos[1], 16, 16))
-        effect_rect = self.alias_rect(Rect(pos[0], pos[1], tool_size[0], tool_size[1]))
-        intersected = self.get_cell(effect_rect)
+        print('effect rect is', rect)
+        intersected = self.get_cell(rect)
         cells = list(filter(lambda c: c.impassible, intersected))
 
         new_cell = None
         if name == "bulldoze":
             for cell in cells:
                 self.del_cell(cell)
-            self.set_cell(Cell('dirt', self.textures, rect32))
+            #self.set_cell(Cell('dirt', self.textures, rect32))
         elif len(cells) == 0:
             for cell in intersected:
                 if not cell.impassible:
                     self.del_cell(cell)
             if name == "r_0_0":
-                new_cell = RCell(self.textures, pos)
+                new_cell = RCell(self.textures, rect.topleft)
             elif name == "c_0_0":
-                new_cell = CCell(self.textures, pos)
+                new_cell = CCell(self.textures, rect.topleft)
             elif name == "i_0_0":
-                new_cell = ICell(self.textures, pos)
+                new_cell = ICell(self.textures, rect.toplect)
             elif name == "road_h":
-                new_cell = RoadCell(self.textures, pos)
+                new_cell = RoadCell(self.textures, rect.topleft)
             elif name == "rail_h":
-                new_cell = RailCell(self.textures, pos)
+                new_cell = RailCell(self.textures, rect.topleft)
         if new_cell is not None:
             self.set_cell(new_cell)
             if issubclass(type(new_cell), ConnectableCell):
