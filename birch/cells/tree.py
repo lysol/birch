@@ -1,5 +1,5 @@
-from cells.cell import Cell
 from random import randint
+from birch.cells.cell import Cell
 
 class Tree(Cell):
 

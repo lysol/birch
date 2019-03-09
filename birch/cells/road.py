@@ -1,4 +1,4 @@
-from cells.connectable import ConnectableCell
+from birch.cells.connectable import ConnectableCell
 
 class RoadCell(ConnectableCell):
 

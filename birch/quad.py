@@ -1,7 +1,6 @@
-from shapely.geometry import Polygon
-from pygame import Rect
-from exceptions import *
 from uuid import uuid4
+from pygame import Rect
+from birch.exceptions import *
 
 class Quad:
 
@@ -245,9 +244,6 @@ class Quad:
 
     def _intersect(self, r1, r2):
         return r1.colliderect(r2)
-        #ri1 = Polygon(self._rect_points(r1))
-        #ri2 = Polygon(self._rect_points(r2))
-        #return ri1.intersects(ri2)
 
     def get(self, rect):
         if not self.leaf:

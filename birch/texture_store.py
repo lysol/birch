@@ -1,5 +1,5 @@
-from pygame import transform, image
 import json
+from pygame import transform, image
 
 class TextureStore(dict):
 

@@ -1,7 +1,7 @@
 from PIL import Image
 import json
 
-data = json.load(open('assets/names.json', 'r'))
+data = json.load(open('birch/assets/names.json', 'r'))
 im = Image.open('assets/spritesheet.png')
 out_images = {}
 for name in data:
@@ -14,4 +14,4 @@ for name in data:
         position[0] + size,
         position[1] + size
         )
-    im.crop(region).save('assets/%s.png' % name)
+    im.crop(region).save('birch/assets/%s.png' % name)

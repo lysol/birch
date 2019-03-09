@@ -1,5 +1,5 @@
-from cells.cell import Cell
-from util import BG_COLOR
+from birch.cells.cell import Cell
+from birch.util import BG_COLOR
 
 def _lmap(f, vs):
     return list(map(f, vs))

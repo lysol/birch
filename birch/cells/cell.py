@@ -1,7 +1,7 @@
-from pygame import Rect, draw
-from cells import *
 from uuid import uuid4
-from util import negate, BG_COLOR
+from pygame import Rect, draw
+from birch.util import negate, BG_COLOR
+from birch.cells import *
 
 class Cell:
 

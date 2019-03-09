@@ -1,16 +1,16 @@
 from random import choice, randint
 from math import sin, pi
 from pygame import Rect
-from cells.rci import RCell, CCell, ICell
-from cells.cell import Cell
-from cells.connectable import ConnectableCell
-from cells.road import RoadCell
-from cells.rail import RailCell
-from cells.uranium import Uranium
-from cells.tree import PineTree, BirchTree
-from util import clamp, pi2
-from quad import Quad
-from exceptions import QuadAlreadySeededException
+from birch.cells.rci import RCell, CCell, ICell
+from birch.cells.cell import Cell
+from birch.cells.connectable import ConnectableCell
+from birch.cells.road import RoadCell
+from birch.cells.rail import RailCell
+from birch.cells.uranium import Uranium
+from birch.cells.tree import PineTree, BirchTree
+from birch.util import clamp, pi2
+from birch.quad import Quad
+from birch.exceptions import QuadAlreadySeededException
 
 class Engine:
 

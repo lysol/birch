@@ -1,6 +1,6 @@
-from cells.cell import Cell
 from random import randint
-from util import clamp
+from birch.util import clamp
+from birch.cells.cell import Cell
 
 def psum(n):
     return sum(map(lambda x: x + 1, range(n)))

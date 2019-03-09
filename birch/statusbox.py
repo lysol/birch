@@ -1,7 +1,7 @@
+import math
 from pygame import draw, Rect, Surface
 from pygame.font import Font
-from util import FG_COLOR, BG_COLOR
-import math
+from birch.util import FG_COLOR, BG_COLOR
 
 class Statusbox:
 

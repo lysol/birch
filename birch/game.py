@@ -6,13 +6,13 @@ from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
     KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q, MOUSEBUTTONDOWN, MOUSEBUTTONUP, \
     Rect, K_d, K_LSHIFT, K_RSHIFT
 
-from texture_store import TextureStore
-from toolbox import Toolbox
-from statusbox import Statusbox
-from rcibox import RCIbox
-from engine import Engine
-from util import RED, BLUE, FG_COLOR, BG_COLOR
-import cursor
+from birch.texture_store import TextureStore
+from birch.toolbox import Toolbox
+from birch.statusbox import Statusbox
+from birch.rcibox import RCIbox
+from birch.engine import Engine
+from birch.util import RED, BLUE, FG_COLOR, BG_COLOR
+from birch import cursor
 
 
 class ObjectEncoder(json.JSONEncoder):
@@ -38,8 +38,8 @@ class Game:
     screen_flags = (HWSURFACE | DOUBLEBUF | RESIZABLE)
     edge_scroll_width = 16
 
-    def __init__(self, initial_rect):
-        self.textures = TextureStore('../assets/')
+    def __init__(self, initial_rect, asset_dir):
+        self.textures = TextureStore(asset_dir)
         self.initial_rect = initial_rect
         self.engine = Engine({
             "cells": [],

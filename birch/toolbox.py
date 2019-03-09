@@ -1,6 +1,6 @@
-from pygame import draw, Rect, Surface
-from util import FG_COLOR, BG_COLOR
 import math
+from pygame import draw, Rect, Surface
+from birch.util import FG_COLOR, BG_COLOR
 
 class Toolbox:
 
