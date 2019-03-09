@@ -104,20 +104,13 @@ class Quad:
         self._debug('Grow op requested', self.rect, point)
         newindex = 0
         tl = [self.rect.left, self.rect.top]
-        if point[0] < self.rect.topleft[0]:
-            tl[0] = self.rect.topleft[0] - self.rect.width
+        if point[0] < self.rect.left:
+            tl[0] = self.rect.left - self.rect.width
             newindex += 1
-        elif point[0] > self.rect.bottomright[0]:
-            tl[0] = self.rect.topleft[1] + self.rect.width
 
-        if point[1] < self.rect.topleft[1]:
-            tl[1] = self.rect.topleft[1] - self.rect.height
+        if point[1] < self.rect.top:
+            tl[1] = self.rect.top - self.rect.height
             newindex += 2
-        elif point[1] > self.rect.bottomright[1]:
-            tl[1] = self.rect.topleft[1] + self.rect.height
-
-        if tl == self.rect.topleft:
-            raise GrowPointException(point, self.rect)
 
         newquad = Quad(Rect(tl[0], tl[1], self.rect.width * 2, self.rect.height * 2),
             level=self.level - 1)
