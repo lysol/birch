@@ -22,3 +22,8 @@ class QuadAlreadySeededException(Exception):
                 x.name, x.rect.left, x.rect.top, x.rect.width, x.rect.height),
                 itemso))))
         super().__init__(messages)
+
+class MalformedQuadException(Exception):
+    def __init__(self, newrect, existingrect):
+        message = 'Grow operation generated an illegally dimensioned quadtree. New top level quad rect:', newrect, 'Existing rect:', existingrect
+        super().__init__(message)

@@ -121,6 +121,8 @@ class Quad:
 
         newquad = Quad(Rect(tl[0], tl[1], self.rect.width * 2, self.rect.height * 2),
             level=self.level - 1)
+        if not newquad.rect.colliderect(self.rect):
+            raise MalformedQuadException(newquad.rect, self.rect)
 
         for i in range(4):
             if i == newindex:
