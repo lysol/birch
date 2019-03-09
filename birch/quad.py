@@ -1,3 +1,4 @@
+import os
 from uuid import uuid4
 from pygame import Rect
 from birch.exceptions import *
@@ -5,7 +6,8 @@ from birch.exceptions import *
 class Quad:
 
     def __init__(self, rect, threshold=32, max_items=16, process_rects=True,
-            meta=None):
+            meta=None, level=0):
+        self.level = level
         self.threshold = threshold
         self.max_items = max_items
         self.process_rects = process_rects
@@ -17,10 +19,16 @@ class Quad:
         self.items = []
         self.quarters = []
         self._id = uuid4()
+        self._debug('initializing new quad with incoming meta', meta)
         if meta is None:
             self.meta = {}
         else:
             self.meta = meta
+        self._debug('new meta', self.meta)
+
+    def _debug(self, *things):
+        if 'DEBUG' in os.environ and os.environ['DEBUG']:
+            print('%s:%d' % (self.id, self.level), " ".join(list(map(lambda x: str(x), things))))
 
     @property
     def id(self):
@@ -29,6 +37,22 @@ class Quad:
     @property
     def leaf(self):
         return len(self.quarters) == 0
+
+    @property
+    def left(self):
+        return self.rect.left
+
+    @property
+    def right(self):
+        return self.rect.right
+
+    @property
+    def top(self):
+        return self.rect.top
+
+    @property
+    def bottom(self):
+        return self.rect.bottom
 
     @property
     def topleft(self):
@@ -55,25 +79,29 @@ class Quad:
         return self.rect.height
 
     def set_meta(self, key, val):
+        self._debug('set_meta', key, val)
         self.meta[key] = val
 
     def del_meta(self, key, val):
         del(self.meta[key])
 
     def meta_is(self, key):
+        self._debug('meta_is', key, key in self.meta and self.meta[key])
         return key in self.meta and self.meta[key]
 
     def meta_not(self, key):
         return key not in self.meta or not self.meta[key]
 
     def point_outside(self, point):
-        return point[0] < self.topleft[0] or point[1] < self.topleft[1] or \
-            point[0] > self.bottomright[0] or point[1] > self.bottomright[1]
+        self._debug('point_outside', point, self.rect, self.left, self.top, self.right, self.bottom)
+        return point[0] < self.left or point[0] > self.right or \
+            point[1] < self.top or point[1] > self.bottom
 
     def rect_outside(self, rect):
         return self.point_outside(rect.topleft) or self.point_outside(rect.bottomright)
 
     def grow(self, point):
+        self._debug('Grow op requested', self.rect, point)
         newindex = 0
         tl = [self.rect.left, self.rect.top]
         if point[0] < self.rect.topleft[0]:
@@ -91,7 +119,8 @@ class Quad:
         if tl == self.rect.topleft:
             raise GrowPointException(point, self.rect)
 
-        newquad = Quad(Rect(tl[0], tl[1], self.rect.width * 2, self.rect.height * 2))
+        newquad = Quad(Rect(tl[0], tl[1], self.rect.width * 2, self.rect.height * 2),
+            level=self.level - 1)
 
         for i in range(4):
             if i == newindex:
@@ -105,11 +134,14 @@ class Quad:
                     ]
                 newquad.quarters.append(
                     Quad(Rect(offset[0], offset[1], self.rect.width, self.rect.height),
-                        meta={}))
+                        meta={}, level=self.level))
+        self._debug('Top:', newquad.level, newquad.rect)
+        for quad in newquad.quarters:
+            self._debug(quad.level, quad.id, quad.rect, quad == self)
         return newquad
 
     def dump(self, prefixlen=0):
-        print(' ' * prefixlen, 'Quad (%s)' % str(self.id), self._rect_points(self.rect), self.halves)
+        print(' ' * prefixlen, 'Quad:%d (%s)' % (self.level, str(self.id)), self._rect_points(self.rect), self.halves)
         print(' ' * (prefixlen + 2), 'meta:')
         for k in self.meta:
             print(' ' * (prefixlen + 4), '%s:' % k, self.meta[k])
@@ -131,6 +163,7 @@ class Quad:
             self.point_outside(item.rect.bottomright)
 
     def _check_item(self, item):
+        self._debug('_check_item', item.name, item.rect, self.rect)
         if not hasattr(item, 'rect'):
             raise MalformedQuadTreeItemException(item)
         elif self.item_outside(item):
@@ -178,7 +211,7 @@ class Quad:
 
     def insert(self, item):
         try:
-            print(self.id, 'insert', self.rect, item.name, item.rect)
+            self._debug('insert', self.rect, item.name, item.rect)
             self._check_item(item)
             maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
             if not maxed and self.leaf:
@@ -186,23 +219,26 @@ class Quad:
                 return
             elif maxed and self.leaf:
                 self.split()
+            self._debug('going to sub insert', item.name, item.rect, 'maxed:', maxed, 'leaf:', self.leaf)
             self.subinsert(item)
         except OutOfBoundsException as e:
-            self.dump()
             raise e
 
     def pos_quarter(self, pos):
-        right = pos[0] >= self.halves[0]
-        bottom = pos[1] >= self.halves[1]
-        index = int(right) + int(bottom) * 2
+        right = 1 if pos[0] >= self.halves[0] else 0
+        bottom = 2 if pos[1] >= self.halves[1] else 0
+        index = right + bottom
+        self._debug('pos check', pos, self.halves, 'right is 1 if pos[0] >= halves[0], bottom is 2 if pos[1] >= halves[1]', right, bottom)
+        self._debug('pos_quarter', pos, index)
         return index
 
     def subinsert(self, item):
+        self._debug('subinsert', item.name, item.rect)
         self._check_item(item)
         ri = self.rect_indices(item.rect)
-        #print('me', self._rect_points(self.rect), 'item insert', item.rect, ri)
         for index in ri:
-            self.quarters[index].insert(item)
+           self._debug('subinsert', item.name, item.rect, 'quarter index', index, 'my rect', self.rect, 'quarter rect', self.quarters[index].rect)
+           self.quarters[index].insert(item)
 
     def split(self, copy_meta=True, existing=None):
         newmeta = {}
@@ -225,7 +261,7 @@ class Quad:
                 if existing is not None and rect == existing.rect:
                     self.quarters.append(existing)
                 else:
-                    self.quarters.append(Quad(rect, meta=dict(newmeta)))
+                    self.quarters.append(Quad(rect, meta=dict(newmeta), level=self.level + 1))
         for item in self.items:
             self.subinsert(item)
         self.items = []
@@ -234,7 +270,9 @@ class Quad:
         return (rect.topleft, rect.topright, rect.bottomleft, rect.bottomright)
 
     def rect_indices(self, rect):
-        return set(map(lambda xy: self.pos_quarter(xy), self._rect_points(rect)))
+        result = set(map(lambda xy: self.pos_quarter(xy), self._rect_points(rect)))
+        self._debug('rect_indices', self.rect, rect, result)
+        return result
 
     def _pgte(self, p1, p2):
         return p1[0] >= p2[0] and p1[1] >= p2[1]
