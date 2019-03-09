@@ -248,12 +248,11 @@ class Engine:
 
         def xy():
             x = randint(rect.left, rect.right)
-            y = randint(rect.left, rect.right)
-            x = x - x % 32
-            y = y - y % 32
+            y = randint(rect.top, rect.bottom)
+            x = x - x % 16
+            y = y - y % 16
             return (
-                randint(rect.left, rect.right),
-                randint(rect.top, rect.bottom)
+                x, y
                 )
 
         uranium_freq = freq(.03)
