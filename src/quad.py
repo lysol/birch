@@ -178,14 +178,19 @@ class Quad:
         return removed
 
     def insert(self, item):
-        self._check_item(item)
-        maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
-        if not maxed and self.leaf:
-            self.items.append(item)
-            return
-        elif maxed and self.leaf:
-            self.split()
-        self.subinsert(item)
+        try:
+            print(self.id, 'insert', self.rect, item.name, item.rect)
+            self._check_item(item)
+            maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
+            if not maxed and self.leaf:
+                self.items.append(item)
+                return
+            elif maxed and self.leaf:
+                self.split()
+            self.subinsert(item)
+        except OutOfBoundsException as e:
+            self.dump()
+            raise e
 
     def pos_quarter(self, pos):
         right = pos[0] >= self.halves[0]
