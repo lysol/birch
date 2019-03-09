@@ -27,7 +27,6 @@ class Cell:
 
     def draw(self, camera, screen):
         coords = self.get_rect(camera)
-        screen.fill(BG_COLOR, coords)
         return screen.blit(self.textures[self.texture_name], coords)
 
     def draw_box(self, camera, screen, color):
