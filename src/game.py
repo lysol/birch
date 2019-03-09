@@ -91,6 +91,7 @@ class Game:
         for cell in self.engine.state['cells']:
             if hasattr(cell, 'population'):
                 print('cell', cell.position, cell.name, cell.population, cell.level)
+        self.engine.quad.dump()
 
     def run(self):
         damage = True

@@ -5,7 +5,8 @@ from uuid import uuid4
 
 class Quad:
 
-    def __init__(self, rect, threshold=32, max_items=16, process_rects=True):
+    def __init__(self, rect, threshold=32, max_items=16, process_rects=True,
+            meta=None):
         self.threshold = threshold
         self.max_items = max_items
         self.process_rects = process_rects
@@ -16,8 +17,15 @@ class Quad:
             ]
         self.items = []
         self.quarters = []
-        self.id = uuid4()
-        self.meta = {}
+        self._id = uuid4()
+        if meta is None:
+            self.meta = {}
+        else:
+            self.meta = meta
+
+    @property
+    def id(self):
+        return str(self._id.hex[-8:])
 
     @property
     def leaf(self):
@@ -97,7 +105,8 @@ class Quad:
                     tl[1] + self.rect.height * int(not top)
                     ]
                 newquad.quarters.append(
-                    Quad(Rect(offset[0], offset[1], self.rect.width, self.rect.height)))
+                    Quad(Rect(offset[0], offset[1], self.rect.width, self.rect.height),
+                        meta={}))
         return newquad
 
     def dump(self, prefixlen=0):
@@ -188,19 +197,28 @@ class Quad:
         for index in ri:
             self.quarters[index].insert(item)
 
-    def split(self):
+    def split(self, copy_meta=True, existing=None):
+        newmeta = {}
+        if copy_meta:
+            newmeta = self.meta
         if self.leaf:
             wh = [self.rect.width / 2, self.rect.height / 2]
-            self.quarters = [
-                Quad(Rect(self.rect[0], self.rect[1],
-                    wh[0], wh[1])),
-                Quad(Rect(self.halves[0], self.rect[1],
-                    wh[0], wh[1])),
-                Quad(Rect(self.rect[0], self.halves[1],
-                    wh[0], wh[1])),
-                Quad(Rect(self.halves[0], self.halves[1],
-                    wh[0], wh[1]))
-                ]
+            rects = [
+                Rect(self.rect[0], self.rect[1],
+                    wh[0], wh[1]),
+                Rect(self.halves[0], self.rect[1],
+                    wh[0], wh[1]),
+                Rect(self.rect[0], self.halves[1],
+                    wh[0], wh[1]),
+                Rect(self.halves[0], self.halves[1],
+                    wh[0], wh[1]),
+            ]
+            self.quarters = []
+            for rect in rects:
+                if existing is not None and rect == existing.rect:
+                    self.quarters.append(existing)
+                else:
+                    self.quarters.append(Quad(rect, meta=dict(newmeta)))
         for item in self.items:
             self.subinsert(item)
         self.items = []

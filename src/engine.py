@@ -10,6 +10,7 @@ from cells.uranium import Uranium
 from cells.tree import PineTree, BirchTree
 from util import clamp, pi2
 from quad import Quad
+from exceptions import QuadAlreadySeededException
 
 class Engine:
 
@@ -58,7 +59,6 @@ class Engine:
         self.textures = textures
         self._next_rci = 0
         self._demand_calc()
-        self.state['seeded'] = []
         self.quad = Quad(initial_rect)
 
     def tick(self):
@@ -155,19 +155,22 @@ class Engine:
         #except IndexError:
         #    return None
 
-    def set_cell(self, cell):
-        apos = self.alias_pos(cell.rect[0], cell.rect[1])
-        cell.rect[0] = apos[0]
-        cell.rect[1] = apos[1]
-        while self.quad.item_outside(cell):
-            for point in (cell.topleft, cell.topright, cell.bottomleft, cell.bottomright):
-                self.grow_check(point)
+    def set_cell(self, cell, alias=True, grow=True):
+        if alias:
+            apos = self.alias_pos(cell.rect[0], cell.rect[1])
+            cell.rect[0] = apos[0]
+            cell.rect[1] = apos[1]
+        if grow:
+            while self.quad.item_outside(cell):
+                for point in (cell.topleft, cell.topright, cell.bottomleft, cell.bottomright):
+                    self.grow_check(point)
         self.quad.insert(cell)
         self.state['cells'].append(cell)
 
     def del_cell(self, cell):
         self.quad.remove(cell)
-        self.state['cells'].remove(cell)
+        if cell in self.state['cells']:
+            self.state['cells'].remove(cell)
 
     def alias_rect(self, rect):
         offset = [-(rect[0] % rect.width), -(rect[1] % rect.height)]
@@ -213,23 +216,29 @@ class Engine:
                     if type(cell) == type(new_cell):
                         cell.cache_texture(self.get_surrounding(cell))
 
-    def is_seeded(self, quad):
-        return quad.id in self.state['seeded']
-
     def seed(self, quad=None):
         if quad is None:
             quad = self.quad
         if quad.meta_is('seeded'):
-            return
+            return True
         elif not quad.leaf:
             seeded = []
             for qu in quad.quarters:
                 seeded.append(self.seed(qu))
-            if seeded == True:
-                self.set_meta('seeded', True)
+            if seeded == [True, True, True, True]:
+                quad.set_meta('seeded', True)
+                return True
+            else:
+                return False
 
         rect = quad.rect
         cells = []
+
+        for item in quad.items:
+            shrink1 = quad.rect.inflate((-1, -1))
+            if shrink1.collidepoint(item.rect.topleft):
+                # should not be in here
+                raise QuadAlreadySeededException(quad)
 
         def freq(perc):
             maxcell = (rect.width / 32) * (rect.width / 32) / 10
@@ -261,13 +270,20 @@ class Engine:
         for i in range(dirt_freq):
             cells.append(Cell('dirt', self.textures, xy()))
 
-        for cell in cells:
-            self.set_cell(cell)
-        self.state['seeded'].append(quad.id)
         quad.set_meta('seeded', True)
+        for cell in cells:
+            self.set_cell(cell, alias=False, grow=False)
         return True
 
     def grow_check(self, point):
+        changed = False
         while self.quad.point_outside(point):
+            old_quad = self.quad
             self.quad = self.quad.grow(point)
-            self.seed(self.quad)
+            changed = True
+        if changed:
+            try:
+                self.seed(self.quad)
+            except QuadAlreadySeededException as e:
+                self.quad.dump()
+                raise e
