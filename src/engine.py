@@ -241,7 +241,7 @@ class Engine:
                 raise QuadAlreadySeededException(quad)
 
         def freq(perc):
-            maxcell = (rect.width / 32) * (rect.width / 32) / 10
+            maxcell = (rect.width / 32) * (rect.width / 32) / 2
             res = int(maxcell * perc)
             print('seeding with max cell', res)
             return res
