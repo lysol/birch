@@ -110,7 +110,10 @@ class Quad:
         return newquad
 
     def dump(self, prefixlen=0):
-        print(' ' * prefixlen, 'Quad', self._rect_points(self.rect), self.halves)
+        print(' ' * prefixlen, 'Quad (%s)' % str(self.id), self._rect_points(self.rect), self.halves)
+        print(' ' * (prefixlen + 2), 'meta:')
+        for k in self.meta:
+            print(' ' * (prefixlen + 4), '%s:' % k, self.meta[k])
         if self.leaf and len(self.items) > 0:
             print(' ' * (prefixlen + 2), 'items:')
             for item in self.items:
