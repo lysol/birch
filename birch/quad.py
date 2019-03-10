@@ -231,9 +231,10 @@ class Quad:
         self._debug('subinsert', item.name, item.rect)
         self._check_item(item)
         ri = self.rect_indices(item.rect)
-        for index in ri:
-           self._debug('subinsert', item.name, item.rect, 'quarter index', index, 'my rect', self.rect, 'quarter rect', self.quarters[index].rect)
-           self.quarters[index].insert(item)
+
+        for quarter in self.quarters:
+            if quarter.rect.colliderect(item.rect):
+                quarter.insert(item)
 
     def split(self, copy_meta=True, existing=None):
         newmeta = {}
