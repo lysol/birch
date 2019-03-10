@@ -247,8 +247,8 @@ class Engine:
             return res
 
         def xy():
-            x = randint(rect.left, rect.right)
-            y = randint(rect.top, rect.bottom)
+            x = randint(rect.left, rect.right - 1)
+            y = randint(rect.top, rect.bottom - 1)
             x = x - x % 16
             y = y - y % 16
             return (
