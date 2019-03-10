@@ -202,7 +202,7 @@ class Engine:
             elif name == "c_0_0":
                 new_cell = CCell(self.textures, rect.topleft)
             elif name == "i_0_0":
-                new_cell = ICell(self.textures, rect.toplect)
+                new_cell = ICell(self.textures, rect.topleft)
             elif name == "road_h":
                 new_cell = RoadCell(self.textures, rect.topleft)
             elif name == "rail_h":
