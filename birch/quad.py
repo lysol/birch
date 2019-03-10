@@ -135,6 +135,21 @@ class Quad:
             self._debug(quad.level, quad.id, quad.rect, quad == self)
         return newquad
 
+    def dump_seeded(self, prefixlen=0):
+        print(' ' * prefixlen, 'Quad:%d (%s)' % (self.level, str(self.id)), self._rect_points(self.rect), self.halves)
+        seeded = 'seeded' in self.meta and self.meta['seeded']
+        print(' ' * (prefixlen + 2), seeded)
+        if self.leaf and len(self.items) > 0:
+            print(' ' * (prefixlen + 2), 'items:')
+            for item in self.items:
+                collide = self.rect.colliderect(item.rect)
+                print(' ' * (prefixlen + 4), item.name, 'Collides: %s' % bool(collide),
+                        self._rect_points(item.rect))
+        if not self.leaf:
+            print(' ' * (prefixlen + 2), 'quarters:')
+            for i, q in enumerate(self.quarters):
+                q.dump_seeded(prefixlen=4 + prefixlen)
+
     def dump(self, prefixlen=0):
         print(' ' * prefixlen, 'Quad:%d (%s)' % (self.level, str(self.id)), self._rect_points(self.rect), self.halves)
         print(' ' * (prefixlen + 2), 'meta:')
@@ -237,6 +252,7 @@ class Quad:
                 quarter.insert(item)
 
     def split(self, copy_meta=True, existing=None):
+        self._debug('split', copy_meta, existing)
         newmeta = {}
         if copy_meta:
             newmeta = self.meta

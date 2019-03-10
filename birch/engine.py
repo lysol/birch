@@ -217,6 +217,7 @@ class Engine:
                         cell.cache_texture(self.get_surrounding(cell))
 
     def seed(self, quad=None):
+        self.quad._debug('seeding')
         if quad is None:
             quad = self.quad
         if quad.meta_is('seeded'):
@@ -243,7 +244,6 @@ class Engine:
         def freq(perc):
             maxcell = (rect.width / 32) * (rect.width / 32) / 2
             res = int(maxcell * perc)
-            print('seeding with max cell', res)
             return res
 
         def xy():
@@ -271,6 +271,7 @@ class Engine:
 
         quad.set_meta('seeded', True)
         for cell in cells:
+            quad._debug('seed insert', cell.id, cell.rect)
             self.set_cell(cell, alias=False, grow=False)
         return True
 
@@ -284,5 +285,5 @@ class Engine:
             try:
                 self.seed(self.quad)
             except QuadAlreadySeededException as e:
-                self.quad.dump()
+                self.quad.dump_seeded()
                 raise e
