@@ -17,9 +17,9 @@ class GrowPointException(Exception):
 class QuadAlreadySeededException(Exception):
     def __init__(self, quad):
         itemso = list(filter(lambda x: quad.rect.collidepoint(x.topleft), quad.items))
-        messages = ['This quad has already been seeded:', quad.id, quad.rect, quad.meta]
-        messages.append(str(list(map(lambda x: '    %s %d, %d, %d, %d' % (
-                x.name, x.rect.left, x.rect.top, x.rect.width, x.rect.height),
+        messages = ['This quad has already been seeded:', quad.id, quad.rect, quad.meta, 'length of items', len(quad.items), len(itemso)]
+        messages.append(str(list(map(lambda x: '    %s %d, %d, %d, %d, %s' % (
+                x.name, x.rect.left, x.rect.top, x.rect.width, x.rect.height, str(x.id)),
                 itemso))))
         super().__init__(messages)
 
