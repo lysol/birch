@@ -145,15 +145,8 @@ class Engine:
         zone = cell.rect.copy().inflate(cell.width * 2, cell.height * 2)
         return self.quad.get(Rect(zone))
 
-    # a way to cheat here is to make the quadtree leaf size 32.
-    # this way we can get the top/left surrounding cells and figure out if we need
-    # to return a cell that is oozing into this one
     def get_cell(self, rect):
         return self.quad.get(rect)
-        #try:
-        #    return self.state["cells"][y][x]
-        #except IndexError:
-        #    return None
 
     def set_cell(self, cell, alias=True, grow=True):
         if alias:
@@ -192,7 +185,6 @@ class Engine:
         if name == "bulldoze":
             for cell in cells:
                 self.del_cell(cell)
-            #self.set_cell(Cell('dirt', self.textures, rect32))
         elif len(cells) == 0:
             for cell in intersected:
                 if not cell.impassible:

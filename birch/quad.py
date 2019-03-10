@@ -307,7 +307,6 @@ class Quad:
                     uniq.append(result)
             return uniq
 
-        #results = list(filter(lambda p: rect.colliderect(p.rect), self.items))
         results = list(filter(lambda p: self._intersect(rect, p.rect), self.items))
         unique = []
         for item in results:
