@@ -329,7 +329,7 @@ class Game:
             update_rects.append(self.rcibox.draw(self.screen))
             tl = screen_cursor_rect.topleft
             gtl = game_cursor_rect.topleft
-            debuginfo = self.font.render("%d, %d %d, %d" % (tl[0], tl[1], gtl[0], gtl[1]), 1, (255,0,0))
+            debuginfo = self.font.render("%d, %d %d, %d (%d deferred)" % (tl[0], tl[1], gtl[0], gtl[1], len(self.engine.deferred_inserts)), 1, (255,0,0))
             sgr = Rect(300, self.screen.get_rect().height - 30, 200, 30)
             self.screen.fill(BG_COLOR, sgr)
             update_rects.append(self.screen.blit(debuginfo, sgr))

@@ -51,6 +51,7 @@ class Engine:
     rci_interval = 20
 
     cell_minimum = 16
+    insert_chunk = 50
 
     def __init__(self, state, textures, initial_rect):
         self.initial_rect = initial_rect
@@ -60,6 +61,7 @@ class Engine:
         self._next_rci = 0
         self._demand_calc()
         self.quad = Quad(initial_rect)
+        self.deferred_inserts = []
 
     def tick(self):
         damage = False
@@ -74,6 +76,8 @@ class Engine:
             self._demand_calc()
             self._rci()
             self._next_rci = self.ticks + self.rci_interval
+        if len(self.deferred_inserts) > 0:
+            self.do_insert()
         return changed
 
     def _demand_calc(self):
@@ -148,17 +152,30 @@ class Engine:
     def get_cell(self, rect):
         return self.quad.get(rect)
 
-    def set_cell(self, cell, alias=True, grow=True):
+    def do_insert(self):
+        for z in range(self.insert_chunk):
+            if len(self.deferred_inserts) == 0:
+                break
+            cell = self.deferred_inserts.pop(0)
+            self.state['cells'].append(cell)
+            self.quad.insert(cell)
+
+    def set_cell(self, cell, alias=True, grow=True, defer=False):
         if alias:
             apos = self.alias_pos(cell.rect[0], cell.rect[1])
             cell.rect[0] = apos[0]
             cell.rect[1] = apos[1]
         if grow:
             while self.quad.item_outside(cell):
-                for point in (cell.topleft, cell.topright, cell.bottomleft, cell.bottomright):
+                for point in (
+                    cell.topleft, cell.topright, cell.bottomleft, cell.bottomright, cell.center
+                ):
                     self.grow_check(point)
-        self.quad.insert(cell)
-        self.state['cells'].append(cell)
+        if defer:
+            self.deferred_inserts.append(cell)
+        else:
+            self.state['cells'].append(cell)
+            self.quad.insert(cell)
 
     def del_cell(self, cell):
         self.quad.remove(cell)
@@ -177,7 +194,6 @@ class Engine:
 
     def use_tool(self, name, rect):
         tool_size = self.textures[name].get_size()
-        print('effect rect is', rect)
         intersected = self.get_cell(rect)
         cells = []
         for cell in intersected:
@@ -211,12 +227,14 @@ class Engine:
                     if type(cell) == type(new_cell):
                         cell.cache_texture(self.get_surrounding(cell))
 
-    def seed(self, quad=None):
+    def seed(self, quad=None, point=None):
         self.quad._debug('seeding')
         if quad is None:
             quad = self.quad
         if quad.meta_is('seeded'):
             return True
+        elif point is not None and not quad.rect.collidepoint(point):
+            return False
         elif not quad.leaf:
             seeded = []
             for qu in quad.quarters:
@@ -267,7 +285,7 @@ class Engine:
         quad.set_meta('seeded', True)
         for cell in cells:
             quad._debug('seed insert', cell.id, cell.rect)
-            self.set_cell(cell, alias=False, grow=False)
+            self.set_cell(cell, alias=False, grow=False, defer=True)
         return True
 
     def grow_check(self, point):
@@ -278,7 +296,7 @@ class Engine:
             changed = True
         if changed:
             try:
-                self.seed(self.quad)
+                self.seed(self.quad, point=point)
             except QuadAlreadySeededException as e:
                 self.quad.dump_seeded()
                 raise e
