@@ -31,7 +31,6 @@ class ConnectableCell(Cell):
         super().__init__(texture_name, textures, position, size=size)
         self.texture_name = '%s_h' % self.texture_name
         self.base_texture_name = texture_name
-        self.impassible = True
         self.next_tick = 0
 
     def _connected(self, cell):

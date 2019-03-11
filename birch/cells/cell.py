@@ -14,7 +14,7 @@ class Cell:
         self.textures = textures
         self.position = position
         self.next_tick = 0
-        self.impassible = False
+        self._impassible = False
         self.id = uuid4()
         # use the texture to get the size if it is None
         if size is not None:
@@ -73,3 +73,6 @@ class Cell:
 
     def tick(self, ticks, engine):
         return False
+
+    def impassible(self, cell):
+        return self._impassible

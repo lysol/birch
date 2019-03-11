@@ -179,7 +179,10 @@ class Engine:
         tool_size = self.textures[name].get_size()
         print('effect rect is', rect)
         intersected = self.get_cell(rect)
-        cells = list(filter(lambda c: c.impassible, intersected))
+        cells = []
+        for cell in intersected:
+            if cell.impassible(name):
+                cells.append(cell)
 
         new_cell = None
         if name == "bulldoze":
