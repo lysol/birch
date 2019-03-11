@@ -16,6 +16,7 @@ class Cell:
         self.next_tick = 0
         self._impassible = False
         self.id = uuid4()
+        self.priority = 0
         # use the texture to get the size if it is None
         if size is not None:
             self.size = size

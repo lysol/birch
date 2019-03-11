@@ -308,8 +308,10 @@ class Game:
 
             # draw map first
             drawn = []
-            for cell in filter(lambda c: self.screen.get_rect().colliderect(
-                c.get_rect(self.camera)), changed_cells):
+            to_draw = filter(lambda c: self.screen.get_rect().colliderect(
+                c.get_rect(self.camera)), changed_cells)
+            to_draw = sorted(to_draw, key=lambda cell: cell.priority)
+            for cell in to_draw:
                 if cell not in drawn:
                     if type(cell) == tuple:
                         print(cell)
