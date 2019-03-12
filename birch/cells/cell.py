@@ -22,6 +22,12 @@ class Cell:
             self.size = size
         else:
             self.size = self.textures[self.texture_name].get_size()
+        self._rect = Rect(
+            self.position[0],
+            self.position[1],
+            self.size[0],
+            self.size[1]
+            )
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
@@ -60,13 +66,16 @@ class Cell:
 
     @property
     def rect(self):
-        r = Rect(
+        return self._rect
+
+    def update_rect(self):
+        self._rect = Rect(
             self.position[0],
             self.position[1],
             self.size[0],
             self.size[1]
             )
-        return r
+        return self._rect
 
     def get_rect(self, camera):
         rect = self.rect.move(*negate(camera))
