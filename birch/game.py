@@ -1,5 +1,5 @@
 import sys, pygame, math, json
-from time import sleep
+from time import sleep, clock
 from random import randint
 
 from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
@@ -69,6 +69,10 @@ class Game:
             self.camera[1] - self.camera[1] % cursor_size
             )
 
+    @property
+    def game_screen_rect(self):
+        return self.screen.get_rect().move(self.camera)
+
     def init(self):
         self.engine.seed()
         pygame.init()
@@ -115,6 +119,12 @@ class Game:
         last_tool_time = 0 # uuuaaauuggh
         last_rci_time = 0
         debug = False
+        debugtext = "loading..."
+        frames_processed = 0
+        frame_time = 0
+        next_fps_kf = 0
+        measured_fps = 0
+        fps_kfs = 0
         while True:
             mouse_pos = pygame.mouse.get_pos()
             mouse_rel = pygame.mouse.get_rel()
@@ -130,7 +140,21 @@ class Game:
 
             if next_kf <= self.time_spent:
                 next_kf = self.time_spent + self.kf_interval
-                damage = True
+                tl = screen_cursor_rect.topleft
+                gtl = game_cursor_rect.topleft
+                if fps_kfs > 200:
+                    measured_fps = (self.time_spent - frame_time) / frames_processed if frames_processed > 0 else 0
+                    fps_kfs = 0
+                    frame_time = self.time_spent
+                    frames_processed = 0
+                if debug:
+                    debugtext = "Pos: (%d, %d) (%d def.) (%d/%d s/q) (%.2f fps %.2f ft)" % (
+                        gtl[0], gtl[1],
+                        len(self.engine.deferred_inserts),
+                        self.engine.quad.quad_count(predicate=lambda qu: 'seeded' in qu.meta and qu.meta['seeded']),
+                            self.engine.quad.quad_count(),
+                        measured_fps, frame_time)
+                fps_kfs += 1
 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -144,7 +168,6 @@ class Game:
                 if event.type == KEYDOWN and event.key not in keys:
                     keys.append(event.key)
                 if K_d in keys:
-                    self.console_dump()
                     debug = not debug
                 if event.type in (MOUSEBUTTONDOWN, MOUSEBUTTONUP):
                     mouse_down = self.get_mouse_pressed()
@@ -320,6 +343,28 @@ class Game:
                         cell.draw_box(self.camera, self.screen, BLUE)
                     drawn.append(cell)
 
+            # draw quads
+            if debug:
+                quad_draw = []
+                quads = [self.engine.quad]
+                gsr = self.game_screen_rect.copy()
+                while len(quads) > 0:
+                    quad = quads.pop(0)
+                    if quad is not None:
+                        if quad.rect.colliderect(gsr):
+                            quad_draw.append(quad)
+                        if not quad.leaf:
+                            quads.extend(quad.quarters)
+                for quad in quad_draw:
+                    base = 128
+                    base = base + quad.level * 32
+                    base = 0 if base < 0 else base
+                    base = 255 if base > 255 else base
+                    rect = quad.rect.copy()
+                    rect = rect.move(-self.camera[0], -self.camera[1])
+                    rect = rect.inflate(-quad.level * 2, -quad.level * 2)
+                    pygame.draw.rect(self.screen, [base, base, 0], rect, 1)
+
             if draw_cursor and not scrolling:
                 update_rects.append(
                     self.screen.blit(self.textures["cursor_%d" % cursor_size], screen_cursor_rect))
@@ -327,12 +372,13 @@ class Game:
             update_rects.append(self.statusbox.draw(self.screen, self.engine.state["speed"]))
             update_rects.append(self.toolbox.draw(self.screen))
             update_rects.append(self.rcibox.draw(self.screen))
-            tl = screen_cursor_rect.topleft
-            gtl = game_cursor_rect.topleft
-            debuginfo = self.font.render("%d, %d %d, %d (%d deferred)" % (tl[0], tl[1], gtl[0], gtl[1], len(self.engine.deferred_inserts)), 1, (255,0,0))
-            sgr = Rect(300, self.screen.get_rect().height - 30, 200, 30)
-            self.screen.fill(BG_COLOR, sgr)
-            update_rects.append(self.screen.blit(debuginfo, sgr))
+            debuginfo = self.font.render(debugtext, False, (255,0,0))
+            debuginfo_bg = self.font.render(debugtext, True, (255,255,255))
+            drect = debuginfo.get_rect()
+            drect = drect.move(300, self.screen.get_rect().height - drect.height - 5)
+            drect_bg = drect.move(-1, -1)
+            update_rects.append(self.screen.blit(debuginfo_bg, drect_bg))
+            update_rects.append(self.screen.blit(debuginfo, drect))
 
             if debug:
                 #for update_rect in update_rects:
@@ -349,4 +395,5 @@ class Game:
             last_screen_cursor_rect = screen_cursor_rect
             last_game_cursor_rect = game_cursor_rect
             sleep(self.sleeptime)
-            self.time_spent += self.sleeptime
+            self.time_spent = clock()
+            frames_processed += 1
