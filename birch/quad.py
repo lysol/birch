@@ -30,6 +30,17 @@ class Quad:
         if 'DEBUG' in os.environ and os.environ['DEBUG']:
             print('%s:%d' % (self.id, self.level), " ".join(list(map(lambda x: str(x), things))))
 
+    def quad_count(self, predicate=None):
+        if self.leaf:
+            if predicate is None or predicate(self):
+                return 1
+            return 0
+        mycount = 0
+        for qu in self.quarters:
+            if qu is not None:
+                mycount += qu.quad_count(predicate=predicate)
+        return mycount
+
     @property
     def id(self):
         return str(self._id.hex[-8:])
@@ -192,7 +203,10 @@ class Quad:
         else:
             removed = False
             for index in self.rect_indices(item.rect):
-                devomer = self.quarters[index].remove(item)
+                if self.quarters[index] is not None:
+                    devomer = self.quarters[index].remove(item)
+                else:
+                    devomer = False
                 removed = devomer or removed
             return removed
 
@@ -207,7 +221,8 @@ class Quad:
                 [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]))
             removed = []
             for i in indices:
-                removed = removed + self.quarters[i].remove(rect, comparator)
+                if self.quarters[i] is not None:
+                    removed = removed + self.quarters[i].remove(rect, comparator)
             return removed
         removed = []
         newitems = []
@@ -228,7 +243,7 @@ class Quad:
                 self.items.append(item)
                 return
             elif maxed and self.leaf:
-                self.split()
+                self.split(item=item)
             self._debug('going to sub insert', item.name, item.rect, 'maxed:', maxed, 'leaf:', self.leaf)
             self.subinsert(item)
         except OutOfBoundsException as e:
@@ -247,33 +262,47 @@ class Quad:
         self._check_item(item)
         ri = self.rect_indices(item.rect)
 
-        for quarter in self.quarters:
+        for i, quarter in enumerate(self.quarters):
+            if quarter is None:
+                # sparsely split quad
+                self.allocate_quarter(i)
+                quarter = self.quarters[i]
             if quarter.rect.colliderect(item.rect):
                 quarter.insert(item)
 
-    def split(self, copy_meta=True, existing=None):
+    @property
+    def _quarter_rects(self):
+        wh = (self.rect.width / 2, self.rect.height / 2)
+        return (
+            Rect(self.rect[0], self.rect[1],
+                wh[0], wh[1]),
+            Rect(self.halves[0], self.rect[1],
+                wh[0], wh[1]),
+            Rect(self.rect[0], self.halves[1],
+                wh[0], wh[1]),
+            Rect(self.halves[0], self.halves[1],
+                wh[0], wh[1]),
+        )
+
+    def allocate_quarter(self, index, copy_meta=True):
+        newmeta = {}
+        if copy_meta:
+            newmeta = self.meta
+        self.quarters[index] = Quad(self._quarter_rects[index], meta=dict(newmeta),
+            level=self.level + 1)
+
+    def split(self, copy_meta=True, existing=None, item=None):
         self._debug('split', copy_meta, existing)
         newmeta = {}
         if copy_meta:
             newmeta = self.meta
         if self.leaf:
-            wh = [self.rect.width / 2, self.rect.height / 2]
-            rects = [
-                Rect(self.rect[0], self.rect[1],
-                    wh[0], wh[1]),
-                Rect(self.halves[0], self.rect[1],
-                    wh[0], wh[1]),
-                Rect(self.rect[0], self.halves[1],
-                    wh[0], wh[1]),
-                Rect(self.halves[0], self.halves[1],
-                    wh[0], wh[1]),
-            ]
-            self.quarters = []
-            for rect in rects:
-                if existing is not None and rect == existing.rect:
-                    self.quarters.append(existing)
-                else:
-                    self.quarters.append(Quad(rect, meta=dict(newmeta), level=self.level + 1))
+            self.quarters = [None, None, None, None]
+            for index in range(4):
+                if existing is not None and self._quarter_rects[index] == existing.rect:
+                    self.quarters[index] = existing
+                elif item is None or self._quarter_rects[index].colliderect(item.rect):
+                    self.allocate_quarter(index, copy_meta=copy_meta)
         for item in self.items:
             self.subinsert(item)
         self.items = []
@@ -300,7 +329,8 @@ class Quad:
             indices = self.rect_indices(rect)
             results = []
             for i in indices:
-                results = results + self.quarters[i].get(rect)
+                if self.quarters[i] is not None:
+                    results = results + self.quarters[i].get(rect)
             uniq = []
             for result in results:
                 if result not in uniq:

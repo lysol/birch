@@ -236,12 +236,13 @@ class Engine:
             quad = self.quad
         if quad.meta_is('seeded'):
             return True
-        elif point is not None and not quad.rect.collidepoint(point):
-            return False
         elif not quad.leaf:
             seeded = []
             for qu in quad.quarters:
-                seeded.append(self.seed(qu))
+                if point is None or qu.rect.collidepoint(point):
+                    seeded.append(self.seed(qu, point))
+                else:
+                    seeded.append(False)
             if seeded == [True, True, True, True]:
                 quad.set_meta('seeded', True)
                 return True
@@ -297,9 +298,8 @@ class Engine:
             old_quad = self.quad
             self.quad = self.quad.grow(point)
             changed = True
-        if changed:
-            try:
-                self.seed(self.quad, point=point)
-            except QuadAlreadySeededException as e:
-                self.quad.dump_seeded()
-                raise e
+        try:
+            self.seed(self.quad, point=point)
+        except QuadAlreadySeededException as e:
+            self.quad.dump_seeded()
+            raise e
