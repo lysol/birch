@@ -77,7 +77,7 @@ class Engine:
             self._rci()
             self._next_rci = self.ticks + self.rci_interval
         if len(self.deferred_inserts) > 0:
-            self.do_insert()
+            changed.extend(self.do_insert())
         return changed
 
     def _demand_calc(self):
@@ -153,12 +153,15 @@ class Engine:
         return self.quad.get(rect)
 
     def do_insert(self):
+        changed = []
         for z in range(self.insert_chunk):
             if len(self.deferred_inserts) == 0:
                 break
             cell = self.deferred_inserts.pop(0)
             self.state['cells'].append(cell)
             self.quad.insert(cell)
+            changed.append(cell)
+        return changed
 
     def set_cell(self, cell, alias=True, grow=True, defer=False):
         if alias:
