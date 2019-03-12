@@ -3,7 +3,7 @@ import birch
 from birch.game import Game
 
 def main():
-    scale = 16 * 32
+    scale = 1024
     print('scale is', scale)
     tl = (-scale, -scale, scale * 2, scale * 2)
     #tl = (-(scale / 2), scale / 2, scale, scale)
