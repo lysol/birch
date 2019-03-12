@@ -268,13 +268,7 @@ class Game:
 
             if damage:
                 self.screen.fill(BG_COLOR)
-                srect = self.screen.get_rect()
-                nr = Rect(
-                    srect.topleft[0] + self.camera[0],
-                    srect.topleft[1] + self.camera[1],
-                    srect.width,
-                    srect.height)
-                changed_cells.extend(self.engine.quad.get(nr))
+                changed_cells.extend(self.engine.quad.get(self.game_screen_rect))
                 draw_cursor = True
 
             if cursor_damage and (
