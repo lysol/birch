@@ -284,7 +284,7 @@ class Engine:
         for i in range(birch_freq):
             cells.append(BirchTree(self.textures, xy()))
         for i in range(dirt_freq):
-            cells.append(Cell('dirt', self.textures, xy()))
+            cells.append(Cell('dirt', self.textures, xy(), priority=-10))
 
         quad.set_meta('seeded', True)
         for cell in cells:

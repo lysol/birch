@@ -6,7 +6,7 @@ from birch.cells import *
 class Cell:
 
     def __init__(self, name, textures, position, texture_name=None,
-            size=None):
+            size=None, priority=0):
         self.name = name
         if texture_name is None:
             texture_name = name
@@ -16,7 +16,7 @@ class Cell:
         self.next_tick = 0
         self._impassible = False
         self.id = uuid4()
-        self.priority = 0
+        self.priority = priority
         # use the texture to get the size if it is None
         if size is not None:
             self.size = size
