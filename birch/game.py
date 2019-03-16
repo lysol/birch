@@ -129,7 +129,7 @@ class Game:
             mouse_pos = pygame.mouse.get_pos()
             mouse_rel = pygame.mouse.get_rel()
             update_rects = []
-            changed_cells = self.engine.tick()
+            changed_cells = self.engine.tick(self.game_screen_rect)
             pygame.mouse.set_visible(False)
             draw_cursor = False
 
@@ -325,8 +325,8 @@ class Game:
 
             # draw map first
             drawn = []
-            to_draw = filter(lambda c: self.screen.get_rect().colliderect(
-                c.get_rect(self.camera)), changed_cells)
+            to_draw = []
+            to_draw = changed_cells[:]
             to_draw = sorted(to_draw, key=lambda cell: cell.priority)
             for cell in to_draw:
                 if cell not in drawn:

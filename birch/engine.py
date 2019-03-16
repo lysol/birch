@@ -1,5 +1,6 @@
 from random import choice, randint
 from math import sin, pi
+from collections import deque
 from pygame import Rect
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
@@ -51,7 +52,7 @@ class Engine:
     rci_interval = 20
 
     cell_minimum = 16
-    insert_chunk = 50
+    insert_chunk = 25
 
     def __init__(self, state, textures, initial_rect):
         self.initial_rect = initial_rect
@@ -61,9 +62,9 @@ class Engine:
         self._next_rci = 0
         self._demand_calc()
         self.quad = Quad(initial_rect)
-        self.deferred_inserts = []
+        self.deferred_inserts = deque([])
 
-    def tick(self):
+    def tick(self, checkrect=None):
         damage = False
         self.ticks += self.state["speed"]
         changed = []
@@ -71,13 +72,20 @@ class Engine:
             if cell.tick(self.ticks, self):
                 # Use the state reference because otherwise if the cell
                 # was destroyed, this will be the old one.
-                changed.append(cell)
+                if checkrect is None or checkrect.colliderect(cell.rect):
+                    changed.append(cell)
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
             self._next_rci = self.ticks + self.rci_interval
         if len(self.deferred_inserts) > 0:
-            changed.extend(self.do_insert())
+            inserted = self.do_insert()
+            if checkrect is not None:
+                for item in inserted:
+                    if checkrect.colliderect(item.rect):
+                        changed.append(item)
+            else:
+                changed.extend(inserted)
         return changed
 
     def _demand_calc(self):
@@ -153,15 +161,18 @@ class Engine:
         return self.quad.get(rect)
 
     def do_insert(self):
-        changed = []
+        cells = []
         for z in range(self.insert_chunk):
             if len(self.deferred_inserts) == 0:
                 break
-            cell = self.deferred_inserts.pop(0)
-            self.state['cells'].append(cell)
-            self.quad.insert(cell)
-            changed.append(cell)
-        return changed
+            cell = self.deferred_inserts.popleft()
+            cells.append(cell)
+        if len(cells) > 0:
+            self.state['cells'].extend(cells)
+            #for cell in cells:
+            #    self.quad.insert(cell)
+            self.quad.insert_many(cells)
+        return cells
 
     def set_cell(self, cell, alias=True, grow=True, defer=False):
         if alias:
