@@ -234,20 +234,29 @@ class Quad:
         self.items = newitems
         return removed
 
-    def insert(self, item):
+    def insert_many(self, items=[]):
+        if len(items) == 0:
+            return False
         try:
-            self._debug('insert', self.rect, item.name, item.rect)
-            self._check_item(item)
+            self._debug('insert_many', self.rect, len(items))
             maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
             if not maxed and self.leaf:
-                self.items.append(item)
-                return
+                self.items.extend(items)
+                return True
             elif maxed and self.leaf:
-                self.split(item=item)
-            self._debug('going to sub insert', item.name, item.rect, 'maxed:', maxed, 'leaf:', self.leaf)
-            self.subinsert(item)
+                if len(self.quarters) > 0:
+                    raise QuadAlreadyAllocatedError(self.id, -1)
+                itemsjoined = list(self.items)
+                itemsjoined.extend(items)
+                self.split(items=itemsjoined)
+            self._debug('going to sub insert items', len(items), 'maxed:', maxed, 'leaf:', self.leaf)
+            return self.subinsert(items)
         except OutOfBoundsException as e:
             raise e
+
+
+    def insert(self, item):
+        return self.insert_many([item])
 
     def pos_quarter(self, pos):
         right = 1 if pos[0] >= self.halves[0] else 0
@@ -257,18 +266,24 @@ class Quad:
         self._debug('pos_quarter', pos, index)
         return index
 
-    def subinsert(self, item):
-        self._debug('subinsert', item.name, item.rect)
-        self._check_item(item)
-        ri = self.rect_indices(item.rect)
-
-        for i, quarter in enumerate(self.quarters):
-            if quarter is None:
-                # sparsely split quad
-                self.allocate_quarter(i)
-                quarter = self.quarters[i]
-            if quarter.rect.colliderect(item.rect):
-                quarter.insert(item)
+    def subinsert(self, items):
+        if type(items) != list:
+            items = [items]
+        if len(items) == 0:
+            return False
+        inserted = 0
+        qrs = self._quarter_rects
+        for i in range(4):
+            inserts = []
+            for item in items:
+                if item.rect.colliderect(qrs[i]):
+                    if self.quarters[i] is None:
+                        self.allocate_quarter(i)
+                    inserts.append(item)
+            if self.quarters[i] is not None and len(inserts) > 0:
+                self.quarters[i].insert_many(inserts)
+                inserted =+ len(inserts)
+        return inserted > 0
 
     @property
     def _quarter_rects(self):
@@ -293,20 +308,33 @@ class Quad:
         self.quarters[index] = Quad(self._quarter_rects[index], meta=dict(newmeta),
             level=self.level + 1)
 
-    def split(self, copy_meta=True, existing=None, item=None):
+    def split(self, copy_meta=True, existing=None, items=None, sparse=False):
         self._debug('split', copy_meta, existing)
         newmeta = {}
         if copy_meta:
             newmeta = self.meta
         if self.leaf:
+            for i, qu in enumerate(self.quarters):
+                if qu is not None:
+                    raise QuadAlreadyAllocatedError(self.id, i)
+            if len(self.quarters) != 0:
+                raise QuadAlreadyAllocatedError(self.id, -1)
             self.quarters = [None, None, None, None]
-            for index in range(4):
-                if existing is not None and self._quarter_rects[index] == existing.rect:
-                    self.quarters[index] = existing
-                elif item is None or self._quarter_rects[index].colliderect(item.rect):
-                    self.allocate_quarter(index, copy_meta=copy_meta)
-        for item in self.items:
-            self.subinsert(item)
+            if sparse:
+                for index in range(4):
+                    if existing is not None and self._quarter_rects[index] == existing.rect:
+                        self.quarters[index] = existing
+                    elif items is None:
+                        self.allocate_quarter(index, copy_meta=copy_meta)
+                    else:
+                        for item in items:
+                            if self._quarter_rects[index].colliderect(item.rect):
+                                self.allocate_quarter(index, copy_meta=copy_meta)
+                                break
+            else:
+                for i in range(4):
+                    self.allocate_quarter(i, copy_meta=copy_meta)
+        self.subinsert(items)
         self.items = []
 
     def _rect_points(self, rect):
