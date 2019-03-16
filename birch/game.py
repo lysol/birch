@@ -358,6 +358,16 @@ class Game:
                     rect = rect.move(-self.camera[0], -self.camera[1])
                     rect = rect.inflate(-quad.level * 2, -quad.level * 2)
                     pygame.draw.rect(self.screen, [base, base, 0], rect, 1)
+                    leafnode = 'Leaf' if quad.leaf else 'Node'
+                    label = '%s (%s)' % (quad.id, leafnode)
+                    labelsurf = self.font.render(label, False, (0, 128, 0))
+                    lrect = labelsurf.get_rect()
+                    drawpoint = [
+                        rect.centerx - lrect.right / 2,
+                        rect.centery - lrect.bottom / 2
+                        ]
+                    plop = lrect.move(*drawpoint)
+                    update_rects.append(self.screen.blit(labelsurf, plop))
 
             if draw_cursor and not scrolling:
                 update_rects.append(
