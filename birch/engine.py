@@ -299,6 +299,10 @@ class Engine:
             cells.append(BirchTree(self.textures, xy()))
 
         quad.set_meta('seeded', True)
+        if point is not None:
+            cells = sorted(cells, key=lambda cell: \
+                    cell.rect.center[0] - point[0] + \
+                    cell.rect.center[1] - point[1])
         for cell in cells:
             quad._debug('seed insert', cell.id, cell.rect)
             self.set_cell(cell, alias=False, grow=False, defer=True)
