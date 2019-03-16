@@ -5,7 +5,7 @@ from birch.exceptions import *
 
 class Quad:
 
-    def __init__(self, rect, threshold=128, max_items=32, process_rects=True,
+    def __init__(self, rect, threshold=2048, max_items=4, process_rects=True,
             meta=None, level=0):
         self.level = level
         self.threshold = threshold
