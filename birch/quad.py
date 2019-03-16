@@ -191,7 +191,6 @@ class Quad:
             raise OutOfBoundsException(item.rect, self.rect)
 
     def remove(self, item):
-        self._check_item(item)
         if self.leaf:
             if item in self.items:
                 self.items.remove(item)
