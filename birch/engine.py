@@ -288,14 +288,15 @@ class Engine:
         birch_freq = freq(.05)
         dirt_freq = freq(.2)
 
+        print('inserting big dirt', rect.topleft, rect.size)
+        cells.append(Cell('dirt', self.textures, rect.topleft, size=rect.size,
+            priority=-10))
         for i in range(uranium_freq):
             cells.append(Uranium(self.textures, xy()))
         for i in range(pine_freq):
             cells.append(PineTree(self.textures, xy()))
         for i in range(birch_freq):
             cells.append(BirchTree(self.textures, xy()))
-        for i in range(dirt_freq):
-            cells.append(Cell('dirt', self.textures, xy(), priority=-10))
 
         quad.set_meta('seeded', True)
         for cell in cells:
