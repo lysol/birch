@@ -288,6 +288,8 @@ class Quad:
         newmeta = {}
         if copy_meta:
             newmeta = self.meta
+        if self.quarters[index] is not None:
+            raise QuadAlreadyAllocatedError(self.id, index)
         self.quarters[index] = Quad(self._quarter_rects[index], meta=dict(newmeta),
             level=self.level + 1)
 

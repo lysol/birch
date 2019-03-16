@@ -27,3 +27,9 @@ class MalformedQuadException(Exception):
     def __init__(self, newrect, existingrect):
         message = 'Grow operation generated an illegally dimensioned quadtree. New top level quad rect:', newrect, 'Existing rect:', existingrect
         super().__init__(message)
+
+class QuadAlreadyAllocatedError(Exception):
+    def __init__(self, quarter_id, index):
+        message = 'Tried to allocate a quad quarter that was already allocated (%s, %d)' % (
+            quarter_id, index)
+        super().__init__(message)
