@@ -1,6 +1,6 @@
 from uuid import uuid4
 import pygame
-from pygame import Rect, draw, Surface
+from pygame import Rect, draw, Surface, SRCALPHA, HWSURFACE
 from birch.util import negate, BG_COLOR
 from birch.cells import *
 
@@ -42,11 +42,9 @@ class Cell:
             if texture_size[0] < self.size[0] or texture_size[1] < self.size[1]:
                 # need to tile
                 try:
-                    self._texture = Surface(self.size)
+                    self._texture = Surface(self.size, flags=(SRCALPHA | HWSURFACE))
                 except pygame.error as e:
-                    print('oops lol', self.size)
                     raise e
-                self._texture.fill(BG_COLOR)
                 plot = [0, 0]
                 while plot[0] < self.size[0]:
                     while plot[1] < self.size[1]:
@@ -55,7 +53,6 @@ class Cell:
                         plot[1] += texture_size[1]
                     plot[0] += texture_size[0]
                     plot[1] = 0
-                print('texture was tiled')
             else:
                 self._texture = self.textures[self.texture_name]
             self._last_texture = self.texture_name
