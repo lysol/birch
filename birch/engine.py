@@ -299,7 +299,7 @@ class Engine:
                 if dw <= 0 or dh <= 0:
                     continue
                 print('creating dirt', x, y, dw, dh)
-                cells.append(Cell('dirt', self.textures, (x, y), size=(dw, dh),
+                cells.append(Cell('dirt', self.textures, (x, y), 'dirt', size=(dw, dh),
                     priority=-10))
 
         for i in range(uranium_freq):

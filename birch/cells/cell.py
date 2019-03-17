@@ -6,11 +6,9 @@ from birch.cells import *
 
 class Cell:
 
-    def __init__(self, name, textures, position, texture_name=None,
+    def __init__(self, name, textures, position, texture_name,
             size=None, priority=0):
         self.name = name
-        if texture_name is None:
-            texture_name = name
         self.texture_name = texture_name
         self.textures = textures
         self.position = position

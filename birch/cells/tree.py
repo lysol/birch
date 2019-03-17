@@ -4,7 +4,7 @@ from birch.cells.cell import Cell
 class Tree(Cell):
 
     def __init__(self, texture_name, textures, position, age=None):
-        super().__init__(texture_name, textures, position)
+        super().__init__(texture_name, textures, position, texture_name)
         self.age = age if age is not None else randint(0, 100)
         self.base_texture_name = texture_name
         self.next_tick = randint(25, 50)

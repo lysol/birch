@@ -15,7 +15,7 @@ class PopCell(Cell):
     def __init__(self, base_texture_name, textures, position, size=None):
         self.level = 0
         self.variety = randint(0,1)
-        super().__init__(base_texture_name, textures, position, size=size)
+        super().__init__(base_texture_name, textures, position, base_texture_name, size=size)
         self.population = 0
         self.demand = 0
 

@@ -27,10 +27,10 @@ for k in _masks:
 
 class ConnectableCell(Cell):
 
-    def __init__(self, texture_name, textures, position, size=[16, 16]):
-        super().__init__(texture_name, textures, position, size=size)
-        self.texture_name = '%s_h' % self.texture_name
-        self.base_texture_name = texture_name
+    def __init__(self, name, textures, position, size=[16, 16]):
+        texture_name = '%s_h' % name
+        super().__init__(name, textures, position, texture_name, size=size)
+        self.base_texture_name = name
         self.next_tick = 0
 
     def _connected(self, cell):
@@ -60,5 +60,7 @@ class ConnectableCell(Cell):
                 tex_key = '%s%s' % (self.base_texture_name, k)
                 if checkmask == mask and tex_key in self.textures:
                     self.texture_name = tex_key
+                    self.dirty_texture = True
                     return
         self.texture_name = '%s_h' % self.base_texture_name
+        self.dirty_texture = True
