@@ -286,11 +286,22 @@ class Engine:
         uranium_freq = freq(.03)
         pine_freq = freq(.05)
         birch_freq = freq(.05)
-        dirt_freq = freq(.2)
 
-        print('inserting big dirt', rect.topleft, rect.size)
-        cells.append(Cell('dirt', self.textures, rect.topleft, size=rect.size,
-            priority=-10))
+        dirt_chunk = 8192
+        for y in range(rect.top, rect.height, dirt_chunk):
+            for x in range(rect.left, rect.width, dirt_chunk):
+                dw = dirt_chunk
+                dh = dirt_chunk
+                if x + dw > rect.right:
+                    dw = rect.right - x
+                if y + dh > rect.bottom:
+                    dh = rect.bottom - y
+                if dw <= 0 or dh <= 0:
+                    continue
+                print('creating dirt', x, y, dw, dh)
+                cells.append(Cell('dirt', self.textures, (x, y), size=(dw, dh),
+                    priority=-10))
+
         for i in range(uranium_freq):
             cells.append(Uranium(self.textures, xy()))
         for i in range(pine_freq):
