@@ -12,10 +12,10 @@ class PopCell(Cell):
     level_threshold = 20
     max_level = 2
 
-    def __init__(self, base_texture_name, textures, position):
-        super().__init__(base_texture_name, textures, position, size=(32, 32))
+    def __init__(self, base_texture_name, textures, position, size=None):
         self.level = 0
-        self.type = randint(0,1)
+        self.variety = randint(0,1)
+        super().__init__(base_texture_name, textures, position, size=size)
         self.population = 0
         self.demand = 0
 
@@ -45,7 +45,7 @@ class PopCell(Cell):
     def texture_name(self):
         return "%s_%d_%d" % (
             self.base_texture_name,
-            self.type,
+            self.variety,
             self._levelclamp(self.level)
         )
 
