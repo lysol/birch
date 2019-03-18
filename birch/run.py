@@ -1,6 +1,6 @@
 from pygame import Rect
 import birch
-from birch.game import Game
+from birch.pyglame import BirchGame
 
 def main():
     scale = 2048
@@ -8,7 +8,7 @@ def main():
     tl = (-scale, -scale, scale * 2, scale * 2)
     #tl = (-(scale / 2), scale / 2, scale, scale)
     print('tl', tl)
-    game = Game(Rect(*tl), '%s/assets' % birch.ROOT)
+    game = BirchGame(Rect(*tl), '%s/assets' % birch.ROOT)
     game.init()
     game.run()
 

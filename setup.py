@@ -9,6 +9,7 @@ setup(name='birch',
       license='ISC',
       packages=['birch'],
       install_requires=[
+          'pyglet',
           'pygame'
           ],
       zip_safe=False)
