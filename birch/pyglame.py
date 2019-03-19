@@ -24,6 +24,7 @@ class BirchWindow(pyglet.window.Window):
     def __init__(self, batches, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.batches = batches
+        self.handlers = {}
 
     def on_draw(self):
         self.clear()
@@ -42,6 +43,15 @@ class BirchWindow(pyglet.window.Window):
         for batch in self.batches:
             batch.draw()
 
+    def handle(self, key, handler):
+        if key not in self.handlers:
+            self.handlers[key] = []
+        self.handlers[key].append(handler)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if 'mouse' in self.handlers:
+            for handler in self.handlers['mouse']:
+                handler(x, self.width - y, dx, dy)
 
 class BirchGame:
 
@@ -83,12 +93,16 @@ class BirchGame:
         self.keys = key.KeyStateHandler()
         self.window.push_handlers(self.keys)
         self.first = True
+        self.window.handle('mouse', self.handle_mouse)
 
     def run(self):
         self.engine.seed()
         pyglet.clock.schedule_interval(self.update, 1/60.0)
         pyglet.app.run()
         #self.init_panels()
+
+    def handle_mouse(self, x, y, dx, dy):
+        self.mouse = x, y
 
     @property
     def camera_rect(self):
