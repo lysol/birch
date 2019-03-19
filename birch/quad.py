@@ -1,6 +1,8 @@
 import os
 from uuid import uuid4
 from pygame import Rect
+import pygame
+from pyglet.graphics import Batch
 from birch.exceptions import *
 
 class Quad:
@@ -25,6 +27,10 @@ class Quad:
         else:
             self.meta = meta
         self._debug('new meta', self.meta)
+        self.batch = Batch()
+
+        if self.can_be_smaller and self.leaf:
+            self.split()
 
     def _debug(self, *things):
         if 'DEBUG' in os.environ and os.environ['DEBUG']:
@@ -194,6 +200,7 @@ class Quad:
         if self.leaf:
             if item in self.items:
                 self.items.remove(item)
+                item.batch = None
                 return True
             removed = item.id in list(map(lambda tem: tem.id == item.id, self.items))
             if removed:
@@ -233,21 +240,30 @@ class Quad:
         self.items = newitems
         return removed
 
+    @property
+    def can_be_smaller(self):
+        return self.rect.width > self.threshold
+
+    @property
+    def maxed(self):
+        return len(self.items) >= self.max_items and self.can_be_smaller
+
     def insert_many(self, items=[]):
         if len(items) == 0:
             return False
         try:
             self._debug('insert_many', self.rect, len(items))
-            maxed = len(self.items) >= self.max_items and self.rect.width > self.threshold
+            maxed = self.maxed
             if not maxed and self.leaf:
                 self.items.extend(items)
+                for item in items:
+                    item.batch = self.batch
                 return True
             elif maxed and self.leaf:
                 if len(self.quarters) > 0:
                     raise QuadAlreadyAllocatedError(self.id, -1)
-                itemsjoined = list(self.items)
-                itemsjoined.extend(items)
-                self.split(items=itemsjoined)
+                self.items.extend(items)
+                self.split()
             self._debug('going to sub insert items', len(items), 'maxed:', maxed, 'leaf:', self.leaf)
             return self.subinsert(items)
         except OutOfBoundsException as e:
@@ -307,7 +323,7 @@ class Quad:
         self.quarters[index] = Quad(self._quarter_rects[index], meta=dict(newmeta),
             level=self.level + 1)
 
-    def split(self, copy_meta=True, existing=None, items=None, sparse=False):
+    def split(self, copy_meta=True, existing=None, sparse=False):
         self._debug('split', copy_meta, existing)
         newmeta = {}
         if copy_meta:
@@ -323,17 +339,12 @@ class Quad:
                 for index in range(4):
                     if existing is not None and self._quarter_rects[index] == existing.rect:
                         self.quarters[index] = existing
-                    elif items is None:
-                        self.allocate_quarter(index, copy_meta=copy_meta)
-                    else:
-                        for item in items:
-                            if self._quarter_rects[index].colliderect(item.rect):
-                                self.allocate_quarter(index, copy_meta=copy_meta)
-                                break
+                    self.allocate_quarter(index, copy_meta=copy_meta)
             else:
                 for i in range(4):
                     self.allocate_quarter(i, copy_meta=copy_meta)
-        self.subinsert(items)
+            self.batch = None
+        self.subinsert(self.items)
         self.items = []
 
     def _rect_points(self, rect):
@@ -352,6 +363,16 @@ class Quad:
 
     def _intersect(self, r1, r2):
         return r1.colliderect(r2)
+
+    def get_batches(self, rect):
+        if not self.leaf:
+            indices = self.rect_indices(rect)
+            results = []
+            for i in indices:
+                if self.quarters[i] is not None:
+                    results.extend(self.quarters[i].get_batches(rect))
+            return results
+        return [self.batch]
 
     def get(self, rect):
         if not self.leaf:

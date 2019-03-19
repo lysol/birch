@@ -1,6 +1,7 @@
 import pyglet, json
 from pyglet.window import key
 from pyglet.gl import *
+from pygame import Rect
 from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
 from birch.statusbox import Statusbox
@@ -20,9 +21,9 @@ class ObjectEncoder(json.JSONEncoder):
 
 class BirchWindow(pyglet.window.Window):
 
-    def __init__(self, batch, *args, **kwargs):
+    def __init__(self, batches, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.batch = batch
+        self.batches = batches
 
     def on_draw(self):
         self.clear()
@@ -38,7 +39,8 @@ class BirchWindow(pyglet.window.Window):
                 255, 255, 255,
                 255, 255, 255))
         )
-        self.batch.draw()
+        for batch in self.batches:
+            batch.draw()
 
 
 class BirchGame:
@@ -46,14 +48,14 @@ class BirchGame:
     camera_speed = 2
 
     def __init__(self, initial_rect, asset_dir):
+        pyglet.options['debug_gl'] = False
         self.size = 800, 600
         self.asset_dir = asset_dir
-        self.batch = pyglet.graphics.Batch()
-        self.textures = TextureStore(asset_dir, self.batch)
+        self.textures = TextureStore(asset_dir)
         glClearColor(1.0, 1.0, 1.0, 1.0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        self.window = BirchWindow(self.batch, width=self.size[0], height=self.size[1])
+        self.window = BirchWindow([], width=self.size[0], height=self.size[1])
         self.window.set_caption('birch')
         self.window.set_icon(self.textures['birch_tree'])
         self.initial_rect = initial_rect
@@ -67,6 +69,7 @@ class BirchGame:
         self.scroll_speed = [2, 2]
         self.camera = [-400, -300]
         self.camera_speed = 12
+        self.last_camera = [-1000000, -1000000]
         self.cursor_speed = 8
         self.screen = None
         self.fps = 60
@@ -79,23 +82,38 @@ class BirchGame:
         self.jsonenc = ObjectEncoder()
         self.keys = key.KeyStateHandler()
         self.window.push_handlers(self.keys)
-
+        self.first = True
 
     def run(self):
         self.engine.seed()
-        pyglet.clock.schedule_interval(self.update, 1/120.0)
+        pyglet.clock.schedule_interval(self.update, 1/60.0)
         pyglet.app.run()
         #self.init_panels()
 
+    @property
+    def camera_rect(self):
+        return Rect(self.camera[0], self.camera[1], self.size[0], self.size[1]
+                )
+
     def update(self, dt):
-        self.engine.tick()
+        self.engine.tick(checkrect=self.camera_rect)
+        for point in (self.camera_rect.topleft, self.camera_rect.topright,
+            self.camera_rect.bottomleft, self.camera_rect.bottomright):
+            self.engine.grow_check(point)
         if self.keys[key.LEFT]:
             self.camera[0] -= self.camera_speed
         if self.keys[key.RIGHT]:
             self.camera[0] += self.camera_speed
-        if self.keys[key.DOWN]:
-            self.camera[1] += self.camera_speed
         if self.keys[key.UP]:
+            self.camera[1] += self.camera_speed
+        if self.keys[key.DOWN]:
             self.camera[1] -= self.camera_speed
-        print(self.camera)
+        delta = abs(self.camera[0] - self.last_camera[0]) + \
+                abs(self.camera[1] - self.last_camera[1])
+        if delta > 50 or self.first:
+            self.last_camera = list(self.camera)
+            self.window.batches = self.engine.get_batches(
+                self.camera_rect.inflate(
+                    self.camera_rect.width, self.camera_rect.height))
+            self.first = True
 

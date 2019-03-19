@@ -13,6 +13,7 @@ class Cell(sprite.Sprite):
         self.name = name
         self.texture_name = texture_name
         self.textures = textures
+        self.real_position = position
         self.position = position
         self.next_tick = 0
         self._impassible = False
@@ -58,7 +59,12 @@ class Cell(sprite.Sprite):
         rect = self.rect.move(*negate(camera))
         return rect
 
+    def set_pos(self, camera):
+        self.x = self.real_position[0] - camera[0]
+        self.y = self.real_position[1] - camera[1]
+
     def update(self, dt):
+        print('lol')
         return False
 
     def impassible(self, cell):

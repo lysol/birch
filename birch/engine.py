@@ -64,16 +64,19 @@ class Engine:
         self.quad = Quad(initial_rect)
         self.deferred_inserts = deque([])
 
+    def in_range(self, camera, pos):
+        return pos[0] > camera[0] - 1000 or \
+            pos[0] < camera[0] + 1000 or \
+            pos[1] < camera[1] - 1000 or \
+            pos[1] < camera[1] + 1000
+
     def tick(self, checkrect=None):
         damage = False
         self.ticks += self.state["speed"]
         changed = []
-        #for cell in filter(lambda c: c.next_tick <= self.ticks, self.state["cells"]):
-        #    if cell.tick(self.ticks, self):
-        #        # Use the state reference because otherwise if the cell
-        #        # was destroyed, this will be the old one.
-        #        if checkrect is None or checkrect.colliderect(cell.rect):
-        #            changed.append(cell)
+        in_range_cells = self.quad.get(checkrect.inflate(checkrect.width / 2, checkrect.height / 2))
+        for cell in in_range_cells:
+            cell.set_pos(checkrect.topleft)
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
@@ -157,6 +160,9 @@ class Engine:
         zone = cell.rect.copy().inflate(cell.width * 2, cell.height * 2)
         return self.quad.get(Rect(zone))
 
+    def get_batches(self, rect):
+        return self.quad.get_batches(rect)
+
     def get_cell(self, rect):
         return self.quad.get(rect)
 
@@ -189,7 +195,7 @@ class Engine:
             self.deferred_inserts.append(cell)
         else:
             self.state['cells'].append(cell)
-            self.quad.insert(cell)
+            #self.quad.insert(cell)
 
     def del_cell(self, cell):
         self.quad.remove(cell)
@@ -248,18 +254,20 @@ class Engine:
         if quad.meta_is('seeded'):
             return True
         elif not quad.leaf:
-            seeded = []
-            for qu in quad.quarters:
-                if point is None or qu.rect.collidepoint(point):
-                    seeded.append(self.seed(qu, point))
-                else:
-                    seeded.append(False)
+            seeded = [False, False, False, False]
+            for i, qu in enumerate(quad.quarters):
+                seeded[i] = quad.meta_is('seeded')
+                if not seeded[i] and (point is None or qu.rect.collidepoint(point)):
+                    # only seed one of these in a go so we don't overwhelm
+                    # the system if it's a big quad
+                    seeded[i] = self.seed(qu, point)
+                    break
             if seeded == [True, True, True, True]:
                 quad.set_meta('seeded', True)
                 return True
             else:
                 return False
-
+        print('seeding', quad.id)
         rect = quad.rect
         cells = []
 
@@ -303,11 +311,11 @@ class Engine:
                 #    priority=-10))
 
         for i in range(uranium_freq):
-            cells.append(Uranium(self.textures, xy(), batch=self.textures.batch))
+            cells.append(Uranium(self.textures, xy()))
         for i in range(pine_freq):
-            cells.append(PineTree(self.textures, xy(), batch=self.textures.batch))
+            cells.append(PineTree(self.textures, xy()))
         for i in range(birch_freq):
-            cells.append(BirchTree(self.textures, xy(), batch=self.textures.batch))
+            cells.append(BirchTree(self.textures, xy()))
 
         quad.set_meta('seeded', True)
         if point is not None:
