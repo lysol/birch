@@ -64,7 +64,6 @@ class Cell(sprite.Sprite):
         self.y = self.real_position[1] - camera[1]
 
     def update(self, dt):
-        print('lol')
         return False
 
     def impassible(self, cell):
