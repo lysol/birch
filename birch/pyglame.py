@@ -78,7 +78,6 @@ class BirchGame:
         self.mouse_down = [False, False]
         self.scroll_speed = [2, 2]
         self.camera = [-400, -300]
-        self.camera_speed = 12
         self.last_camera = [-1000000, -1000000]
         self.cursor_speed = 8
         self.screen = None
@@ -124,7 +123,7 @@ class BirchGame:
             self.camera[1] -= self.camera_speed
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
-        if delta > 50 or self.first:
+        if delta > self.camera_speed * 2 or not self.first:
             self.last_camera = list(self.camera)
             self.window.batches = self.engine.get_batches(
                 self.camera_rect.inflate(
