@@ -1,4 +1,6 @@
 import json
+import pyglet
+from pyglet import sprite, resource
 from pygame import transform, image
 
 class TextureStore(dict):
@@ -7,6 +9,8 @@ class TextureStore(dict):
         super(dict, self).__init__(*args, **kwargs);
         self.asset_dir = asset_dir
 
+        pyglet.resource.path.extend([self.asset_dir])
+        pyglet.resource.reindex()
         names = json.load(open('%s/names.json' % asset_dir))
         for name in names:
             self.load(name)
@@ -15,4 +19,11 @@ class TextureStore(dict):
         self['i_1_0'] = self['i_0_0']
 
     def load(self, key):
-        self[key] = transform.scale2x(image.load("%s/%s.png" % (self.asset_dir, key)))
+        self[key] = resource.image("%s.png" % key)
+
+    def get_sprite(self, key, x=0, y=0):
+        image = self[key]
+        outsprite = sprite.Sprite(img=self[key], x=x, y=y)
+        outsprite.scale = 2.0
+        return outsprite
+
