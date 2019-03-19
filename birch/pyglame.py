@@ -1,4 +1,5 @@
 import pyglet, json
+from pyglet.gl import *
 from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
 from birch.statusbox import Statusbox
@@ -18,8 +19,25 @@ class ObjectEncoder(json.JSONEncoder):
 
 class BirchWindow(pyglet.window.Window):
 
+    def __init__(self, batch, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.batch = batch
+
     def on_draw(self):
         self.clear()
+        pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
+            [0, 1, 2, 0, 2, 3],
+            ('v2i', (0, 0,
+                     self.width, 0,
+                     self.width, self.height,
+                     0, self.height)),
+            ('c3B', (
+                255, 255, 255,
+                255, 255, 255,
+                255, 255, 255,
+                255, 255, 255))
+        )
+        self.batch.draw()
 
 
 class BirchGame:
@@ -27,8 +45,14 @@ class BirchGame:
     def __init__(self, initial_rect, asset_dir):
         self.size = 800, 600
         self.asset_dir = asset_dir
-        self.textures = TextureStore(asset_dir)
-        self.window = BirchWindow(width=self.size[0], height=self.size[1])
+        self.batch = pyglet.graphics.Batch()
+        self.textures = TextureStore(asset_dir, self.batch)
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        self.window = BirchWindow(self.batch, width=self.size[0], height=self.size[1])
+        self.window.set_caption('birch')
+        self.window.set_icon(self.textures['birch_tree'])
         self.initial_rect = initial_rect
         self.engine = Engine({
             "cells": [],
