@@ -1,15 +1,16 @@
 from uuid import uuid4
+from pyglet import sprite
 import pygame
 from pygame import Rect, draw, Surface, SRCALPHA, HWSURFACE
 from birch.util import negate, BG_COLOR
 from birch.cells import *
 
-class Cell:
+class Cell(sprite.Sprite):
 
-    def __init__(self, name, textures, position, texture_name,
+    def __init__(self, name, textures, position, texture_name, batch=None,
             size=None, priority=0):
+        super().__init__(textures[texture_name], position[0], position[1], batch=batch)
         self.name = name
-        self.sprite = textures.get_sprite(texture_name, *position)
         self.texture_name = texture_name
         self.textures = textures
         self.position = position
@@ -17,8 +18,9 @@ class Cell:
         self._impassible = False
         self.id = uuid4()
         self.priority = priority
-        self.size = size if size is not None else [self.sprite.width, self.sprite.height]
+        #self.size = size if size is not None else [self.sprite.width, self.sprite.height]
         self.update_rect()
+        self.scale = 2.0
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
@@ -40,14 +42,6 @@ class Cell:
         return self.rect.bottomright
 
     @property
-    def width(self):
-        return self.rect.width
-
-    @property
-    def height(self):
-        return self.rect.height
-
-    @property
     def rect(self):
         return self._rect
 
@@ -55,8 +49,8 @@ class Cell:
         self._rect = Rect(
             self.position[0],
             self.position[1],
-            self.size[0],
-            self.size[1]
+            self.width,
+            self.height
             )
         return self._rect
 
@@ -64,7 +58,7 @@ class Cell:
         rect = self.rect.move(*negate(camera))
         return rect
 
-    def tick(self, ticks, engine):
+    def update(self, dt):
         return False
 
     def impassible(self, cell):

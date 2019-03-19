@@ -1,4 +1,5 @@
 import pyglet, json
+from pyglet.window import key
 from pyglet.gl import *
 from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
@@ -42,6 +43,8 @@ class BirchWindow(pyglet.window.Window):
 
 class BirchGame:
 
+    camera_speed = 2
+
     def __init__(self, initial_rect, asset_dir):
         self.size = 800, 600
         self.asset_dir = asset_dir
@@ -74,13 +77,25 @@ class BirchGame:
         self.edge_delay = 0.5
         self.scroll_pos = 0, 0
         self.jsonenc = ObjectEncoder()
+        self.keys = key.KeyStateHandler()
+        self.window.push_handlers(self.keys)
+
 
     def run(self):
         self.engine.seed()
-        pyglet.clock.schedule_interval(self.update, 0.5)
+        pyglet.clock.schedule_interval(self.update, 1/120.0)
         pyglet.app.run()
         #self.init_panels()
 
     def update(self, dt):
-        pass
+        self.engine.tick()
+        if self.keys[key.LEFT]:
+            self.camera[0] -= self.camera_speed
+        if self.keys[key.RIGHT]:
+            self.camera[0] += self.camera_speed
+        if self.keys[key.DOWN]:
+            self.camera[1] += self.camera_speed
+        if self.keys[key.UP]:
+            self.camera[1] -= self.camera_speed
+        print(self.camera)
 

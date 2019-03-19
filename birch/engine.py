@@ -68,12 +68,12 @@ class Engine:
         damage = False
         self.ticks += self.state["speed"]
         changed = []
-        for cell in filter(lambda c: c.next_tick <= self.ticks, self.state["cells"]):
-            if cell.tick(self.ticks, self):
-                # Use the state reference because otherwise if the cell
-                # was destroyed, this will be the old one.
-                if checkrect is None or checkrect.colliderect(cell.rect):
-                    changed.append(cell)
+        #for cell in filter(lambda c: c.next_tick <= self.ticks, self.state["cells"]):
+        #    if cell.tick(self.ticks, self):
+        #        # Use the state reference because otherwise if the cell
+        #        # was destroyed, this will be the old one.
+        #        if checkrect is None or checkrect.colliderect(cell.rect):
+        #            changed.append(cell)
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
@@ -299,15 +299,15 @@ class Engine:
                 if dw <= 0 or dh <= 0:
                     continue
                 print('creating dirt', x, y, dw, dh)
-                cells.append(Cell('dirt', self.textures, (x, y), 'dirt', size=(dw, dh),
-                    priority=-10))
+                #cells.append(Cell('dirt', self.textures, (x, y), 'dirt', size=(dw, dh),
+                #    priority=-10))
 
         for i in range(uranium_freq):
-            cells.append(Uranium(self.textures, xy()))
+            cells.append(Uranium(self.textures, xy(), batch=self.textures.batch))
         for i in range(pine_freq):
-            cells.append(PineTree(self.textures, xy()))
+            cells.append(PineTree(self.textures, xy(), batch=self.textures.batch))
         for i in range(birch_freq):
-            cells.append(BirchTree(self.textures, xy()))
+            cells.append(BirchTree(self.textures, xy(), batch=self.textures.batch))
 
         quad.set_meta('seeded', True)
         if point is not None:

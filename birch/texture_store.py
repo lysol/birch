@@ -21,6 +21,8 @@ class TextureStore(dict):
 
     def load(self, key):
         self[key] = resource.image("%s.png" % key)
+        self[key].anchor_x = 0
+        self[key].anchor_y = 0
 
     def get_sprite(self, key, x=0, y=0):
         image = self[key]
