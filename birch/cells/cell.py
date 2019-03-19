@@ -9,6 +9,7 @@ class Cell:
     def __init__(self, name, textures, position, texture_name,
             size=None, priority=0):
         self.name = name
+        self.sprite = textures.get_sprite(texture_name, *position)
         self.texture_name = texture_name
         self.textures = textures
         self.position = position
@@ -16,62 +17,11 @@ class Cell:
         self._impassible = False
         self.id = uuid4()
         self.priority = priority
-        # use the texture to get the size if it is None
-        texture_size = self.textures[self.texture_name].get_size()
-        if size is not None:
-            self.size = size
-        else:
-            self.size = texture_size
-        self._rect = Rect(
-            self.position[0],
-            self.position[1],
-            self.size[0],
-            self.size[1]
-            )
-        self._last_texture = None
-        self._texture = None
-        self.dirty_texture = False
-        self._init_texture()
-
-    def _init_texture(self):
-        if self._texture is None or self._last_texture is None or \
-            self._last_texture != self.texture_name:
-            texture_size = self.textures[self.texture_name].get_size()
-            if texture_size[0] < self.size[0] or texture_size[1] < self.size[1]:
-                # need to tile
-                try:
-                    self._texture = Surface(self.size, flags=(SRCALPHA | HWSURFACE))
-                except pygame.error as e:
-                    raise e
-                plot = [0, 0]
-                while plot[0] < self.size[0]:
-                    while plot[1] < self.size[1]:
-                        self._texture.blit(self.textures[self.texture_name],
-                            Rect(plot[0], plot[1], texture_size[0], texture_size[1]))
-                        plot[1] += texture_size[1]
-                    plot[0] += texture_size[0]
-                    plot[1] = 0
-            else:
-                self._texture = self.textures[self.texture_name]
-            self._last_texture = self.texture_name
-            self.dirty_texture = False
-
-    @property
-    def texture(self):
-        if self.dirty_texture:
-            self._init_texture()
-        return self._texture
+        self.size = size if size is not None else [self.sprite.width, self.sprite.height]
+        self.update_rect()
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
-
-    def draw(self, camera, screen):
-        coords = self.get_rect(camera)
-        return screen.blit(self.texture, coords)
-
-    def draw_box(self, camera, screen, color):
-        coords = self.get_rect(camera)
-        return draw.rect(screen, color, coords, 1)
 
     @property
     def topleft(self):
