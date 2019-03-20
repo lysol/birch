@@ -56,9 +56,10 @@ class BirchWindow(pyglet.window.Window):
             for handler in self.handlers['mouse']:
                 handler(x, self.width - y, dx, dy)
 
+
 class BirchGame:
 
-    camera_speed = 2
+    camera_speed = 16
 
     def __init__(self, initial_rect, asset_dir):
         pyglet.options['debug_gl'] = False
@@ -133,7 +134,7 @@ class BirchGame:
                 abs(self.camera[1] - self.last_camera[1])
         if delta > self.camera_speed * 2 or not self.first:
             self.last_camera = list(self.camera)
-            self.window.batches = self.engine.get_batches(
+            self.window.batches = self.engine.get_batches(self.camera,
                 self.camera_rect.inflate(
                     self.camera_rect.width, self.camera_rect.height))
             self.first = True

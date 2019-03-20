@@ -364,14 +364,16 @@ class Quad:
     def _intersect(self, r1, r2):
         return r1.colliderect(r2)
 
-    def get_batches(self, rect):
+    def get_batches(self, camera, rect):
         if not self.leaf:
             indices = self.rect_indices(rect)
             results = []
             for i in indices:
                 if self.quarters[i] is not None:
-                    results.extend(self.quarters[i].get_batches(rect))
+                    results.extend(self.quarters[i].get_batches(camera, rect))
             return results
+        for item in self.items:
+            item.set_pos(camera)
         return [self.batch]
 
     def get(self, rect):

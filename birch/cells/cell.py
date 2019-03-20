@@ -48,8 +48,8 @@ class Cell(sprite.Sprite):
 
     def update_rect(self):
         self._rect = Rect(
-            self.position[0],
-            self.position[1],
+            self.real_position[0],
+            self.real_position[1],
             self.width,
             self.height
             )

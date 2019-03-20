@@ -74,7 +74,7 @@ class Engine:
         damage = False
         self.ticks += self.state["speed"]
         changed = []
-        in_range_cells = self.quad.get(checkrect.inflate(checkrect.width / 2, checkrect.height / 2))
+        in_range_cells = self.quad.get(checkrect.inflate(checkrect.width, checkrect.height))
         for cell in in_range_cells:
             cell.set_pos(checkrect.topleft)
         if self._next_rci <= self.ticks:
@@ -160,8 +160,8 @@ class Engine:
         zone = cell.rect.copy().inflate(cell.width * 2, cell.height * 2)
         return self.quad.get(Rect(zone))
 
-    def get_batches(self, rect):
-        return self.quad.get_batches(rect)
+    def get_batches(self, camera, rect):
+        return self.quad.get_batches(camera, rect)
 
     def get_cell(self, rect):
         return self.quad.get(rect)
