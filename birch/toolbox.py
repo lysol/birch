@@ -1,6 +1,7 @@
 import math
-from pygame import draw, Rect, Surface
-from birch.util import FG_COLOR, BG_COLOR
+import pyglet
+from pygame import Rect
+from birch.util import FG_COLOR, BG_COLOR, fix_origin
 
 class Toolbox:
 
@@ -10,26 +11,39 @@ class Toolbox:
     width = 77
     height = 300
 
-    def __init__(self, tools, textures):
-        self.tools = tools
+    tools = (
+        "bulldoze",
+        "r_0_0",
+        "c_0_0",
+        "i_0_0",
+        "road_h",
+        "rail_h"
+        )
+
+    def __init__(self, window_height, textures):
+        self.window_height = window_height
+        self.batch = pyglet.graphics.Batch()
+        self.sprites = []
         self.tool_rects = []
         self.selected = 0
         self.textures = textures
-        self.surface = Surface(self.get_rect()[2:])
         # build areas for tools
         for i, tool in enumerate(self.tools):
             tex = self.textures[tool]
-            size = tex.get_size()
+            size = (tex.width * 2, tex.height * 2)
             if i == 0:
-                left = self.padding
-                top = self.padding
+                left = self.padding + self.position[0]
+                top = self.padding + self.position[1]
             else:
                 prev_rect = self.tool_rects[i - 1]
                 top = prev_rect.top
-                left = self.icon_spacing + prev_rect.left + prev_rect.width
-                if left + size[0] > self.width - self.icon_spacing:
-                    left = self.padding
-                    top = prev_rect.top + prev_rect.height + self.icon_spacing
+                left = prev_rect.right + self.icon_spacing
+                if left + size[0] > self.position[0] + self.width - self.icon_spacing:
+                    left = self.padding + self.position[0]
+                    top = prev_rect.bottom + self.icon_spacing
+            np = fix_origin((left, top + tex.height * 2), self.window_height)
+            self.sprites.append(pyglet.sprite.Sprite(self.textures[tool], np[0], np[1], batch=self.batch))
+            self.sprites[-1].scale = 2
             r = Rect(left, top, size[0], size[1])
             self.tool_rects.append(r)
 
@@ -62,17 +76,29 @@ class Toolbox:
             return 16
         return self.tool_rects[self.selected].width
 
-    def draw(self, screen):
-        bounds = list(self.get_rect())
-        bounds[0] = 0
-        bounds[1] = 0
-        self.surface.fill(FG_COLOR)
-        draw.rect(self.surface, BG_COLOR, Rect(*bounds))
-        draw.rect(self.surface, FG_COLOR, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
+    def draw(self):
+        w = self.width
+        h = self.height
+        pos = self.position
 
-        for i, tool in enumerate(self.tools):
-            self.surface.blit(self.textures[tool], self.tool_rects[i])
-            if i == self.selected:
-                self.surface.blit(self.textures["cursor_%d" % self.textures[tool].get_rect().width],
-                    self.tool_rects[i])
-        return screen.blit(self.surface, self.position)
+        bgvx = fix_origin((
+            pos[0], pos[1],
+            pos[0], pos[1] + h,
+            pos[0] + w, pos[1] + h,
+            pos[0] + w, pos[1]
+            ), self.window_height)
+        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
+            ('v2i', bgvx),
+            ('c3B', (0, 0 ,0) * 4)
+        )
+        bgvx2 = (
+            bgvx[0] + 2, bgvx[1] - 2,
+            bgvx[2] + 2, bgvx[3] + 2,
+            bgvx[4] - 2, bgvx[5] + 2,
+            bgvx[6] - 2, bgvx[7] - 2
+            )
+        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
+            ('v2i', bgvx2),
+            ('c3B', (255, 255, 255) * 4)
+        )
+        self.batch.draw()

@@ -21,9 +21,10 @@ class ObjectEncoder(json.JSONEncoder):
 
 class BirchWindow(pyglet.window.Window):
 
-    def __init__(self, batches, *args, **kwargs):
+    def __init__(self, batches, ui, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.batches = batches
+        self.ui = ui
         self.handlers = {}
 
     def on_draw(self):
@@ -42,6 +43,8 @@ class BirchWindow(pyglet.window.Window):
         )
         for batch in self.batches:
             batch.draw()
+        for el in self.ui:
+            el.draw()
 
     def handle(self, key, handler):
         if key not in self.handlers:
@@ -65,7 +68,8 @@ class BirchGame:
         glClearColor(1.0, 1.0, 1.0, 1.0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        self.window = BirchWindow([], width=self.size[0], height=self.size[1])
+        self.ui_elements = []
+        self.window = BirchWindow([], self.ui_elements, width=self.size[0], height=self.size[1])
         self.window.set_caption('birch')
         self.window.set_icon(self.textures['birch_tree'])
         self.initial_rect = initial_rect
@@ -93,6 +97,10 @@ class BirchGame:
         self.window.push_handlers(self.keys)
         self.first = True
         self.window.handle('mouse', self.handle_mouse)
+        self.init_ui()
+
+    def init_ui(self):
+        self.ui_elements.append(Toolbox(self.window.height, self.textures))
 
     def run(self):
         self.engine.seed()

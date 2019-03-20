@@ -6,6 +6,13 @@ def clamp(i, mini, maxi):
 def negate(stuff):
     return tuple(map(lambda x: -x, stuff))
 
+def fix_origin(vertexes, height):
+    outvx = []
+    for o in range(0, len(vertexes), 2):
+        outvx.append(vertexes[o])
+        outvx.append(height - vertexes[o + 1])
+    return tuple(outvx)
+
 pi2 = pi * 2
 
 BLACK = 0, 0, 0
