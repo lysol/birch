@@ -29,6 +29,12 @@ class Toolbox(UIElement):
         self.tool_rects = []
         self.selected = None
         self.textures = textures
+        self.cursor_32 = pyglet.sprite.Sprite(self.textures['cursor_32'], -1000, -1000)
+        self.cursor_16 = pyglet.sprite.Sprite(self.textures['cursor_16'], -1000, -1000)
+        self.cursor_32.scale = 2
+        self.cursor_16.scale = 2
+        self.active_cursor = self.cursor_32
+        self.tool_indexes = {}
         # build areas for tools
         for i, tool in enumerate(self.tools):
             tex = self.textures[tool]
@@ -46,12 +52,19 @@ class Toolbox(UIElement):
             self.handle_region(tool, self.use_tool, left, top, tex.width * 2, tex.height * 2)
             np = fix_origin((left, top + tex.height * 2), self.window_height)
             self.sprites.append(pyglet.sprite.Sprite(self.textures[tool], np[0], np[1], batch=self.batch))
+            self.tool_indexes[tool] = i
             self.sprites[-1].scale = 2
             r = Rect(left, top, size[0], size[1])
             self.tool_rects.append(r)
 
     def use_tool(self, tool, x, y, buttons):
         self.selected = tool
+        if self.textures[tool].width == 8:
+            self.active_cursor = self.cursor_16
+        else:
+            self.active_cursor = self.cursor_32
+        self.active_cursor.x = self.sprites[self.tool_indexes[tool]].x
+        self.active_cursor.y = self.sprites[self.tool_indexes[tool]].y
 
     @property
     def position(self):
@@ -115,3 +128,4 @@ class Toolbox(UIElement):
             ('c3B', (255, 255, 255) * 4)
         )
         self.batch.draw()
+        self.active_cursor.draw()
