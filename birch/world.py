@@ -47,7 +47,11 @@ class World:
         for chunk in chunks:
             for sprite_id in chunk:
                 sprite = chunk[sprite_id]
-                if sprite not in out:
+                if sprite not in out and \
+                    sprite.x >= x and \
+                    sprite.y >= y and \
+                    sprite.x <= x + w and \
+                    sprite.y <= y + h:
                     out.append(sprite)
         return out
 

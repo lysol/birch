@@ -21,14 +21,14 @@ class Toolbox(UIElement):
         "rail_h"
         )
 
-    def __init__(self, window_height, textures, camera=(0, 0)):
+    def __init__(self, window_height, textures):
+        super().__init__(20, 20)
         self.window_height = window_height
         self.batch = pyglet.graphics.Batch()
         self.sprites = []
         self.tool_rects = []
-        self.selected = 0
+        self.selected = None
         self.textures = textures
-        self.camera = camera
         # build areas for tools
         for i, tool in enumerate(self.tools):
             tex = self.textures[tool]
@@ -43,25 +43,22 @@ class Toolbox(UIElement):
                 if left + size[0] > self.position[0] + self.width - self.icon_spacing:
                     left = self.padding + self.position[0]
                     top = prev_rect.bottom + self.icon_spacing
+            self.handle_region(tool, self.use_tool, left, top, tex.width * 2, tex.height * 2)
             np = fix_origin((left, top + tex.height * 2), self.window_height)
             self.sprites.append(pyglet.sprite.Sprite(self.textures[tool], np[0], np[1], batch=self.batch))
             self.sprites[-1].scale = 2
             r = Rect(left, top, size[0], size[1])
             self.tool_rects.append(r)
 
+    def use_tool(self, tool, x, y, buttons):
+        self.selected = tool
+
     @property
     def position(self):
         return (
-            self._position[0] + self.camera[0],
-            self._position[1] + self.camera[1]
+            self._position[0],
+            self._position[1]
             )
-
-    def set_camera(self, x, y):
-        delta = self.camera[0] - x, self.camera[1] - y
-        self.camera = [x, y]
-        for sprite in self.sprites:
-            sprite.x -= delta[1]
-            sprite.y -= delta[0]
 
     def get_rect(self):
         bounds = (
@@ -88,9 +85,9 @@ class Toolbox(UIElement):
 
     @property
     def tool_size(self):
-        if self.tools[self.selected] == 'bulldoze':
+        if self.selected == 'bulldoze':
             return 16
-        return self.tool_rects[self.selected].width
+        return self.click_regions[self.selected][2]
 
     def draw(self):
         w = self.width

@@ -201,9 +201,15 @@ class Engine:
             y - y % size
             ]
 
-    def use_tool(self, name, rect):
-        tool_size = self.textures[name].get_size()
-        intersected = self.get_cell(rect)
+    def use_tool(self, name, x, y):
+        if name is None:
+            return
+        tooltex = self.textures[name]
+        tool_size = (tooltex.width * 2, tooltex.height * 2)
+        aliased = self.alias_pos(x, y)
+        intersected = self.get_cell(Rect(
+            aliased[0], aliased[1],
+            tool_size[0], tool_size[1]))
         cells = []
         for cell in intersected:
             if cell.impassible(name):
@@ -218,15 +224,15 @@ class Engine:
                 if not cell.impassible:
                     self.del_cell(cell)
             if name == "r_0_0":
-                new_cell = RCell(self.textures, rect.topleft)
+                new_cell = RCell(self.textures, aliased)
             elif name == "c_0_0":
-                new_cell = CCell(self.textures, rect.topleft)
+                new_cell = CCell(self.textures, aliased)
             elif name == "i_0_0":
-                new_cell = ICell(self.textures, rect.topleft)
+                new_cell = ICell(self.textures, aliased)
             elif name == "road_h":
-                new_cell = RoadCell(self.textures, rect.topleft)
+                new_cell = RoadCell(self.textures, aliased)
             elif name == "rail_h":
-                new_cell = RailCell(self.textures, rect.topleft)
+                new_cell = RailCell(self.textures, aliased)
         if new_cell is not None:
             self.set_cell(new_cell)
             if issubclass(type(new_cell), ConnectableCell):

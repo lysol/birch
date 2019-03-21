@@ -159,7 +159,8 @@ class BirchGame:
         self.init_ui()
 
     def init_ui(self):
-        self.ui_elements.append(Toolbox(self.window.height, self.textures))
+        self.toolbox = Toolbox(self.window.height, self.textures)
+        self.ui_elements.append(self.toolbox)
 
     def run(self):
         self.engine.seed(0, 0)
@@ -173,9 +174,13 @@ class BirchGame:
     def handle_mouse_press(self, x, y, button, modifiers):
         self.mouse = x, y
         self.mouse_buttons = set(list(self.mouse_buttons) + [button])
+        ui_clicked = False
         if len(self.mouse_buttons) > 0:
             for el in self.ui_elements:
-                el.check_mouse(self.mouse, self.mouse_buttons)
+                ui_clicked = el.check_mouse(self.mouse, self.mouse_buttons) or ui_clicked
+        if not ui_clicked:
+            # click map
+            self.engine.use_tool(self.toolbox.selected, x, y)
 
     def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.mouse = x, y
