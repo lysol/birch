@@ -2,8 +2,9 @@ import math
 import pyglet
 from pygame import Rect
 from birch.util import FG_COLOR, BG_COLOR, fix_origin
+from birch.ui_element import UIElement
 
-class Toolbox:
+class Toolbox(UIElement):
 
     _position = 20, 20
     padding = 4

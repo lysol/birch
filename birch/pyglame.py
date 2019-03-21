@@ -62,16 +62,26 @@ class BirchWindow(pyglet.window.Window):
             self.handlers[key] = []
         self.handlers[key].append(handler)
 
+    def dispatch(self, key, *args, **kwargs):
+        if key in self.handlers:
+            for handler in self.handlers[key]:
+                handler(*args, **kwargs)
+
     def on_resize(self, width, height):
         super().on_resize(width, height)
-        if 'resize' in self.handlers:
-            for handler in self.handlers['resize']:
-                handler(width, height)
+        self.dispatch('resize', width, height)
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if 'mouse' in self.handlers:
-            for handler in self.handlers['mouse']:
-                handler(x, self.width - y, dx, dy)
+        self.dispatch('mouse_motion', x, self.height - y, dx, -dy)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        self.dispatch('mouse_press', x, self.height - y, button, modifiers)
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.dispatch('mouse_release', x, self.height - y, button, modifiers)
+
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        self.dispatch('mouse_drag', x, self.height - y, dx, -dy, button, modifiers)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if scroll_y > 0:
@@ -125,7 +135,7 @@ class BirchGame:
             "population": 0,
             "speed": 1
             }, self.textures, initial_rect)
-        self.mouse_down = [False, False]
+        self.mouse_buttons = []
         self.scroll_speed = [2, 2]
         self.camera = [-400, -300]
         self.last_camera = [-1000000, -1000000]
@@ -141,8 +151,11 @@ class BirchGame:
         self.keys = key.KeyStateHandler()
         self.window.push_handlers(self.keys)
         self.first = True
-        self.window.handle('mouse', self.handle_mouse)
+        self.window.handle('mouse_motion', self.handle_mouse)
         #self.window.handle('resize', self.handle_resize)
+        self.window.handle('mouse_press', self.handle_mouse_press)
+        self.window.handle('mouse_release', self.handle_mouse_release)
+        self.window.handle('mouse_drag', self.handle_mouse_drag)
         self.init_ui()
 
     def init_ui(self):
@@ -156,6 +169,20 @@ class BirchGame:
 
     def handle_mouse(self, x, y, dx, dy):
         self.mouse = x, y
+
+    def handle_mouse_press(self, x, y, button, modifiers):
+        self.mouse = x, y
+        self.mouse_buttons = set(list(self.mouse_buttons) + [button])
+        if len(self.mouse_buttons) > 0:
+            for el in self.ui_elements:
+                el.check_mouse(self.mouse, self.mouse_buttons)
+
+    def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        self.mouse = x, y
+
+    def handle_mouse_release(self, x, y, button, modifiers):
+        self.mouse = x, y
+        self.mouse_buttons = set(filter(lambda b: b != button, self.mouse_buttons))
 
     @property
     def camera_rect(self):

@@ -10,6 +10,7 @@ setup(name='birch',
       packages=['birch'],
       install_requires=[
           'pyglet',
-          'pygame'
+          'pygame',
+          'noise'
           ],
       zip_safe=False)

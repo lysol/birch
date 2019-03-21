@@ -2,6 +2,7 @@ from random import choice, randint
 from math import sin, pi
 from collections import deque
 from pygame import Rect
+from noise import pnoise1
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
 from birch.cells.connectable import ConnectableCell
