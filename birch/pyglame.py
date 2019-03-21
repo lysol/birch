@@ -180,7 +180,7 @@ class BirchGame:
                 ui_clicked = el.check_mouse(self.mouse, self.mouse_buttons) or ui_clicked
         if not ui_clicked:
             # click map
-            self.engine.use_tool(self.toolbox.selected, x, y)
+            self.engine.use_tool(self.toolbox.selected, self.camera[0] + x, self.camera[1] + self.window.height - y)
 
     def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.mouse = x, y
