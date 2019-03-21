@@ -5,7 +5,7 @@ from birch.util import FG_COLOR, BG_COLOR, fix_origin
 
 class Toolbox:
 
-    position = 20, 20
+    _position = 20, 20
     padding = 4
     icon_spacing = 4
     width = 77
@@ -20,13 +20,14 @@ class Toolbox:
         "rail_h"
         )
 
-    def __init__(self, window_height, textures):
+    def __init__(self, window_height, textures, camera=(0, 0)):
         self.window_height = window_height
         self.batch = pyglet.graphics.Batch()
         self.sprites = []
         self.tool_rects = []
         self.selected = 0
         self.textures = textures
+        self.camera = camera
         # build areas for tools
         for i, tool in enumerate(self.tools):
             tex = self.textures[tool]
@@ -47,11 +48,25 @@ class Toolbox:
             r = Rect(left, top, size[0], size[1])
             self.tool_rects.append(r)
 
+    @property
+    def position(self):
+        return (
+            self._position[0] + self.camera[0],
+            self._position[1] + self.camera[1]
+            )
+
+    def set_camera(self, x, y):
+        delta = self.camera[0] - x, self.camera[1] - y
+        self.camera = [x, y]
+        for sprite in self.sprites:
+            sprite.x -= delta[1]
+            sprite.y -= delta[0]
+
     def get_rect(self):
         bounds = (
             self.position[0], self.position[1],
-            self.width,
-            self.height
+            self.position[0] + self.width,
+            self.position[1] + self.height
             )
         return bounds
 
