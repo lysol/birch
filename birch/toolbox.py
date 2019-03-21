@@ -73,29 +73,6 @@ class Toolbox(UIElement):
             self._position[1]
             )
 
-    def get_rect(self):
-        bounds = (
-            self.position[0], self.position[1],
-            self.position[0] + self.width,
-            self.position[1] + self.height
-            )
-        return bounds
-
-    def in_bounds(self, pos):
-        bounds = self.get_rect()
-        return pos[0] >= bounds[0] and pos[0] <= bounds[0] + bounds[2] and \
-            pos[1] >= bounds[1] and pos[1] <= bounds[1] + bounds[3]
-
-    def hover_icon(self, pos):
-        p = [
-            pos[0] - self.position[0],
-            pos[1] - self.position[1]
-            ]
-        for i, rect in enumerate(self.tool_rects):
-            if rect.collidepoint(p):
-                return i
-        return None
-
     @property
     def tool_size(self):
         if self.selected == 'bulldoze':
