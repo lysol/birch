@@ -8,7 +8,6 @@ from birch.statusbox import Statusbox
 from birch.rcibox import RCIbox
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR
-from birch import cursor
 
 
 class ObjectEncoder(json.JSONEncoder):

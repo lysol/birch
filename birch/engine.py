@@ -11,7 +11,6 @@ from birch.cells.uranium import Uranium
 from birch.cells.tree import PineTree, BirchTree
 from birch.util import clamp, pi2
 from birch.world import World
-from birch.exceptions import QuadAlreadySeededException
 
 class Engine:
 
