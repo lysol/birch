@@ -20,12 +20,16 @@ class ObjectEncoder(json.JSONEncoder):
 
 class BirchWindow(pyglet.window.Window):
 
+    max_zoom = 2.0
+    min_zoom = 1
+
     def __init__(self, batches, ui, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.batches = batches
         self.ui = ui
         self.handlers = {}
         self.camera = (0, 0)
+        self.zoom = 1
 
     def on_draw(self):
         self.clear()
@@ -33,7 +37,7 @@ class BirchWindow(pyglet.window.Window):
         top = 0
         right = self.width
         bottom = self.height
-        self.change_view(camera=(0, 0))
+        self.change_view(zoom=1.0, camera=(0, 0))
         pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
             [0, 1, 2, 0, 2, 3],
             ('v2i', (left, top,
@@ -49,7 +53,7 @@ class BirchWindow(pyglet.window.Window):
         self.change_view()
         for batch in self.batches:
             batch.draw()
-        self.change_view(camera=(0, 0))
+        self.change_view(zoom=1.0, camera=(0, 0))
         for el in self.ui:
             el.draw()
 
@@ -69,14 +73,29 @@ class BirchWindow(pyglet.window.Window):
             for handler in self.handlers['mouse']:
                 handler(x, self.width - y, dx, dy)
 
-    def change_view(self, width=None, height=None, camera=None):
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if scroll_y > 0:
+            self.zoom += 0.1
+        elif scroll_y < 0:
+            self.zoom -= 0.1
+        if self.zoom > self.max_zoom:
+            self.zoom = self.max_zoom
+        elif self.zoom < self.min_zoom:
+            self.zoom = self.min_zoom
+
+    def change_view(self, width=None, height=None, camera=None, zoom=None):
         camera = self.camera if camera is None else camera
         width = width if width is not None else self.width
         height = height if height is not None else self.height
+        zoom = zoom if zoom is not None else self.zoom
         left = camera[0]
         top = camera[1]
         right = camera[0] + width
         bottom = camera[1] + height
+        left = left * zoom
+        top = top * zoom
+        right = right * zoom
+        bottom = bottom * zoom
         glMatrixMode(gl.GL_PROJECTION)
         glLoadIdentity()
         glOrtho(left, right, top, bottom, -1, 1)
