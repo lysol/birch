@@ -30,6 +30,7 @@ class BirchWindow(pyglet.window.Window):
         self.handlers = {}
         self.camera = (0, 0)
         self.zoom = 1
+        self.reference_point = 0, 0
         self.cursor_sprite = None
 
     def on_draw(self):
@@ -56,9 +57,25 @@ class BirchWindow(pyglet.window.Window):
             batch.draw()
         if self.cursor_sprite is not None:
             self.cursor_sprite.draw()
+        for y in range(0, self.height, 64):
+            for x in range(0, self.width, 64):
+                delto = x, y
+                color = (255, 0, 0) if delto[0] % 128 == 0 and delto[1] % 128 == 0 else (0, 255, 0)
+                if delto[0] == 0 and delto[1] == 0:
+                    color = (255, 255, 0)
+                self.draw_dot(x, y, color)
         self.change_view(zoom=1.0, camera=(0, 0))
         for el in self.ui:
             el.draw()
+
+    def draw_dot(self, x, y, color, width=3):
+        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
+            ('v2i', (
+                x - width, y - width,
+                x - width, y + width,
+                x + width, y + width,
+                x + width, y - width)),
+            ('c3B', color * 4))
 
     def handle(self, key, handler):
         if key not in self.handlers:
@@ -78,6 +95,7 @@ class BirchWindow(pyglet.window.Window):
         self.dispatch('mouse_motion', x, self.height - y, dx, -dy)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        self.reference_point = self.camera[0] + x, self.camera[1] + y
         self.dispatch('mouse_press', x, self.height - y, button, modifiers)
 
     def on_mouse_release(self, x, y, button, modifiers):
