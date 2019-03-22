@@ -235,7 +235,8 @@ class BirchGame:
         if not ui_clicked:
             # click map
             tool_pos = self.window.cursor_sprite.position
-            self.engine.use_tool(self.toolbox.selected, tool_pos[0], tool_pos[1])
+            self.engine.use_tool(self.toolbox.selected, tool_pos[0], tool_pos[1],
+                tool_size=self.toolbox.tool_size)
             self.window.set_mouse_visible(False)
         else:
             self.window.set_mouse_visible(True)

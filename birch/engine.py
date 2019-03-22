@@ -198,14 +198,13 @@ class Engine:
             y - y % size
             ]
 
-    def use_tool(self, name, x, y):
+    def use_tool(self, name, x, y, tool_size=32):
         # assuming x, y is already aliased.
         if name is None:
             return
         tooltex = self.textures[name]
-        tool_size = (tooltex.width * 2, tooltex.height * 2)
         intersected = self.get_cell(x, y,
-            tool_size[0], tool_size[1])
+            tool_size, tool_size)
         cells = []
         for cell in intersected:
             if cell.impassible(name):
