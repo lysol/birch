@@ -48,7 +48,7 @@ class Toolbox(UIElement):
                 if left + size[0] > self.x + self.width - self.icon_spacing:
                     left = self.padding + self.x
                     top = prev_rect.bottom + self.icon_spacing
-            self.handle_region(tool, self.use_tool, left, top, tex.width * 2, tex.height * 2)
+            self.handle_region(tool, self.set_tool, left, top, tex.width * 2, tex.height * 2)
             np = fix_origin((left, top + tex.height * 2), self.window_height)
             self.sprites.append(pyglet.sprite.Sprite(self.textures[tool], np[0], np[1], batch=self.batch))
             self.tool_indexes[tool] = i
@@ -70,7 +70,7 @@ class Toolbox(UIElement):
     def sprite_by_name(self, tool):
         return self.sprites[self.tool_indexes[tool]]
 
-    def use_tool(self, tool, x=None, y=None, buttons=None):
+    def set_tool(self, tool, x=None, y=None, buttons=None):
         self.selected = tool
         if self.textures[tool].width == 8:
             self.active_cursor = self.cursor_16

@@ -184,7 +184,7 @@ class BirchGame:
     def init_ui(self):
         self.toolbox = Toolbox(self.window.height, self.textures)
         self.ui_elements.append(self.toolbox)
-        self.toolbox.use_tool('bulldoze')
+        self.toolbox.set_tool('bulldoze')
 
     def run(self):
         self.engine.seed(0, 0)
@@ -227,12 +227,15 @@ class BirchGame:
         self.mouse = x, y
         self.mouse_buttons = set(list(self.mouse_buttons) + [button])
         ui_clicked = False
+        self.set_sprite_cursor()
+        self.set_cursor_sprite_pos()
         if len(self.mouse_buttons) > 0:
             for el in self.ui_elements:
                 ui_clicked = el.check_mouse(self.mouse, self.mouse_buttons) or ui_clicked
         if not ui_clicked:
             # click map
-            self.engine.use_tool(self.toolbox.selected, self.camera[0] + x, self.camera[1] + self.window.height - y)
+            tool_pos = self.window.cursor_sprite.position
+            self.engine.use_tool(self.toolbox.selected, tool_pos[0], tool_pos[1])
             self.window.set_mouse_visible(False)
         else:
             self.window.set_mouse_visible(True)

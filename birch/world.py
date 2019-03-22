@@ -47,12 +47,19 @@ class World:
         for chunk in chunks:
             for sprite_id in chunk:
                 sprite = chunk[sprite_id]
-                if sprite not in out and \
-                    sprite.x >= x and \
-                    sprite.y >= y and \
-                    sprite.x <= x + w and \
-                    sprite.y <= y + h:
-                    out.append(sprite)
+                if sprite not in out:
+                    for point in (
+                        (sprite.x, sprite.y),
+                        (sprite.x + sprite.width, sprite.y),
+                        (sprite.x + sprite.width, sprite.y + sprite.height),
+                        (sprite.x, sprite.y + sprite.height)
+                        ):
+                        if point[0] >= x and \
+                            point[1] >= y and \
+                            point[0] < x + w and \
+                            point[1] < y + h:
+                            out.append(sprite)
+                            break
         return out
 
     def get_chunks(self, x, y, w = 1, h = 1):
