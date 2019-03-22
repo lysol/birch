@@ -42,8 +42,6 @@ class World:
         del self.world[oy][ox][sprite.id]
 
     def get(self, x, y, w, h):
-        if w == 32:
-            print('get', x, y, w ,h)
         chunks = self.get_chunks(x, y, w, h)
         out = []
         for chunk in chunks:
