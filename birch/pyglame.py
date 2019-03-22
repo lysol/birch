@@ -30,6 +30,7 @@ class BirchWindow(pyglet.window.Window):
         self.handlers = {}
         self.camera = (0, 0)
         self.zoom = 1
+        self.cursor_sprite = None
 
     def on_draw(self):
         self.clear()
@@ -53,6 +54,8 @@ class BirchWindow(pyglet.window.Window):
         self.change_view()
         for batch in self.batches:
             batch.draw()
+        if self.cursor_sprite is not None:
+            self.cursor_sprite.draw()
         self.change_view(zoom=1.0, camera=(0, 0))
         for el in self.ui:
             el.draw()
@@ -156,11 +159,14 @@ class BirchGame:
         self.window.handle('mouse_press', self.handle_mouse_press)
         self.window.handle('mouse_release', self.handle_mouse_release)
         self.window.handle('mouse_drag', self.handle_mouse_drag)
+        self.mouse = 0, 0
         self.init_ui()
+        self.set_sprite_cursor()
 
     def init_ui(self):
         self.toolbox = Toolbox(self.window.height, self.textures)
         self.ui_elements.append(self.toolbox)
+        self.toolbox.use_tool('bulldoze')
 
     def run(self):
         self.engine.seed(0, 0)
@@ -168,8 +174,36 @@ class BirchGame:
         pyglet.app.run()
         #self.init_panels()
 
+    def set_sprite_cursor(self):
+        if self.toolbox.use_sprite_cursor:
+            tex = self.toolbox.selected
+        else:
+            tex = 'cursor_%d' % self.toolbox.tool_size
+        self.window.cursor_sprite = pyglet.sprite.Sprite(self.textures[tex], *self.mouse)
+        self.window.cursor_sprite.scale = 2
+
+    def set_cursor_sprite_pos(self):
+        x, y = self.mouse
+        self.window.cursor_sprite.x = self.camera[0] + x
+        self.window.cursor_sprite.y = self.camera[1] + self.window.height - y
+        x, y = self.window.cursor_sprite.position
+        x = x - x % 16
+        y = y - y % 16
+        self.window.cursor_sprite.x = x
+        self.window.cursor_sprite.y = y
+
     def handle_mouse(self, x, y, dx, dy):
         self.mouse = x, y
+        hovered = False
+        for el in self.ui_elements:
+            if el.check_mouse(self.mouse, self.mouse_buttons):
+                hovered = True
+                self.window.cursor_sprite.x = -10000
+                self.window.cursor_sprite.y = -10000
+                break
+        if not hovered:
+            self.set_cursor_sprite_pos()
+        self.window.set_mouse_visible(hovered)
 
     def handle_mouse_press(self, x, y, button, modifiers):
         self.mouse = x, y
@@ -181,13 +215,20 @@ class BirchGame:
         if not ui_clicked:
             # click map
             self.engine.use_tool(self.toolbox.selected, self.camera[0] + x, self.camera[1] + self.window.height - y)
+            self.window.set_mouse_visible(False)
+        else:
+            self.window.set_mouse_visible(True)
+        self.set_sprite_cursor()
+        self.set_cursor_sprite_pos()
 
     def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.mouse = x, y
+        self.set_cursor_sprite_pos()
 
     def handle_mouse_release(self, x, y, button, modifiers):
         self.mouse = x, y
         self.mouse_buttons = set(filter(lambda b: b != button, self.mouse_buttons))
+        self.set_cursor_sprite_pos()
 
     @property
     def camera_rect(self):

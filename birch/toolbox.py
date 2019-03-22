@@ -6,7 +6,6 @@ from birch.ui_element import UIElement
 
 class Toolbox(UIElement):
 
-    _position = 20, 20
     padding = 4
     icon_spacing = 4
     width = 77
@@ -40,14 +39,14 @@ class Toolbox(UIElement):
             tex = self.textures[tool]
             size = (tex.width * 2, tex.height * 2)
             if i == 0:
-                left = self.padding + self.position[0]
-                top = self.padding + self.position[1]
+                left = self.padding + self.x
+                top = self.padding + self.y
             else:
                 prev_rect = self.tool_rects[i - 1]
                 top = prev_rect.top
                 left = prev_rect.right + self.icon_spacing
-                if left + size[0] > self.position[0] + self.width - self.icon_spacing:
-                    left = self.padding + self.position[0]
+                if left + size[0] > self.x + self.width - self.icon_spacing:
+                    left = self.padding + self.x
                     top = prev_rect.bottom + self.icon_spacing
             self.handle_region(tool, self.use_tool, left, top, tex.width * 2, tex.height * 2)
             np = fix_origin((left, top + tex.height * 2), self.window_height)
@@ -57,21 +56,29 @@ class Toolbox(UIElement):
             r = Rect(left, top, size[0], size[1])
             self.tool_rects.append(r)
 
-    def use_tool(self, tool, x, y, buttons):
+    @property
+    def use_sprite_cursor(self):
+        if self.selected == 'bulldoze':
+            return False
+        else:
+            return True
+
+    @property
+    def active_sprite(self):
+        return self.sprite_by_name(self.selected)
+
+    def sprite_by_name(self, tool):
+        return self.sprites[self.tool_indexes[tool]]
+
+    def use_tool(self, tool, x=None, y=None, buttons=None):
         self.selected = tool
         if self.textures[tool].width == 8:
             self.active_cursor = self.cursor_16
         else:
             self.active_cursor = self.cursor_32
-        self.active_cursor.x = self.sprites[self.tool_indexes[tool]].x
-        self.active_cursor.y = self.sprites[self.tool_indexes[tool]].y
-
-    @property
-    def position(self):
-        return (
-            self._position[0],
-            self._position[1]
-            )
+        tool_sprite = self.sprite_by_name(tool)
+        self.active_cursor.x = tool_sprite.x
+        self.active_cursor.y = tool_sprite.y
 
     @property
     def tool_size(self):
@@ -82,7 +89,7 @@ class Toolbox(UIElement):
     def draw(self):
         w = self.width
         h = self.height
-        pos = self.position
+        pos = self.x, self.y
 
         bgvx = fix_origin((
             pos[0], pos[1],
