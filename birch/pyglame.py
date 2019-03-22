@@ -106,9 +106,9 @@ class BirchWindow(pyglet.window.Window):
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if scroll_y > 0:
-            self.zoom += 0.1
+            self.zoom += 0.025
         elif scroll_y < 0:
-            self.zoom -= 0.1
+            self.zoom -= 0.025
         if self.zoom > self.max_zoom:
             self.zoom = self.max_zoom
         elif self.zoom < self.min_zoom:
