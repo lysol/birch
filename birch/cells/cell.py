@@ -1,7 +1,6 @@
 from uuid import uuid4
 from pyglet import sprite
 import pygame
-from pygame import Rect, draw, Surface, SRCALPHA, HWSURFACE
 from birch.util import negate, BG_COLOR
 from birch.cells import *
 
@@ -19,44 +18,48 @@ class Cell(sprite.Sprite):
         self.id = uuid4()
         self.priority = priority
         #self.size = size if size is not None else [self.sprite.width, self.sprite.height]
-        self.update_rect()
         self.scale = 2.0
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
+    def _shift(self, delta):
+        return self.position[0] + delta[0], self.position[1] + delta[1]
+
+    @property
+    def left(self):
+        return self.position[0]
+
+    @property
+    def top(self):
+        return self.position[1]
+
+    @property
+    def right(self):
+        return self.position[0] + self.width
+
+    @property
+    def bottom(self):
+        return self.position[1] + self.height
+
     @property
     def topleft(self):
-        return self.rect.topleft
+        return self.position
 
     @property
     def topright(self):
-        return self.rect.topright
+        return self._shift((self.width, 0))
 
     @property
     def bottomleft(self):
-        return self.rect.bottomleft
+        return self._shift((0, self.height))
 
     @property
     def bottomright(self):
-        return self.rect.bottomright
+        return self._shift((self.width, self.height))
 
-    @property
-    def rect(self):
-        return self._rect
-
-    def update_rect(self):
-        self._rect = Rect(
-            self.position[0],
-            self.position[1],
-            self.width,
-            self.height
-            )
-        return self._rect
-
-    def get_rect(self, camera):
-        rect = self.rect.move(*negate(camera))
-        return rect
+    def viewed_position(self, camera):
+        return self._shift(negate(camera))
 
     def update(self, dt):
         return False

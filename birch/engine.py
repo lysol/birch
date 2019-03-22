@@ -156,11 +156,13 @@ class Engine:
                 cell.demand = demand
 
     def get_surrounding(self, cell):
-        zone = cell.rect.copy().inflate(cell.width * 2, cell.height * 2)
-        return self.world.get(*zone.topleft, zone.width, zone.height)
+        return self.world.get(cell.left - cell.width,
+                cell.top - cell.height,
+                cell.width * 3,
+                cell.height * 3)
 
-    def get_cell(self, rect):
-        return self.world.get(*rect.topleft, rect.width, rect.height)
+    def get_cell(self, x, y, w, h):
+        return self.world.get(x, y, w, h)
 
     def do_insert(self):
         cells = []
@@ -177,9 +179,8 @@ class Engine:
 
     def set_cell(self, cell, alias=True, grow=True, defer=False):
         if alias:
-            apos = self.alias_pos(cell.rect[0], cell.rect[1])
-            cell.rect[0] = apos[0]
-            cell.rect[1] = apos[1]
+            apos = self.alias_pos(cell.left, cell.top)
+            cell.position = apos[0], apos[1]
         if defer:
             self.deferred_inserts.append(cell)
         else:
@@ -191,10 +192,6 @@ class Engine:
         if cell in self.state['cells']:
             self.state['cells'].remove(cell)
 
-    def alias_rect(self, rect):
-        offset = [-(rect[0] % rect.width), -(rect[1] % rect.height)]
-        return rect.move(offset)
-
     def alias_pos(self, x, y, size=16):
         return [
             x - x % size,
@@ -202,14 +199,13 @@ class Engine:
             ]
 
     def use_tool(self, name, x, y):
+        # assuming x, y is already aliased.
         if name is None:
             return
         tooltex = self.textures[name]
         tool_size = (tooltex.width * 2, tooltex.height * 2)
-        aliased = self.alias_pos(x, y)
-        intersected = self.get_cell(Rect(
-            aliased[0], aliased[1],
-            tool_size[0], tool_size[1]))
+        intersected = self.get_cell(x, y,
+            tool_size[0], tool_size[1])
         cells = []
         for cell in intersected:
             if cell.impassible(name):
@@ -224,22 +220,23 @@ class Engine:
                 if not cell.impassible:
                     self.del_cell(cell)
             if name == "r_0_0":
-                new_cell = RCell(self.textures, aliased)
+                new_cell = RCell(self.textures, (x, y))
             elif name == "c_0_0":
-                new_cell = CCell(self.textures, aliased)
+                new_cell = CCell(self.textures, (x, y))
             elif name == "i_0_0":
-                new_cell = ICell(self.textures, aliased)
+                new_cell = ICell(self.textures, (x, y))
             elif name == "road_h":
-                new_cell = RoadCell(self.textures, aliased)
+                new_cell = RoadCell(self.textures, (x, y))
             elif name == "rail_h":
-                new_cell = RailCell(self.textures, aliased)
+                new_cell = RailCell(self.textures, (x, y))
         if new_cell is not None:
-            self.set_cell(new_cell)
+            self.set_cell(new_cell, alias=False)
             if issubclass(type(new_cell), ConnectableCell):
-                checkrect = new_cell.rect.inflate(new_cell.rect.width * 2,
-                    new_cell.rect.height * 2)
-                surrounding = self.world.get(
-                    *checkrect.topleft, checkrect.width, checkrect.height)
+                newbounds = (new_cell.left - new_cell.width,
+                    new_cell.top - new_cell.height,
+                    new_cell.width * 3,
+                    new_cell.height * 3)
+                surrounding = self.world.get(*newbounds)
                 for cell in surrounding:
                     if type(cell) == type(new_cell):
                         cell.cache_texture(self.get_surrounding(cell))

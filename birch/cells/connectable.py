@@ -47,10 +47,10 @@ class ConnectableCell(Cell):
         for cell in surrounding:
             if type(cell) != type(self) or cell == self:
                 continue
-            same_x = self.rect.topleft[0] == cell.rect.topleft[0]
-            same_y = self.rect.topleft[1] == cell.rect.topleft[1]
-            x_offset = self.rect.topleft[0] - cell.rect.topleft[0]
-            y_offset = self.rect.topleft[1] - cell.rect.topleft[1]
+            same_x = self.left == cell.left
+            same_y = self.top == cell.top
+            x_offset = self.left - cell.left
+            y_offset = self.top - cell.top
             mask[0] = mask[0] or same_x and y_offset == -self.height
             mask[1] = mask[1] or same_y and x_offset == -self.width
             mask[2] = mask[2] or same_y and x_offset == self.width
