@@ -58,6 +58,23 @@ class Cell(sprite.Sprite):
     def bottomright(self):
         return self._shift((self.width, self.height))
 
+    def intersects(self, x, y, w=None, h=None):
+        if w is None or h is None:
+            points = [(x, y)]
+        else:
+            r = x + w - 1
+            b = y + h - 1
+            points = ((x, y),
+                (r, y),
+                (r, b),
+                (x, b))
+        for a, b in points:
+            if a >= self.x and b >= self.y and \
+                a < self.x + self.width and \
+                b < self.y + self.height:
+                return True
+        return False
+
     def viewed_position(self, camera):
         return self._shift(negate(camera))
 
