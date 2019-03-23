@@ -154,10 +154,8 @@ class Engine:
                 cell.demand = demand
 
     def get_surrounding(self, cell):
-        return self.world.get(cell.left - cell.width,
-                cell.top - cell.height,
-                cell.width * 3,
-                cell.height * 3)
+        bounds = cell.rect.inflate(cell.width * 2, cell.height * 2).bounds
+        return self.world.get(*bounds)
 
     def get_cell(self, x, y, w, h):
         return self.world.get(x, y, w, h)
@@ -229,10 +227,7 @@ class Engine:
         if new_cell is not None:
             self.set_cell(new_cell, alias=False)
             if issubclass(type(new_cell), ConnectableCell):
-                newbounds = (new_cell.left - new_cell.width,
-                    new_cell.top - new_cell.height,
-                    new_cell.width * 3,
-                    new_cell.height * 3)
+                newbounds = new_cell.rect.inflate(new_cell.width * 2, new_cell.height * 2).bounds
                 surrounding = self.world.get(*newbounds)
                 for cell in surrounding:
                     if type(cell) == type(new_cell):

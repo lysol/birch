@@ -47,14 +47,10 @@ class ConnectableCell(Cell):
         for cell in surrounding:
             if type(cell) != type(self) or cell == self:
                 continue
-            same_x = self.left == cell.left
-            same_y = self.top == cell.top
-            x_offset = self.left - cell.left
-            y_offset = self.top - cell.top
-            mask[0] = mask[0] or same_x and y_offset == -self.height
-            mask[1] = mask[1] or same_y and x_offset == -self.width
-            mask[2] = mask[2] or same_y and x_offset == self.width
-            mask[3] = mask[3] or same_x and y_offset == self.height
+            mask[0] = mask[0] or self.left == cell.left and cell.bottom == self.top
+            mask[1] = mask[1] or self.right == cell.left and cell.top == self.top
+            mask[2] = mask[2] or self.left == cell.right and cell.top == self.top
+            mask[3] = mask[3] or self.left == cell.left and cell.top == self.bottom
         for k in _connection_masks:
             for checkmask in _connection_masks[k]:
                 tex_key = '%s%s' % (self.base_texture_name, k)

@@ -22,6 +22,16 @@ class Rect:
         self.w = w
         self.h = h
 
+    def __str__(self):
+        return '<Rect %d,%d to %d,%d (%d w %d h)>' % (
+            self.left, self.top,
+            self.right, self.bottom,
+            self.w, self.h)
+
+    @property
+    def bounds(self):
+        return (self.x, self.y, self.w, self.h)
+
     @property
     def position(self):
         return (self.x, self.y)
