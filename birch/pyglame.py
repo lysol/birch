@@ -242,8 +242,7 @@ class BirchGame:
         self.set_cursor_sprite_pos()
 
     def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
-        self.mouse = x, y
-        self.set_cursor_sprite_pos()
+        self.handle_mouse_press(x, y, button, modifiers)
 
     def handle_mouse_release(self, x, y, button, modifiers):
         self.mouse = x, y
