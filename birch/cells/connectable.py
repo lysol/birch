@@ -56,7 +56,7 @@ class ConnectableCell(Cell):
                 tex_key = '%s%s' % (self.base_texture_name, k)
                 if checkmask == mask and tex_key in self.textures:
                     self.texture_name = tex_key
-                    self.dirty_texture = True
+                    self.image = self.textures[self.texture_name]
                     return
         self.texture_name = '%s_h' % self.base_texture_name
-        self.dirty_texture = True
+        self.image = self.textures[self.texture_name]
