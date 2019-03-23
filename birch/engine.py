@@ -1,7 +1,6 @@
 from random import choice, randint
 from math import sin, pi
 from collections import deque
-from pygame import Rect
 from noise import pnoise1
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
@@ -10,7 +9,7 @@ from birch.cells.road import RoadCell
 from birch.cells.rail import RailCell
 from birch.cells.uranium import Uranium
 from birch.cells.tree import PineTree, BirchTree
-from birch.util import clamp, pi2
+from birch.util import clamp, pi2, Rect
 from birch.world import World
 
 class Engine:
@@ -54,8 +53,7 @@ class Engine:
     cell_minimum = 16
     insert_chunk = 25
 
-    def __init__(self, state, textures, initial_rect):
-        self.initial_rect = initial_rect
+    def __init__(self, state, textures):
         self.state = state
         self.ticks = 0
         self.textures = textures

@@ -1,13 +1,12 @@
 import pyglet, json
 from pyglet.window import key
 from pyglet.gl import *
-from pygame import Rect
 from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
-from birch.statusbox import Statusbox
-from birch.rcibox import RCIbox
+#from birch.statusbox import Statusbox
+#from birch.rcibox import RCIbox
 from birch.engine import Engine
-from birch.util import RED, BLUE, FG_COLOR, BG_COLOR
+from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
 
 
 class ObjectEncoder(json.JSONEncoder):
@@ -137,7 +136,7 @@ class BirchGame:
 
     camera_speed = 16
 
-    def __init__(self, initial_rect, asset_dir):
+    def __init__(self, asset_dir):
         pyglet.options['debug_gl'] = False
         self.size = 800, 600
         self.asset_dir = asset_dir
@@ -149,13 +148,12 @@ class BirchGame:
         self.window = BirchWindow([], self.ui_elements, width=self.size[0], height=self.size[1])
         self.window.set_caption('birch')
         self.window.set_icon(self.textures['birch_tree'])
-        self.initial_rect = initial_rect
         self.engine = Engine({
             "cells": [],
             "money": 10000,
             "population": 0,
             "speed": 1
-            }, self.textures, initial_rect)
+            }, self.textures)
         self.mouse_buttons = []
         self.scroll_speed = [2, 2]
         self.camera = [-400, -300]
@@ -254,8 +252,7 @@ class BirchGame:
 
     @property
     def camera_rect(self):
-        return Rect(self.camera[0], self.camera[1], self.size[0], self.size[1]
-                )
+        return Rect(self.camera[0], self.camera[1], self.size[0], self.size[1])
 
     #def handle_resize(self, width, height):
     #    self.change_view(width, height)

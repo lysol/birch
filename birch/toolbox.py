@@ -1,7 +1,6 @@
 import math
 import pyglet
-from pygame import Rect
-from birch.util import FG_COLOR, BG_COLOR, fix_origin
+from birch.util import FG_COLOR, BG_COLOR, fix_origin, Rect
 from birch.ui_element import UIElement
 
 class Toolbox(UIElement):

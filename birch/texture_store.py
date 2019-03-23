@@ -1,7 +1,6 @@
 import json
 import pyglet
 from pyglet import sprite, resource
-from pygame import transform, image
 
 class TextureStore(dict):
 

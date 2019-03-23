@@ -1,33 +1,25 @@
 import math
-from pygame import draw, Rect, Surface
-from pygame.font import Font
-from birch.util import FG_COLOR, BG_COLOR
+from birch.ui_element import UIElement
+from birch.util import FG_COLOR, BG_COLOR, Rect
 
-class RCIbox:
+class RCIbox(UIElement):
 
-    dimensions = 72, 36
+    width = 72
+    height = 36
     bar_width = 4
     padding = 2
 
-    def __init__(self):
-        self.surface = Surface(self._dims_padded)
-        self.font = Font(None, 16)
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.rect = Rect(x, y, self.width, self.height)
 
     def _bar_width(self, v, maxw):
         maxbar = self.dimensions[0] - 4 - maxw - self.padding * 2
         return max(0, math.floor(maxbar * v))
 
     @property
-    def rect(self):
-        return self.surface.get_rect()
-
-    @property
     def _dims_padded(self):
         return list(map(lambda x: x + self.padding * 2, self.dimensions))
-
-    def draw(self, screen):
-        return screen.blit(self.surface,
-            (self.padding + 4, screen.get_size()[1] - self.padding - self.dimensions[1] - 4))
 
     def in_bounds(self, pos):
         return self.rect.collidepoint(pos)

@@ -1,6 +1,5 @@
 from uuid import uuid4
 from pyglet import sprite
-import pygame
 from birch.util import negate, BG_COLOR
 from birch.cells import *
 
