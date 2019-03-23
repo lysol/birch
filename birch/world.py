@@ -49,7 +49,6 @@ class World:
                 sprite = chunk[sprite_id]
                 if sprite not in out and sprite.intersects(x, y, w, h):
                     out.append(sprite)
-                    break
         return out
 
     def get_chunks(self, x, y, w = 1, h = 1):
