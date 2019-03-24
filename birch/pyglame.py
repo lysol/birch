@@ -191,8 +191,7 @@ class BirchGame:
         self.toolbox.set_tool('bulldoze')
 
     def run(self):
-        self.engine.seed(0, 0)
-        pyglet.clock.schedule_interval(self.update, 1/60.0)
+        pyglet.clock.schedule_interval(self.update, self.sleeptime)
         pyglet.app.run()
         #self.init_panels()
 
