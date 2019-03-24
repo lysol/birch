@@ -18,8 +18,9 @@ class World:
         ox, oy = self._alias(x, y)
         return (ox, oy) not in self.seeded or not self.seeded[(ox, oy)]
 
-    def _inflate(self, ix, iy):
+    def _inflate(self, ix, iy, priority=10):
         changed = False
+        priority = 10 if priority is None else priority
         if iy not in self.world:
             self.world[iy] = {}
             changed = True
@@ -27,18 +28,23 @@ class World:
             self.world[iy][ix] = {}
             changed = True
         if changed:
-            self.batches[(ix, iy)] = pyglet.graphics.Batch()
+            self.batches[(ix, iy)] = {}
+            self.batches[(ix, iy)][priority] = pyglet.graphics.Batch()
             self.seeded[(ix, iy)] = False
 
     def insert(self, sprite, x, y):
         ox, oy = self._alias(x, y)
-        self._inflate(ox, oy)
-        sprite.batch = self.batches[(ox, oy)]
+        priority = sprite.priority if hasattr(sprite, 'priority') else 10
+        self._inflate(ox, oy, priority=priority)
+        if priority not in self.batches[(ox, oy)]:
+            self.batches[(ox, oy)][priority] = pyglet.graphics.Batch()
+        sprite.batch = self.batches[(ox, oy)][priority]
         self.world[oy][ox][sprite.id] = sprite
 
     def delete(self, sprite, x, y):
         ox, oy = self._alias(x, y)
         self._inflate(ox, oy)
+        sprite.batch = None
         del self.world[oy][ox][sprite.id]
 
     def get(self, x, y, w, h):
@@ -78,6 +84,9 @@ class World:
         for yes in list(range(oy, py + 1)):
             for xes in list(range(ox, px + 1)):
                 if (xes, yes) in self.batches:
-                    batch_draws.append(self.batches[(xes, yes)])
+                    bdict = self.batches[(xes, yes)]
+                    pees = sorted(bdict.keys())
+                    for p in pees:
+                        batch_draws.append(bdict[p])
         return batch_draws
 
