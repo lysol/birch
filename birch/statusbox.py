@@ -1,72 +1,77 @@
 import math
-from pygame import draw, Rect, Surface
-from pygame.font import Font
-from birch.util import FG_COLOR, BG_COLOR
+from pyglet.sprite import Sprite
+from pyglet.graphics import draw
+from pyglet import gl
+from birch.util import FG_COLOR, BG_COLOR, Rect, fix_origin
+from birch.ui_element import UIElement
 
-class Statusbox:
+class Statusbox(UIElement):
 
     speeds = "pause", "slow", "normal", "fast"
     speed_icon_dims = 24, 22
 
-    position = 100, 20
-    dimensions = 682, 32
+    width = 682
+    height = 34
+
     padding = 4
 
-    def __init__(self, textures, engine):
+    def __init__(self, window_height, textures, engine):
+        super().__init__(100, 20)
+        self.window_height = window_height
         self.textures = textures
-        print(self.get_bounds())
-        self.surface = Surface(self.get_bounds()[2:])
-        self.font = Font(None, 24)
         self.engine = engine
-        self.bounds = Rect(
-            self.position[0],
-            self.position[1],
-            self.dimensions[0],
-            self.dimensions[1]
+        self.rect = Rect(
+            self.x,
+            self.y,
+            self.width,
+            self.height
             )
+        self.speed_sprites = {}
+        sid = self.speed_icon_dims
+        _sp_pos = (
+            self.x + self.width - sid[0] - 6,
+            self.window_height - (self.y + self.padding + 4 + sid[1]))
+
+        for speed in self.speeds:
+            self.speed_sprites[speed] = Sprite(self.textures[speed],
+                _sp_pos[0], _sp_pos[1], batch=self.batch)
+            self.speed_sprites[speed].scale = 2
+
+        self.speed_icon_rect = Rect(
+            _sp_pos[0] + self.x, _sp_pos[1] + self.y,
+            32, 32)
 
     def in_bounds(self, pos):
-        return self.bounds.collidepoint(pos)
-
-    @property
-    def speed_icon_position(self):
-        return (
-            self.dimensions[0] - self.speed_icon_dims[0] - 6,
-            self.dimensions[1] - self.speed_icon_dims[1] - \
-                (self.dimensions[1] - self.speed_icon_dims[1]) / 2)
-
-    @property
-    def speed_icon_rect(self):
-        return Rect(
-            self.speed_icon_position[0] + self.position[0],
-            self.speed_icon_position[1] + self.position[1],
-            self.speed_icon_dims[0],
-            self.speed_icon_dims[1]
-            )
+        return self.rect.collidepoint(pos)
 
     def speed_icon_hover(self, pos):
         return self.speed_icon_rect.collidepoint(pos)
 
-    def get_bounds(self):
-        return (
-            self.position[0],
-            self.position[1],
-            self.dimensions[0],
-            self.dimensions[1]
-            )
+    def draw(self):
+        speed = self.engine.state['speed']
+        bound = list(self.rect.bounds)
+        w = self.width
+        h = self.height
 
-    def draw(self, screen, speed):
-        bounds = list(self.get_bounds())
-        bounds[0] = 0
-        bounds[1] = 0
-        draw.rect(self.surface, BG_COLOR, Rect(*bounds))
-        draw.rect(self.surface, FG_COLOR, Rect(0, 0, bounds[2] - 1, bounds[3] - 1), 2)
-        message = "$%d   Population: %d" % (self.engine.state["money"], self.engine.state["population"])
-        text = self.font.render(message, 1, FG_COLOR)
-        self.surface.blit(text, (3, 3))
-        self.surface.blit(self.textures[self.speeds[speed]], (
-            self.dimensions[0] - self.speed_icon_dims[0] - 6,
-            self.dimensions[1] - self.speed_icon_dims[1] - \
-                (self.dimensions[1] - self.speed_icon_dims[1]) / 2)
-                )
-        return screen.blit(self.surface, self.position)
+        bgvx = fix_origin((
+            self.x, self.y,
+            self.x, self.y + h,
+            self.x + w, self.y + h,
+            self.x + w, self.y
+            ), self.window_height)
+        draw(4, gl.GL_QUADS,
+            ('v2i', bgvx),
+            ('c3B', (0, 0 ,0) * 4)
+        )
+        bgvx2 = (
+            bgvx[0] + 2, bgvx[1] - 2,
+            bgvx[2] + 2, bgvx[3] + 2,
+            bgvx[4] - 2, bgvx[5] + 2,
+            bgvx[6] - 2, bgvx[7] - 2
+            )
+        draw(4, gl.GL_QUADS,
+            ('v2i', bgvx2),
+            ('c3B', (255, 255, 255) * 4)
+        )
+        self.speed_sprites[self.speeds[speed]].draw()
+

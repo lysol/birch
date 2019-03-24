@@ -3,7 +3,7 @@ from pyglet.window import key
 from pyglet.gl import *
 from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
-#from birch.statusbox import Statusbox
+from birch.statusbox import Statusbox
 #from birch.rcibox import RCIbox
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
@@ -190,6 +190,8 @@ class BirchGame:
         self.toolbox = Toolbox(self.window.height, self.textures)
         self.ui_elements.append(self.toolbox)
         self.toolbox.set_tool('bulldoze')
+        self.statusbox = Statusbox(self.window.height, self.textures, self.engine)
+        self.ui_elements.append(self.statusbox)
 
     def run(self):
         pyglet.clock.schedule_interval(self.update, self.sleeptime)
