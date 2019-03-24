@@ -170,5 +170,9 @@
     "cursor_16": {
         "size": 8,
         "position": [112, 56]
+    },
+    "button": {
+        "size": [24, 10],
+        "position": [0, 64]
     }
 }
