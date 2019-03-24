@@ -31,6 +31,7 @@ class BirchWindow(pyglet.window.Window):
         self.zoom = 1
         self.reference_point = 0, 0
         self.cursor_sprite = None
+        self.debug = False
 
     def on_draw(self):
         self.clear()
@@ -56,13 +57,17 @@ class BirchWindow(pyglet.window.Window):
             batch.draw()
         if self.cursor_sprite is not None:
             self.cursor_sprite.draw()
-        for y in range(0, self.height, 64):
-            for x in range(0, self.width, 64):
-                delto = x, y
-                color = (255, 0, 0) if delto[0] % 128 == 0 and delto[1] % 128 == 0 else (0, 255, 0)
-                if delto[0] == 0 and delto[1] == 0:
-                    color = (255, 255, 0)
-                self.draw_dot(x, y, color)
+        if self.debug:
+            for y in range(0, self.height, 64):
+                for x in range(0, self.width, 64):
+                    delto = x, y
+                    color = (255, 0, 0) if delto[0] % 128 == 0 and delto[1] % 128 == 0 else (0, 255, 0)
+                    if delto[0] == 0 and delto[1] == 0:
+                        color = (255, 255, 0)
+                    self.draw_dot(x, y, color)
+        if 'draw' in self.handlers:
+            for handler in self.handlers['draw']:
+                handler(self)
         self.change_view(zoom=1.0, camera=(0, 0))
         for el in self.ui:
             el.draw()
@@ -175,6 +180,7 @@ class BirchGame:
         self.window.handle('mouse_press', self.handle_mouse_press)
         self.window.handle('mouse_release', self.handle_mouse_release)
         self.window.handle('mouse_drag', self.handle_mouse_drag)
+        self.window.handle('draw', self.handle_draw)
         self.mouse = 0, 0
         self.init_ui()
         self.set_sprite_cursor()
@@ -207,6 +213,11 @@ class BirchGame:
         y = y - y % 16
         self.window.cursor_sprite.x = x
         self.window.cursor_sprite.y = y
+
+    def handle_draw(self, window):
+        pass
+        #self.engine.world.draw_chunks(*self.camera, self.camera_rect.width,
+        #    self.camera_rect.height)
 
     def handle_mouse(self, x, y, dx, dy):
         self.mouse = x, y
