@@ -164,7 +164,7 @@ class BirchGame:
         self.camera = [-400, -300]
         self.last_camera = [-1000000, -1000000]
         self.cursor_speed = 8
-        self.fps = 60
+        self.fps = 100.0
         self.sleeptime = 1 / self.fps
         self.time_spent = 0
         self.kf_interval = 0.5
