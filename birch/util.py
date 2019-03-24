@@ -84,6 +84,21 @@ class Rect:
         return x >= self.x and x < self.x + self.w and \
             y >= self.y and y < self.y + self.h
 
+    def colliderect(self, rect):
+        x = rect.x
+        y = rect.y
+        w = rect.w
+        h = rect.h
+        l = x
+        t = y
+        b = y + h - 1
+        r = x + w - 1
+        return not (
+            r < self.left or \
+            l > self.right - 1 or \
+            b < self.top or \
+            t > self.bottom - 1
+            )
 pi2 = pi * 2
 
 BLACK = 0, 0, 0

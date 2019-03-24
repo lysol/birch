@@ -51,7 +51,7 @@ class Engine:
     rci_interval = 20
 
     cell_minimum = 16
-    insert_chunk = 25
+    insert_chunk = 15
 
     def __init__(self, state, textures):
         self.state = state
@@ -171,6 +171,7 @@ class Engine:
             self.state['cells'].extend(cells)
             for cell in cells:
                 self.world.insert(cell, *cell.position)
+                self.texture_check(cell)
         return cells
 
     def set_cell(self, cell, alias=True, grow=True, defer=False):
@@ -182,6 +183,15 @@ class Engine:
         else:
             self.state['cells'].append(cell)
             self.world.insert(cell, *cell.position)
+            self.texture_check(cell)
+
+    def texture_check(self, cell):
+        if issubclass(type(cell), ConnectableCell):
+            newbounds = cell.rect.inflate(cell.width * 2, cell.height * 2).bounds
+            surrounding = self.world.get(*newbounds)
+            for other in surrounding:
+                if type(other) == type(cell):
+                    other.cache_texture(self.get_surrounding(other))
 
     def del_cell(self, cell):
         self.world.delete(cell, *cell.position)
@@ -226,12 +236,6 @@ class Engine:
                 new_cell = RailCell(self.textures, (x, y))
         if new_cell is not None:
             self.set_cell(new_cell, alias=False)
-            if issubclass(type(new_cell), ConnectableCell):
-                newbounds = new_cell.rect.inflate(new_cell.width * 2, new_cell.height * 2).bounds
-                surrounding = self.world.get(*newbounds)
-                for cell in surrounding:
-                    if type(cell) == type(new_cell):
-                        cell.cache_texture(self.get_surrounding(cell))
 
     def get_batches(self, x, y, w, h):
         r = Rect(x, y, w, h).inflate(w, h)
@@ -284,7 +288,7 @@ class Engine:
             cells.append(PineTree(self.textures, xy()))
         for i in range(birch_freq):
             cells.append(BirchTree(self.textures, xy()))
-
-        self.world.seed(*tl, cells)
+        self.world.seed(*tl, [])
+        self.deferred_inserts.extend(cells)
         return True
 
