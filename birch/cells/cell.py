@@ -18,6 +18,29 @@ class Cell(sprite.Sprite):
         self.priority = priority
         #self.size = size if size is not None else [self.sprite.width, self.sprite.height]
         self.scale = 2.0
+        self.set_dimensions()
+
+    def __setattr__(self, attrname, value):
+        supper = super()
+        supper.__setattr__(attrname, value)
+        if hasattr(self, '_dimensions') and attrname in self._dimensions:
+            self.set_dimensions()
+
+    def set_dimensions(self):
+        topper = super()
+        self._dimensions = {
+            'left': self.position[0],
+            'right': self.position[0] + topper.width,
+            'bottom': self.position[1] + topper.height,
+            'top': self.position[1],
+            'width': topper.width,
+            'height': topper.height,
+            'topleft': (topper.x, topper.y),
+            'topright': (topper.x + topper.width, topper.y),
+            'bottomleft': (topper.x, topper.y + topper.height),
+            'bottomright': (topper.x + topper.width, topper.y + topper.height),
+            'rect': Rect(topper.x, topper.y, topper.width, topper.height)
+        }
 
     def __str__(self):
         return '%s: %s' % (self.__class__, str(self.bounds))
@@ -29,6 +52,14 @@ class Cell(sprite.Sprite):
         return self.position[0] + delta[0], self.position[1] + delta[1]
 
     @property
+    def width(self):
+        return self._dimensions['width']
+
+    @property
+    def height(self):
+        return self._dimensions['height']
+
+    @property
     def w(self):
         return self.width
 
@@ -38,43 +69,43 @@ class Cell(sprite.Sprite):
 
     @property
     def left(self):
-        return self.position[0]
+        return self._dimensions['left']
 
     @property
     def top(self):
-        return self.position[1]
+        return self._dimensions['top']
 
     @property
     def right(self):
-        return self.position[0] + self.width
+        return self._dimensions['right']
 
     @property
     def bottom(self):
-        return self.position[1] + self.height
+        return self._dimensions['bottom']
 
     @property
     def topleft(self):
-        return self.position
+        return self._dimensions['topleft']
 
     @property
     def topright(self):
-        return self._shift((self.width, 0))
+        return self._dimensions['topright']
 
     @property
     def bottomleft(self):
-        return self._shift((0, self.height))
+        return self._dimensions['bottomleft']
 
     @property
     def bottomright(self):
-        return self._shift((self.width, self.height))
+        return self._dimensions['bottomright']
 
     @property
     def rect(self):
-        return Rect(self.x, self.y, self.w, self.h)
+        return self._dimensions['rect']
 
     @property
     def bounds(self):
-        return self.rect.bounds
+        return self._dimensions['rect'].bounds
 
     def collidepoint(self, x, y):
         return x >= self.left and x < self.right and \
