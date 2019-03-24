@@ -167,7 +167,8 @@ class BirchGame:
         self.fps = 100.0
         self.sleeptime = 1 / self.fps
         self.time_spent = 0
-        self.kf_interval = 0.5
+        self.kf_rate = 20
+        self.kf_countdown = 20
         self.speed_delay = 0.1
         self.edge_delay = 0.5
         self.scroll_pos = 0, 0
@@ -267,6 +268,7 @@ class BirchGame:
     #    self.change_view(width, height)
 
     def update(self, dt):
+        self.kf_countdown -= 1
         self.engine.tick(checkrect=self.camera_rect)
         view_changed = False
         for point in (self.camera_rect.topleft, self.camera_rect.topright,
@@ -286,10 +288,12 @@ class BirchGame:
             view_changed = True
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
-        if delta > self.camera_speed * 2 or not self.first:
+        if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:
             self.window.batches = self.engine.get_batches(*self.camera,
                 self.camera_rect.width, self.camera_rect.height)
             self.last_camera = list(self.camera)
             self.first = True
         self.window.camera = self.camera
+        if self.kf_countdown == 0:
+            self.kf_countdown = self.kf_rate
 
