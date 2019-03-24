@@ -75,6 +75,41 @@ class World:
         self.seeded[(ix, iy)] = True
         return True
 
+    def draw_chunks(self, x, y, w = 1, h = 1):
+        ox, oy = self._alias(x, y)
+        px, py = self._alias(x + w, y + h)
+        for yes in list(range(oy, py + 1)):
+            for xes in list(range(ox, px + 1)):
+                self.draw(xes * self.chunk_size, yes * self.chunk_size)
+
+    def draw(self, x, y):
+        pos = x, y
+        w = self.chunk_size
+        h = self.chunk_size
+
+        bgvx = (
+            pos[0], pos[1],
+            pos[0], pos[1] + h,
+            pos[0] + w, pos[1] + h,
+            pos[0] + w, pos[1]
+            )
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
+            ('v2i', bgvx[0:4]),
+            ('c3B', (0, 255 ,0) * 2)
+        )
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
+            ('v2i', bgvx[2:6]),
+            ('c3B', (0, 255 ,0) * 2)
+        )
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
+            ('v2i', bgvx[4:8]),
+            ('c3B', (0, 255 ,0) * 2)
+        )
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
+            ('v2i', (bgvx[6], bgvx[7], bgvx[0], bgvx[1])),
+            ('c3B', (0, 255 ,0) * 2)
+        )
+
     def get_batches(self, x, y, w, h):
         ox, oy = self._alias(x, y)
         px, py = self._alias(x + w, y + h)
