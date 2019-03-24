@@ -2,7 +2,7 @@ import pyglet
 
 class World:
 
-    def __init__(self, chunk_size=2048):
+    def __init__(self, chunk_size=1024):
         self.world = {}
         self.chunk_size = chunk_size
         self.seeded = {}
