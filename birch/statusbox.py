@@ -15,8 +15,8 @@ class Statusbox(UIElement):
 
     padding = 4
 
-    def __init__(self, window_height, textures, engine):
-        super().__init__(100, 20, window_height)
+    def __init__(self, x, y, window_height, textures, engine):
+        super().__init__(x, y, window_height)
         self.textures = textures
         self.engine = engine
         self.rect = Rect(

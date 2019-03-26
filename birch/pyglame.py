@@ -191,7 +191,8 @@ class BirchGame:
         self.toolbox = Toolbox(self.window.height, self.textures)
         self.ui_elements.append(self.toolbox)
         self.toolbox.set_tool('bulldoze')
-        self.statusbox = Statusbox(self.window.height, self.textures, self.engine)
+        sx, sy = self.toolbox.x + self.toolbox.width + 4, self.toolbox.y
+        self.statusbox = Statusbox(sx, sy, self.window.height, self.textures, self.engine)
         self.ui_elements.append(self.statusbox)
 
     def run(self):

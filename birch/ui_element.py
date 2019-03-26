@@ -13,6 +13,7 @@ class UIElement:
         self.batch = Batch()
         self.click_regions = {}
         self.click_handlers = {}
+        self.ui_elements = []
         self.box_vx = []
         self.box_modes = []
         self.window_height = window_height
