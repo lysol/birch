@@ -20,8 +20,7 @@ class Toolbox(UIElement):
         )
 
     def __init__(self, window_height, textures):
-        super().__init__(20, 20)
-        self.window_height = window_height
+        super().__init__(20, 20, window_height)
         self.batch = pyglet.graphics.Batch()
         self.sprites = []
         self.tool_rects = []
@@ -86,29 +85,6 @@ class Toolbox(UIElement):
         return self.click_regions[self.selected][2]
 
     def draw(self):
-        w = self.width
-        h = self.height
-        pos = self.x, self.y
-
-        bgvx = fix_origin((
-            pos[0], pos[1],
-            pos[0], pos[1] + h,
-            pos[0] + w, pos[1] + h,
-            pos[0] + w, pos[1]
-            ), self.window_height)
-        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
-            ('v2i', bgvx),
-            ('c3B', (0, 0 ,0) * 4)
-        )
-        bgvx2 = (
-            bgvx[0] + 2, bgvx[1] - 2,
-            bgvx[2] + 2, bgvx[3] + 2,
-            bgvx[4] - 2, bgvx[5] + 2,
-            bgvx[6] - 2, bgvx[7] - 2
-            )
-        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
-            ('v2i', bgvx2),
-            ('c3B', (255, 255, 255) * 4)
-        )
+        self.draw_box()
         self.batch.draw()
         self.active_cursor.draw()

@@ -1,16 +1,52 @@
-from pyglet.graphics import Batch
+from pyglet.graphics import Batch, vertex_list
+from pyglet.gl import GL_QUADS
+from birch.util import fix_origin
 
 class UIElement:
 
     width = 100
     height = 100
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, window_height):
         self.x = x
         self.y = y
         self.batch = Batch()
         self.click_regions = {}
         self.click_handlers = {}
+        self.box_vx = []
+        self.window_height = window_height
+        self.init_box()
+
+    def init_box(self):
+        w = self.width
+        h = self.height
+        pos = self.x, self.y
+
+        bgvx = fix_origin((
+            pos[0], pos[1],
+            pos[0], pos[1] + h,
+            pos[0] + w, pos[1] + h,
+            pos[0] + w, pos[1]
+            ), self.window_height)
+        bgvx2 = (
+            bgvx[0] + 2, bgvx[1] - 2,
+            bgvx[2] + 2, bgvx[3] + 2,
+            bgvx[4] - 2, bgvx[5] + 2,
+            bgvx[6] - 2, bgvx[7] - 2
+            )
+        self.box_vx.append(vertex_list(4,
+            ('v2i', bgvx),
+            ('c3B', (0, 0, 0) * 4)
+            ))
+
+        self.box_vx.append(vertex_list(4,
+            ('v2i', bgvx2),
+            ('c3B', (255, 255, 255) * 4)
+            ))
+
+    def draw_box(self):
+        for vx in self.box_vx:
+            vx.draw(GL_QUADS)
 
     def handle_region(self, name, handler, x, y, w, h):
         self.click_regions[name] = (x, y, w, h)

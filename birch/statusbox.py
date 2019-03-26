@@ -16,8 +16,7 @@ class Statusbox(UIElement):
     padding = 4
 
     def __init__(self, window_height, textures, engine):
-        super().__init__(100, 20)
-        self.window_height = window_height
+        super().__init__(100, 20, window_height)
         self.textures = textures
         self.engine = engine
         self.rect = Rect(
@@ -49,29 +48,6 @@ class Statusbox(UIElement):
 
     def draw(self):
         speed = self.engine.state['speed']
-        bound = list(self.rect.bounds)
-        w = self.width
-        h = self.height
-
-        bgvx = fix_origin((
-            self.x, self.y,
-            self.x, self.y + h,
-            self.x + w, self.y + h,
-            self.x + w, self.y
-            ), self.window_height)
-        draw(4, gl.GL_QUADS,
-            ('v2i', bgvx),
-            ('c3B', (0, 0 ,0) * 4)
-        )
-        bgvx2 = (
-            bgvx[0] + 2, bgvx[1] - 2,
-            bgvx[2] + 2, bgvx[3] + 2,
-            bgvx[4] - 2, bgvx[5] + 2,
-            bgvx[6] - 2, bgvx[7] - 2
-            )
-        draw(4, gl.GL_QUADS,
-            ('v2i', bgvx2),
-            ('c3B', (255, 255, 255) * 4)
-        )
+        self.draw_box()
         self.speed_sprites[self.speeds[speed]].draw()
 
