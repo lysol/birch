@@ -14,8 +14,8 @@ class UIElement:
         self.click_regions = {}
         self.click_handlers = {}
         self.box_vx = []
+        self.box_modes = []
         self.window_height = window_height
-        self.init_box()
 
     def init_box(self):
         w = self.width
@@ -44,9 +44,16 @@ class UIElement:
             ('c3B', (255, 255, 255) * 4)
             ))
 
+        self.box_modes = (
+            GL_QUADS,
+            GL_QUADS
+            )
+
     def draw_box(self):
-        for vx in self.box_vx:
-            vx.draw(GL_QUADS)
+        if len(self.box_vx) == 0:
+            self.init_box()
+        for i, vx in enumerate(self.box_vx):
+            vx.draw(self.box_modes[i])
 
     def handle_region(self, name, handler, x, y, w, h):
         self.click_regions[name] = (x, y, w, h)
