@@ -239,8 +239,6 @@ class Engine:
                 new_cell = CCell(self.textures, (x, y))
             elif name == "i_0_0":
                 new_cell = ICell(self.textures, (x, y))
-            elif name == "road_h":
-                new_cell = RoadCell(self.textures, (x, y))
             elif name == "rail_h":
                 new_cell = RailCell(self.textures, (x, y))
         if new_cell is not None:
@@ -328,22 +326,6 @@ class Engine:
         uranium_freq = freq(.03)
         pine_freq = freq(.05)
         birch_freq = freq(.05)
-        road_freq = freq(0.03)
-
-        #dirt_chunk = self.world.chunk_size
-        #for y in range(rect.top, rect.height, dirt_chunk):
-        #    for x in range(rect.left, rect.width, dirt_chunk):
-        #        dw = dirt_chunk
-        #        dh = dirt_chunk
-        #        if x + dw > rect.right:
-        #            dw = rect.right - x
-        #        if y + dh > rect.bottom:
-        #            dh = rect.bottom - y
-        #        if dw <= 0 or dh <= 0:
-        #            continue
-        #        print('creating dirt', x, y, dw, dh)
-        #        #cells.append(Cell('dirt', self.textures, (x, y), 'dirt', size=(dw, dh),
-        #        #    priority=-10))
 
         for i in range(uranium_freq):
             cells.append(Uranium(self.textures, xy()))
@@ -351,18 +333,6 @@ class Engine:
             cells.append(PineTree(self.textures, xy()))
         for i in range(birch_freq):
             cells.append(BirchTree(self.textures, xy()))
-        for i in range(road_freq):
-            begin = xy()
-            step = randint(0,1)
-            step = -1 if step == 0 else step
-            index = randint(0,1)
-            number = randint(5,25)
-            for c in range(0, number):
-                if randint(0,100) < 15:
-                    index = randint(0,1)
-                newpos = list(begin)
-                newpos[index] = 16 * c * step + begin[index]
-                cells.append(RoadCell(self.textures, newpos))
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
         image_key = self.create_background(bounds[0], bounds[1])
