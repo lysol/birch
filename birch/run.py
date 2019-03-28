@@ -1,6 +1,6 @@
 import os
 import birch
-from birch.pyglame import BirchGame
+from birch.game import BirchGame
 
 def main():
     asset_path = os.path.realpath('%s/assets' % birch.ROOT)

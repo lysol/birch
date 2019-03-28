@@ -1,18 +1,13 @@
-import sys, pygame, math, json
-from time import sleep, clock
-from random import randint
-
-from pygame import HWSURFACE, DOUBLEBUF, RESIZABLE, QUIT, VIDEORESIZE, \
-    KEYUP, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_q, MOUSEBUTTONDOWN, MOUSEBUTTONUP, \
-    Rect, K_d, K_LSHIFT, K_RSHIFT
-
+import pyglet, json
+from pyglet.window import key
+from pyglet.gl import *
 from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
 from birch.statusbox import Statusbox
-from birch.rcibox import RCIbox
+from birch.cursor import Cursor
+#from birch.rcibox import RCIbox
 from birch.engine import Engine
-from birch.util import RED, BLUE, FG_COLOR, BG_COLOR
-from birch import cursor
+from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
 
 
 class ObjectEncoder(json.JSONEncoder):
@@ -23,381 +18,284 @@ class ObjectEncoder(json.JSONEncoder):
             return repr(o)
 
 
-class Game:
+class BirchWindow(pyglet.window.Window):
 
-    tools = (
-        "bulldoze",
-        "r_0_0",
-        "c_0_0",
-        "i_0_0",
-        "road_h",
-        "rail_h"
+    max_zoom = 2.0
+    min_zoom = 1
+
+    def __init__(self, batches, ui, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.batches = batches
+        self.ui = ui
+        self.handlers = {}
+        self.camera = (0, 0)
+        self.zoom = 1
+        self.reference_point = 0, 0
+        self.cursor = None
+        self.debug = False
+
+    def on_draw(self):
+        self.clear()
+        left = 0
+        top = 0
+        right = self.width
+        bottom = self.height
+        self.change_view(zoom=1.0, camera=(0, 0))
+        pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
+            [0, 1, 2, 0, 2, 3],
+            ('v2i', (left, top,
+                     right, top,
+                     right, bottom,
+                     left, bottom)),
+            ('c3B', (
+                255, 255, 255,
+                255, 255, 255,
+                255, 255, 255,
+                255, 255, 255))
         )
+        self.change_view()
+        for batch in self.batches:
+            batch.draw()
+        if self.cursor is not None:
+            self.cursor.draw()
+        if self.debug:
+            for y in range(0, self.height, 64):
+                for x in range(0, self.width, 64):
+                    delto = x, y
+                    color = (255, 0, 0) if delto[0] % 128 == 0 and delto[1] % 128 == 0 else (0, 255, 0)
+                    if delto[0] == 0 and delto[1] == 0:
+                        color = (255, 255, 0)
+                    self.draw_dot(x, y, color)
+        if 'draw' in self.handlers:
+            for handler in self.handlers['draw']:
+                handler(self)
+        self.change_view(zoom=1.0, camera=(0, 0))
+        for el in self.ui:
+            el.draw()
 
-    damage_keys = K_DOWN, K_UP, K_RIGHT, K_LEFT
-    screen_flags = (HWSURFACE | DOUBLEBUF | RESIZABLE)
-    edge_scroll_width = 16
+    def draw_dot(self, x, y, color, width=3):
+        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
+            ('v2i', (
+                x - width, y - width,
+                x - width, y + width,
+                x + width, y + width,
+                x + width, y - width)),
+            ('c3B', color * 4))
 
-    def __init__(self, initial_rect, asset_dir):
+    def handle(self, key, handler):
+        if key not in self.handlers:
+            self.handlers[key] = []
+        self.handlers[key].append(handler)
+
+    def dispatch(self, key, *args, **kwargs):
+        if key in self.handlers:
+            for handler in self.handlers[key]:
+                handler(*args, **kwargs)
+
+    def on_resize(self, width, height):
+        super().on_resize(width, height)
+        self.dispatch('resize', width, height)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        self.dispatch('mouse_motion', x, self.height - y, dx, -dy)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        self.reference_point = self.camera[0] + x, self.camera[1] + y
+        self.dispatch('mouse_press', x, self.height - y, button, modifiers)
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.dispatch('mouse_release', x, self.height - y, button, modifiers)
+
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        self.dispatch('mouse_drag', x, self.height - y, dx, -dy, button, modifiers)
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if scroll_y > 0:
+            self.zoom += 0.025
+        elif scroll_y < 0:
+            self.zoom -= 0.025
+        if self.zoom > self.max_zoom:
+            self.zoom = self.max_zoom
+        elif self.zoom < self.min_zoom:
+            self.zoom = self.min_zoom
+
+    def change_view(self, width=None, height=None, camera=None, zoom=None):
+        camera = self.camera if camera is None else camera
+        width = width if width is not None else self.width
+        height = height if height is not None else self.height
+        zoom = zoom if zoom is not None else self.zoom
+        left = camera[0]
+        top = camera[1]
+        right = camera[0] + width
+        bottom = camera[1] + height
+        left = left * zoom
+        top = top * zoom
+        right = right * zoom
+        bottom = bottom * zoom
+        glMatrixMode(gl.GL_PROJECTION)
+        glLoadIdentity()
+        glOrtho(left, right, top, bottom, -1, 1)
+        glMatrixMode(gl.GL_MODELVIEW)
+
+
+class BirchGame:
+
+    camera_speed = 16
+
+    def __init__(self, asset_dir):
+        pyglet.options['debug_gl'] = False
+        self.size = 800, 600
+        self.asset_dir = asset_dir
         self.textures = TextureStore(asset_dir)
-        self.initial_rect = initial_rect
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        self.ui_elements = []
+        self.window = BirchWindow([], self.ui_elements, width=self.size[0], height=self.size[1])
+        self.window.set_caption('birch')
+        self.window.set_icon(self.textures['birch_tree'])
         self.engine = Engine({
             "cells": [],
             "money": 10000,
             "population": 0,
             "speed": 1
-            }, self.textures, initial_rect)
-        self.mouse_down = [False, False]
-        self.size = 800, 600
+            }, self.textures)
+        self.mouse_buttons = []
         self.scroll_speed = [2, 2]
         self.camera = [-400, -300]
-        self.camera_speed = 12
+        self.last_camera = [-1000000, -1000000]
         self.cursor_speed = 8
-        self.screen = None
-        self.fps = 60
+        self.fps = 100.0
         self.sleeptime = 1 / self.fps
         self.time_spent = 0
-        self.kf_interval = 0.5
+        self.kf_rate = 20
+        self.kf_countdown = 20
         self.speed_delay = 0.1
         self.edge_delay = 0.5
         self.scroll_pos = 0, 0
         self.jsonenc = ObjectEncoder()
+        self.keys = key.KeyStateHandler()
+        self.window.push_handlers(self.keys)
+        self.first = True
+        self.window.handle('mouse_motion', self.handle_mouse)
+        #self.window.handle('resize', self.handle_resize)
+        self.window.handle('mouse_press', self.handle_mouse_press)
+        self.window.handle('mouse_release', self.handle_mouse_release)
+        self.window.handle('mouse_drag', self.handle_mouse_drag)
+        self.window.handle('draw', self.handle_draw)
+        self.mouse = 0, 0
+        self.init_ui()
+        self.set_cursor_size()
 
-    def aliased_camera(self, cursor_size):
-        return (
-            self.camera[0] - self.camera[0] % cursor_size,
-            self.camera[1] - self.camera[1] % cursor_size
-            )
-
-    @property
-    def game_screen_rect(self):
-        return self.screen.get_rect().move(self.camera)
-
-    def init(self):
-        self.engine.seed()
-        pygame.init()
-        pygame.display.set_caption('birch')
-        self.screen = pygame.display.set_mode(self.size, self.screen_flags)
-        # reduce cpu usage, what a shitty bug
-        pygame.mixer.quit()
-        self.font = pygame.font.Font(None, 24)
-        self.init_panels()
-
-    def init_panels(self):
-        self.toolbox = Toolbox(self.tools, self.textures)
-        self.rcibox = RCIbox()
-        self.statusbox = Statusbox(self.textures, self.engine)
-
-    def get_mouse_pressed(self):
-        return pygame.mouse.get_pressed()
-
-    def console_dump(self):
-        for cell in self.engine.state['cells']:
-            if hasattr(cell, 'population'):
-                print('cell', cell.position, cell.name, cell.population, cell.level)
-        self.engine.quad.dump_seeded()
+    def init_ui(self):
+        self.toolbox = Toolbox(self.window.height, self.textures)
+        self.ui_elements.append(self.toolbox)
+        self.toolbox.set_tool('bulldoze')
+        sx, sy = self.toolbox.x + self.toolbox.width + 4, self.toolbox.y
+        self.statusbox = Statusbox(sx, sy, self.window.height, self.textures, self.engine)
+        self.ui_elements.append(self.statusbox)
 
     def run(self):
-        damage = True
-        size = self.screen.get_size()
-        keys = []
-        mouse_down = self.get_mouse_pressed()
-        scrolling = False
-        edged = -1
+        pyglet.clock.schedule_interval(self.update, self.sleeptime)
+        pyglet.app.run()
+        #self.init_panels()
 
-        cursor_size = 32
-        cursor_changed = False
-        cursor_damage = False
-        screen_cursor_rect = Rect(0, 0, 32, 32)
-        game_cursor_rect = screen_cursor_rect.copy()
-        last_screen_cursor_rect = screen_cursor_rect.copy()
-        last_game_cursor_rect = screen_cursor_rect.copy()
+    def set_cursor_size(self):
+        if self.window.cursor is None or self.toolbox.tool_size != self.window.cursor.width:
+            self.window.cursor = Cursor(*self.mouse, self.toolbox.tool_size,
+                    self.window.height)
 
-        last_speed_change = 0
-        last_kf = 0
-        next_kf = 0
-        last_tool_time = 0 # uuuaaauuggh
-        last_rci_time = 0
-        debug = False
-        debugtext = "loading..."
-        frames_processed = 0
-        frame_time = 0
-        next_fps_kf = 0
-        measured_fps = 0
-        fps_kfs = 0
-        while True:
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_rel = pygame.mouse.get_rel()
-            update_rects = []
-            changed_cells = self.engine.tick(self.game_screen_rect)
-            pygame.mouse.set_visible(False)
-            draw_cursor = False
+    def set_cursor_pos(self):
+        x, y = self.mouse
+        self.window.cursor.x = self.camera[0] + x
+        self.window.cursor.y = self.camera[1] + self.window.height - y
+        x, y = self.window.cursor.position
+        x = x - x % 16
+        y = y - y % 16
+        self.window.cursor.x = x
+        self.window.cursor.y = y
+        self.window.cursor.fix_pos()
 
-            camera_rect = Rect(self.camera[0], self.camera[1], self.size[0], self.size[1])
-            for point in (camera_rect.topleft, camera_rect.topright,
-                camera_rect.bottomleft, camera_rect.bottomright):
-                self.engine.grow_check(point)
+    def handle_draw(self, window):
+        pass
+        #self.engine.world.draw_chunks(*self.camera, self.camera_rect.width,
+        #    self.camera_rect.height)
 
-            if next_kf <= self.time_spent:
-                next_kf = self.time_spent + self.kf_interval
-                tl = screen_cursor_rect.topleft
-                gtl = game_cursor_rect.topleft
-                if fps_kfs > 200:
-                    measured_fps = (self.time_spent - frame_time) / frames_processed if frames_processed > 0 else 0
-                    fps_kfs = 0
-                    frame_time = self.time_spent
-                    frames_processed = 0
-                if debug:
-                    debugtext = "Pos: (%d, %d) (%d def.) (%d/%d s/q) (%.2f fps %.2f ft)" % (
-                        gtl[0], gtl[1],
-                        len(self.engine.deferred_inserts),
-                        self.engine.quad.quad_count(predicate=lambda qu: 'seeded' in qu.meta and qu.meta['seeded']),
-                            self.engine.quad.quad_count(),
-                        measured_fps, frame_time)
-                fps_kfs += 1
+    def handle_mouse(self, x, y, dx, dy):
+        self.mouse = x, y
+        hovered = False
+        for el in self.ui_elements:
+            if el.check_mouse(self.mouse, self.mouse_buttons):
+                hovered = True
+                self.window.cursor.x = -10000
+                self.window.cursor.y = -10000
+                break
+        if not hovered:
+            self.set_cursor_pos()
+        self.window.set_mouse_visible(hovered)
 
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    sys.exit()
-                if event.type == VIDEORESIZE:
-                    self.screen = pygame.display.set_mode(
-                        event.dict['size'], self.screen_flags)
-                    size = event.dict['size']
-                if event.type == KEYUP and event.key in keys:
-                    keys.remove(event.key)
-                if event.type == KEYDOWN and event.key not in keys:
-                    keys.append(event.key)
-                if K_d in keys:
-                    debug = not debug
-                if event.type in (MOUSEBUTTONDOWN, MOUSEBUTTONUP):
-                    mouse_down = self.get_mouse_pressed()
+    def handle_mouse_press(self, x, y, button, modifiers):
+        self.mouse = x, y
+        self.mouse_buttons = set(list(self.mouse_buttons) + [button])
+        ui_clicked = False
+        self.set_cursor_size()
+        self.set_cursor_pos()
+        if len(self.mouse_buttons) > 0:
+            for el in self.ui_elements:
+                ui_clicked = el.check_mouse(self.mouse, self.mouse_buttons) or ui_clicked
+        if not ui_clicked:
+            # click map
+            tool_pos = self.window.cursor.position
+            self.engine.use_tool(self.toolbox.selected, tool_pos[0], tool_pos[1],
+                tool_size=self.toolbox.tool_size)
+            self.window.set_mouse_visible(False)
+        else:
+            self.window.set_mouse_visible(True)
+        self.set_cursor_size()
+        self.set_cursor_pos()
 
+    def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        self.handle_mouse_press(x, y, button, modifiers)
 
-            for key in keys:
-                if key in (K_DOWN, K_UP, K_RIGHT, K_LEFT):
-                    damage = True
-                if key in (K_LSHIFT, K_RSHIFT):
-                    if not scrolling:
-                        scroll_pos = mouse_pos
-                        cursor.set_cursor("scroll")
-                    scrolling = True
-                    cursor_changed = True
-                if key == K_q:
-                    sys.exit()
-                elif key == K_DOWN:
-                    self.camera[1] += self.camera_speed
-                elif key == K_UP:
-                    self.camera[1] -= self.camera_speed
-                elif key == K_RIGHT:
-                    self.camera[0] += self.camera_speed
-                elif key == K_LEFT:
-                    self.camera[0] -= self.camera_speed
+    def handle_mouse_release(self, x, y, button, modifiers):
+        self.mouse = x, y
+        self.mouse_buttons = set(filter(lambda b: b != button, self.mouse_buttons))
+        self.set_cursor_pos()
 
-            if scrolling:
-                if K_LSHIFT not in keys and K_RSHIFT not in keys:
-                    scrolling = False
-                    scroll_pos = 0, 0
-                    cursor_changed = False
-                    cursor.set_cursor("arrow")
-                else:
-                    pygame.mouse.set_visible(True)
+    @property
+    def camera_rect(self):
+        return Rect(self.camera[0], self.camera[1], self.size[0], self.size[1])
 
-            if pygame.mouse.get_focused() and not scrolling:
-                if mouse_pos[0] <= self.edge_scroll_width:
-                    if edged == -1:
-                        edged = self.time_spent
-                    if self.time_spent - edged > self.edge_delay:
-                        self.camera[0] -= self.camera_speed
-                        damage = True
-                elif mouse_pos[0] >= size[0] - self.edge_scroll_width:
-                    if edged == -1:
-                        edged = self.time_spent
-                    if self.time_spent - edged > self.edge_delay:
-                        self.camera[0] += self.camera_speed
-                elif mouse_pos[1] <= self.edge_scroll_width:
-                    if edged == -1:
-                        edged = self.time_spent
-                    if self.time_spent - edged > self.edge_delay:
-                        self.camera[1] -= self.camera_speed
-                        damage = True
-                elif mouse_pos[1] >= size[1] - self.edge_scroll_width:
-                    if edged == -1:
-                        edged = self.time_spent
-                    if self.time_spent - edged > self.edge_delay:
-                        self.camera[1] += self.camera_speed
-                else:
-                    edged = -1
+    #def handle_resize(self, width, height):
+    #    self.change_view(width, height)
 
-            if pygame.mouse.get_focused() and scrolling:
-                self.camera[0] += mouse_rel[0]
-                self.camera[1] += mouse_rel[1]
-                damage = True
-            else:
-                edged = -1
+    def update(self, dt):
+        self.kf_countdown -= 1
+        self.engine.tick(checkrect=self.camera_rect)
+        view_changed = False
+        for point in (self.camera_rect.topleft, self.camera_rect.topright,
+            self.camera_rect.bottomleft, self.camera_rect.bottomright):
+            self.engine.seed(*point)
+        if self.keys[key.LEFT]:
+            self.camera[0] -= self.camera_speed
+            view_changed = True
+        if self.keys[key.RIGHT]:
+            self.camera[0] += self.camera_speed
+            view_changed = True
+        if self.keys[key.UP]:
+            self.camera[1] += self.camera_speed
+            view_changed = True
+        if self.keys[key.DOWN]:
+            self.camera[1] -= self.camera_speed
+            view_changed = True
+        delta = abs(self.camera[0] - self.last_camera[0]) + \
+                abs(self.camera[1] - self.last_camera[1])
+        if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:
+            self.window.batches = self.engine.get_batches(*self.camera,
+                self.camera_rect.width, self.camera_rect.height)
+            self.last_camera = list(self.camera)
+            self.first = True
+        self.window.camera = self.camera
+        if self.kf_countdown == 0:
+            self.kf_countdown = self.kf_rate
 
-            aliased_mouse_pos = (
-                mouse_pos[0] - mouse_pos[0] % 16,
-                mouse_pos[1] - mouse_pos[1] % 16
-                )
-
-            aliased_camera_pos = self.aliased_camera(16)
-            game_cursor_rect = Rect(
-                aliased_mouse_pos[0] + aliased_camera_pos[0],
-                aliased_mouse_pos[1] + aliased_camera_pos[1],
-                cursor_size,
-                cursor_size
-                )
-
-            screen_cursor_rect = Rect(
-                aliased_mouse_pos[0] + cursor_size - self.camera[0] % cursor_size,
-                aliased_mouse_pos[1] + cursor_size - self.camera[1] % cursor_size,
-                cursor_size,
-                cursor_size
-                )
-
-            game_cursor_rect = screen_cursor_rect.move(*self.camera)
-
-            rcivals = list(map(lambda k: self.engine.state["demand"][k],
-                ('r', 'c', 'i')))
-
-            if self.time_spent >= last_rci_time:
-                self.rcibox.cache_draw(*rcivals)
-                rect = self.rcibox.draw(self.screen)
-                update_rects.append(rect)
-                last_rci_time = self.time_spent + self.kf_interval
-
-            if damage:
-                self.screen.fill(BG_COLOR)
-                changed_cells.extend(self.engine.quad.get(self.game_screen_rect))
-                draw_cursor = True
-
-            if cursor_damage and (
-                screen_cursor_rect[0] != last_screen_cursor_rect.topleft[0] or \
-                screen_cursor_rect[1] != last_screen_cursor_rect.topleft[1]):
-                update_rects.append(screen_cursor_rect)
-                update_rects.append(last_screen_cursor_rect)
-                cell_damage = game_cursor_rect.copy()
-                last_cell_damage = last_game_cursor_rect.copy()
-                self.screen.fill(BG_COLOR, last_screen_cursor_rect)
-                self.screen.fill(BG_COLOR, screen_cursor_rect)
-                changed_cells.extend(self.engine.quad.get(cell_damage))
-                changed_cells.extend(self.engine.quad.get(last_cell_damage))
-                cursor_damage = False
-
-            if mouse_rel[0] != 0 or mouse_rel[1] != 0:
-                cursor_damage = True
-                draw_cursor = True
-
-            if self.toolbox.in_bounds(mouse_pos):
-                pygame.mouse.set_visible(True)
-                if mouse_down[0]:
-                    hovered = self.toolbox.hover_icon(mouse_pos)
-                    if hovered is not None:
-                        self.toolbox.selected = hovered
-                        cursor_size = self.toolbox.tool_size
-
-                draw_cursor = False
-            elif self.rcibox.in_bounds(mouse_pos):
-                draw_cursor = False
-                pass
-            elif self.statusbox.in_bounds(mouse_pos):
-                pygame.mouse.set_visible(True)
-                if self.statusbox.speed_icon_hover(mouse_pos):
-                    if not cursor_changed:
-                        cursor.set_cursor("pointer")
-                        cursor_changed = True
-                    if mouse_down[0] and self.time_spent >= last_speed_change + self.speed_delay:
-                        self.engine.state["speed"] = (
-                            self.engine.state["speed"] + 1) % len(self.statusbox.speeds)
-                        last_speed_change = self.time_spent
-                        next_kf = self.time_spent
-                    elif cursor_changed and not scrolling:
-                        cursor.set_cursor("arrow")
-                        cursor_changed = False
-                    draw_cursor = False
-            else:
-                if mouse_down[0] and self.toolbox.selected is not None:
-                    self.engine.use_tool(self.toolbox.tools[self.toolbox.selected], game_cursor_rect)
-                    splash = game_cursor_rect.inflate([cursor_size * 2] * 2)
-                    changed_cells.extend(self.engine.quad.get(splash))
-                    update_rects.append(screen_cursor_rect)
-                    draw_cursor = True
-
-            # draw map first
-            drawn = []
-            to_draw = []
-            to_draw = changed_cells[:]
-            to_draw = sorted(to_draw, key=lambda cell: cell.priority)
-            for cell in to_draw:
-                if cell not in drawn:
-                    if type(cell) == tuple:
-                        print(cell)
-                    update_rects.append(cell.draw(self.camera, self.screen))
-                    if debug:
-                        cell.draw_box(self.camera, self.screen, BLUE)
-                    drawn.append(cell)
-
-            # draw quads
-            if debug:
-                quad_draw = []
-                quads = [self.engine.quad]
-                gsr = self.game_screen_rect.copy()
-                while len(quads) > 0:
-                    quad = quads.pop(0)
-                    if quad is not None:
-                        if quad.rect.colliderect(gsr):
-                            quad_draw.append(quad)
-                        if not quad.leaf:
-                            quads.extend(quad.quarters)
-                for quad in quad_draw:
-                    base = 128
-                    base = base + quad.level * 32
-                    base = 0 if base < 0 else base
-                    base = 255 if base > 255 else base
-                    rect = quad.rect.copy()
-                    rect = rect.move(-self.camera[0], -self.camera[1])
-                    rect = rect.inflate(-quad.level * 2, -quad.level * 2)
-                    pygame.draw.rect(self.screen, [base, base, 0], rect, 1)
-                    leafnode = 'Leaf' if quad.leaf else 'Node'
-                    label = '%s (%s)' % (quad.id, leafnode)
-                    labelsurf = self.font.render(label, False, (0, 128, 0))
-                    lrect = labelsurf.get_rect()
-                    drawpoint = [
-                        rect.centerx - lrect.right / 2,
-                        rect.centery - lrect.bottom / 2
-                        ]
-                    plop = lrect.move(*drawpoint)
-                    update_rects.append(self.screen.blit(labelsurf, plop))
-
-            if draw_cursor and not scrolling:
-                update_rects.append(
-                    self.screen.blit(self.textures["cursor_%d" % cursor_size], screen_cursor_rect))
-
-            update_rects.append(self.statusbox.draw(self.screen, self.engine.state["speed"]))
-            update_rects.append(self.toolbox.draw(self.screen))
-            update_rects.append(self.rcibox.draw(self.screen))
-            debuginfo = self.font.render(debugtext, False, (255,0,0))
-            debuginfo_bg = self.font.render(debugtext, True, (255,255,255))
-            drect = debuginfo.get_rect()
-            drect = drect.move(300, self.screen.get_rect().height - drect.height - 5)
-            drect_bg = drect.move(-1, -1)
-            update_rects.append(self.screen.blit(debuginfo_bg, drect_bg))
-            update_rects.append(self.screen.blit(debuginfo, drect))
-
-            if debug:
-                #for update_rect in update_rects:
-                #    pygame.draw.rect(self.screen, RED, update_rect, 1)
-                damage = True
-
-            if damage:
-                pygame.display.flip()
-            else:
-                pygame.display.update(update_rects)
-
-            damage = False
-            draw_cursor = False
-            last_screen_cursor_rect = screen_cursor_rect
-            last_game_cursor_rect = game_cursor_rect
-            sleep(self.sleeptime)
-            self.time_spent = clock()
-            frames_processed += 1
