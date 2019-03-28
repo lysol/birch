@@ -7,6 +7,7 @@ class World:
         self.chunk_size = chunk_size
         self.seeded = {}
         self.batches = {}
+        self.vertex_lists = {}
         self.bg_batches = {}
         self.bgs = {}
 
@@ -33,6 +34,14 @@ class World:
             self.batches[(ix, iy)] = {}
             self.batches[(ix, iy)][priority] = pyglet.graphics.Batch()
             self.seeded[(ix, iy)] = False
+
+    def bg_vertex(self, x, y, count, mode, group, *data):
+        ox, oy = self._alias(x, y)
+        if (ox, oy) not in self.vertex_lists:
+            self.vertex_lists[(ox, oy)] = []
+            self.bg_batches[(ox, oy)] = pyglet.graphics.Batch()
+        self.vertex_lists[(ox, oy)].append(
+            self.bg_batches[(ox, oy)].add(count, mode, group, *data))
 
     def set_bg(self, sprite, x, y):
         ox, oy = self._alias(x, y)
