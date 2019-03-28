@@ -8,7 +8,7 @@ class TextureStore(dict):
         super(dict, self).__init__(*args, **kwargs);
         self.asset_dir = asset_dir
 
-        pyglet.resource.path.extend([self.asset_dir])
+        pyglet.resource.path.extend([self.asset_dir, '/tmp'])
         pyglet.resource.reindex()
         names = json.load(open('%s/names.json' % asset_dir))
         for name in names:
@@ -17,10 +17,15 @@ class TextureStore(dict):
         self['c_1_0'] = self['c_0_0']
         self['i_1_0'] = self['i_0_0']
 
-    def load(self, key):
-        self[key] = resource.image("%s.png" % key)
+    def load(self, key, filename=None, reindex=False):
+        if filename is None:
+            filename = "%s.png" % key
+        if reindex:
+            pyglet.resource.reindex()
+        self[key] = resource.image(filename)
         self[key].anchor_x = 0
         self[key].anchor_y = 0
+        return self[key]
 
     def get_sprite(self, key, x=0, y=0):
         image = self[key]

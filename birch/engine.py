@@ -1,7 +1,14 @@
-from random import choice, randint
-from math import sin, pi
+from os import unlink
+from random import choice, randint, random
+from math import sin, pi, hypot
 from collections import deque
-from noise import pnoise1
+from uuid import uuid4
+from noise import pnoise2, snoise2
+from pyglet.gl import *
+from pyglet import resource
+from pyglet.sprite import Sprite
+import pyglet
+from PIL import Image, ImageDraw
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
 from birch.cells.connectable import ConnectableCell
@@ -61,6 +68,7 @@ class Engine:
         self._demand_calc()
         self.world = World()
         self.deferred_inserts = deque([])
+        self.randoms = []
 
     def in_range(self, camera, pos):
         return pos[0] > camera[0] - 1000 or \
@@ -74,6 +82,7 @@ class Engine:
         changed = []
         cr = checkrect.inflate(checkrect.width, checkrect.height)
         in_range_cells = self.world.get(*cr.topleft, cr.width, cr.height)
+        self.gen_random()
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
@@ -241,6 +250,59 @@ class Engine:
         r = Rect(x, y, w, h).inflate(w, h)
         return self.world.get_batches(*r.topleft, r.width, r.height)
 
+    def gen_random(self):
+        maxd = self.world.chunk_size * self.world.chunk_size
+        if len(self.randoms) < maxd:
+            for z in range(2048):
+                self.randoms.append(random())
+
+    def rands(self):
+        if len(self.randoms) == 0:
+            self.gen_random()
+        x = self.randoms.pop()
+        return x
+
+    def create_background(self, ix, iy):
+        dims = [int(self.world.chunk_size / 2)] * 2
+        img = Image.new('RGBA', dims)
+        draw = ImageDraw.Draw(img)
+        draw.rectangle((0, 0, dims[0], dims[1]), fill=(255, 255, 255, 0))
+        pixels = img.load()
+        # draw dirt stuff
+        octaves = 1
+        freq = 32.0
+        dirts = 0
+        size = 8
+        for x in range(0, dims[0], size):
+            for y in range(0, dims[1], size):
+                ox, oy = ix + x, iy + y
+                noised = snoise2(ox / freq * 2, oy / freq * 2) * 0.2 + 0.5
+                thresh = self.rands()
+                if noised > thresh: #noised % 2 == 0:
+                    dirts  = dirts + 1
+                    color = (0, 0, 0, 255)
+                    r = size / 2
+                    center = x + r, y + r
+                    for a in range(x, x + size):
+                        for b in range(y, y + size):
+                            vector = a - center[0], b - center[1]
+                            highpot = hypot(*vector)
+                            thresh = self.rands() + (highpot / r) * 0.5
+                            peed = snoise2(ox / freq * 2, oy / freq * 2) * 0.2 + 0.1
+                            if peed > thresh:
+                                pixels[a, b] = color
+                    #pixels[x + 1, y] = color
+                    #pixels[x + 1, y + 1] = color
+                    #pixels[x, y + 1] = color
+        filename = '%s.png' % (str(uuid4())[:8])
+        img.save('/tmp/' + filename)
+        key = 'bg_%d_%d' % (ix, iy)
+        image = self.textures.load(key, filename=filename, reindex=True)
+        unlink('/tmp/' + filename)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        return key
+
     def seed(self, x, y):
         if not self.world.unseeded(x, y):
             return
@@ -303,5 +365,10 @@ class Engine:
                 cells.append(RoadCell(self.textures, newpos))
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
+        image_key = self.create_background(bounds[0], bounds[1])
+        bg_sprite = Sprite(self.textures[image_key], bounds[0], bounds[1])
+        bg_sprite.scale = 2
+        self.world.set_bg(bg_sprite, bounds[0], bounds[1])
+
         return True
 

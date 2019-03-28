@@ -7,6 +7,8 @@ class World:
         self.chunk_size = chunk_size
         self.seeded = {}
         self.batches = {}
+        self.bg_batches = {}
+        self.bgs = {}
 
     def _alias(self, x, y):
         return (
@@ -31,6 +33,13 @@ class World:
             self.batches[(ix, iy)] = {}
             self.batches[(ix, iy)][priority] = pyglet.graphics.Batch()
             self.seeded[(ix, iy)] = False
+
+    def set_bg(self, sprite, x, y):
+        ox, oy = self._alias(x, y)
+        if (ox, oy) not in self.bg_batches:
+            self.bg_batches[(ox, oy)] = pyglet.graphics.Batch()
+        sprite.batch = self.bg_batches[(ox, oy)]
+        self.bgs['%d_%d' % (ox, oy)] = sprite
 
     def insert(self, sprite, x, y):
         ox, oy = self._alias(x, y)
@@ -118,6 +127,8 @@ class World:
         #    cell.set_pos((x, y))
         for yes in list(range(oy, py + 1)):
             for xes in list(range(ox, px + 1)):
+                if (xes, yes) in self.bg_batches:
+                    batch_draws.append(self.bg_batches[(xes, yes)])
                 if (xes, yes) in self.batches:
                     bdict = self.batches[(xes, yes)]
                     pees = sorted(bdict.keys())

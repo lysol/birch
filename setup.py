@@ -10,6 +10,7 @@ setup(name='birch',
       packages=['birch'],
       install_requires=[
           'pyglet',
-          'noise'
+          'noise',
+          'pillow'
           ],
       zip_safe=False)
