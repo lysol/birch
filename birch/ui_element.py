@@ -68,10 +68,11 @@ class UIElement:
             y >= ry and y <= ry + rh
 
     def check_mouse(self, pos, buttons):
+        something = False
         if len(buttons) == 0:
             # nothing clicked, hover
             if self.in_region(*pos, self.x, self.y, self.width, self.height):
-                return self.hover(pos)
+                something = self.hover(pos)
         else:
             for region in self.click_regions:
                 r = self.click_regions[region]
@@ -79,7 +80,10 @@ class UIElement:
                 args.extend(r)
                 if self.in_region(*args):
                     self.click_handlers[region](region, *pos, buttons)
-                    return True
-        return False
+                    something = True
+        for el in self.ui_elements:
+            something = el.check_mouse(pos, buttons) or something
+        return something
+
 
 
