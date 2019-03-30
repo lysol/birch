@@ -143,7 +143,7 @@ class BirchGame:
     def __init__(self, asset_dir):
         pyglet.options['debug_gl'] = False
         self.main_batch = pyglet.graphics.Batch()
-        self.size = 800, 600
+        self.size = 1280, 720
         self.asset_dir = asset_dir
         self.textures = TextureStore(asset_dir)
         glClearColor(1.0, 1.0, 1.0, 1.0)
