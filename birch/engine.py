@@ -243,7 +243,7 @@ class Engine:
         if new_cell is not None:
             self.set_cell(new_cell, alias=False)
 
-    def get_batches(self, x, y, w, h):
+    def get_batches(self, x, y, w=1, h=1):
         r = Rect(x, y, w, h).inflate(w, h)
         return self.world.get_batches(*r.topleft, r.width, r.height)
 

@@ -1,5 +1,6 @@
 import math
 import pyglet
+from pyglet.graphics import OrderedGroup
 from birch.util import FG_COLOR, BG_COLOR, fix_origin, Rect
 from birch.ui_element import UIElement
 from birch.cursor import Cursor
@@ -19,10 +20,9 @@ class Toolbox(UIElement):
         "rail_h"
         )
 
-    def __init__(self, window_height, textures):
+    def __init__(self, window_height, textures, batch=None):
         self.width = self.padding * 2 + self.icon_spacing + 64
-        super().__init__(20, 20, window_height)
-        self.batch = pyglet.graphics.Batch()
+        super().__init__(20, 20, window_height, batch=batch)
         self.sprites = []
         self.tool_rects = []
         self.selected = None
@@ -44,7 +44,8 @@ class Toolbox(UIElement):
                     top = prev_rect.bottom + self.icon_spacing
             self.handle_region(tool, self.set_tool, left, top, tex.width * 2, tex.height * 2)
             np = fix_origin((left, top + tex.height * 2), self.window_height)
-            self.sprites.append(pyglet.sprite.Sprite(self.textures[tool], np[0], np[1], batch=self.batch))
+            self.sprites.append(pyglet.sprite.Sprite(
+                self.textures[tool], np[0], np[1], batch=self.batch, group=OrderedGroup(self.groupNumber + 1)))
             self.tool_indexes[tool] = i
             self.sprites[-1].scale = 2
             r = Rect(left, top, size[0], size[1])
@@ -62,16 +63,10 @@ class Toolbox(UIElement):
         tool_sprite = self.sprite_by_name(tool)
         self.ui_elements = [Cursor(tool_sprite.x, tool_sprite.y,
             self.textures[tool].width * 2, self.window_height)]
-        self.ui_elements[0].fix_pos()
+        self.ui_elements[0].fix_pos((0, 0))
 
     @property
     def tool_size(self):
         if self.selected == 'bulldoze':
             return 16
         return self.click_regions[self.selected][2]
-
-    def draw(self):
-        self.draw_box()
-        self.batch.draw()
-        for el in self.ui_elements:
-            el.draw()

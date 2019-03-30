@@ -33,6 +33,10 @@ class Rect:
         return (self.x, self.y, self.w, self.h)
 
     @property
+    def center(self):
+        return self.x + int(self.width / 2), self.y + int(self.height / 2)
+
+    @property
     def position(self):
         return (self.x, self.y)
 

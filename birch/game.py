@@ -23,9 +23,10 @@ class BirchWindow(pyglet.window.Window):
     max_zoom = 2.0
     min_zoom = 1
 
-    def __init__(self, batches, ui, *args, **kwargs):
+    def __init__(self, batches, main_batch, ui, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.batches = batches
+        self.main_batch = main_batch
         self.ui = ui
         self.handlers = {}
         self.camera = (0, 0)
@@ -56,8 +57,6 @@ class BirchWindow(pyglet.window.Window):
         self.change_view()
         for batch in self.batches:
             batch.draw()
-        if self.cursor is not None:
-            self.cursor.draw()
         if self.debug:
             for y in range(0, self.height, 64):
                 for x in range(0, self.width, 64):
@@ -70,8 +69,7 @@ class BirchWindow(pyglet.window.Window):
             for handler in self.handlers['draw']:
                 handler(self)
         self.change_view(zoom=1.0, camera=(0, 0))
-        for el in self.ui:
-            el.draw()
+        self.main_batch.draw()
 
     def draw_dot(self, x, y, color, width=3):
         pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
@@ -144,6 +142,7 @@ class BirchGame:
 
     def __init__(self, asset_dir):
         pyglet.options['debug_gl'] = False
+        self.main_batch = pyglet.graphics.Batch()
         self.size = 800, 600
         self.asset_dir = asset_dir
         self.textures = TextureStore(asset_dir)
@@ -151,7 +150,8 @@ class BirchGame:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         self.ui_elements = []
-        self.window = BirchWindow([], self.ui_elements, width=self.size[0], height=self.size[1])
+        self.window = BirchWindow([], self.main_batch, self.ui_elements,
+                width=self.size[0], height=self.size[1])
         self.window.set_caption('birch')
         self.window.set_icon(self.textures['birch_tree'])
         self.engine = Engine({
@@ -162,7 +162,10 @@ class BirchGame:
             }, self.textures)
         self.mouse_buttons = []
         self.scroll_speed = [2, 2]
-        self.camera = [-400, -300]
+        self.camera = [
+            int(self.window.width / 2 - self.engine.world.chunk_size / 2),
+            int(self.window.height / 2 - self.engine.world.chunk_size / 2)
+            ]
         self.last_camera = [-1000000, -1000000]
         self.cursor_speed = 8
         self.fps = 100.0
@@ -188,11 +191,11 @@ class BirchGame:
         self.set_cursor_size()
 
     def init_ui(self):
-        self.toolbox = Toolbox(self.window.height, self.textures)
+        self.toolbox = Toolbox(self.window.height, self.textures, self.main_batch)
         self.ui_elements.append(self.toolbox)
         self.toolbox.set_tool('bulldoze')
         sx, sy = self.toolbox.x + self.toolbox.width + 4, self.toolbox.y
-        self.statusbox = Statusbox(sx, sy, self.window.height, self.textures, self.engine)
+        self.statusbox = Statusbox(sx, sy, self.window.height, self.textures, self.engine, self.main_batch)
         self.ui_elements.append(self.statusbox)
 
     def run(self):
@@ -203,7 +206,7 @@ class BirchGame:
     def set_cursor_size(self):
         if self.window.cursor is None or self.toolbox.tool_size != self.window.cursor.width:
             self.window.cursor = Cursor(*self.mouse, self.toolbox.tool_size,
-                    self.window.height)
+                    self.window.height, batch=self.main_batch)
 
     def set_cursor_pos(self):
         x, y = self.mouse
@@ -214,7 +217,7 @@ class BirchGame:
         y = y - y % 16
         self.window.cursor.x = x
         self.window.cursor.y = y
-        self.window.cursor.fix_pos()
+        self.window.cursor.fix_pos(self.camera)
 
     def handle_draw(self, window):
         pass
@@ -291,8 +294,7 @@ class BirchGame:
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
         if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:
-            self.window.batches = self.engine.get_batches(*self.camera,
-                self.camera_rect.width, self.camera_rect.height)
+            self.window.batches = self.engine.get_batches(*(self.camera_rect.center))
             self.last_camera = list(self.camera)
             self.first = True
         self.window.camera = self.camera

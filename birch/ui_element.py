@@ -1,4 +1,4 @@
-from pyglet.graphics import Batch, vertex_list
+from pyglet.graphics import Batch, vertex_list, OrderedGroup
 from pyglet.gl import GL_QUADS
 from birch.util import fix_origin
 
@@ -6,17 +6,21 @@ class UIElement:
 
     width = 100
     height = 100
+    line_width = 2
 
-    def __init__(self, x, y, window_height):
+    def __init__(self, x, y, window_height, batch=None):
         self.x = x
         self.y = y
-        self.batch = Batch()
+        self.batch = Batch() if batch is None else batch
         self.click_regions = {}
         self.click_handlers = {}
         self.ui_elements = []
         self.box_vx = []
         self.box_modes = []
         self.window_height = window_height
+        self.groupNumber = 100
+        if len(self.box_vx) == 0:
+            self.init_box()
 
     def init_box(self):
         w = self.width
@@ -35,26 +39,19 @@ class UIElement:
             bgvx[4] - 2, bgvx[5] + 2,
             bgvx[6] - 2, bgvx[7] - 2
             )
-        self.box_vx.append(vertex_list(4,
+        self.box_vx.append(self.batch.add(4,
+            GL_QUADS,
+            OrderedGroup(self.groupNumber),
             ('v2i', bgvx),
             ('c3B', (0, 0, 0) * 4)
             ))
 
-        self.box_vx.append(vertex_list(4,
+        self.box_vx.append(self.batch.add(4,
+            GL_QUADS,
+            OrderedGroup(self.groupNumber),
             ('v2i', bgvx2),
             ('c3B', (255, 255, 255) * 4)
             ))
-
-        self.box_modes = (
-            GL_QUADS,
-            GL_QUADS
-            )
-
-    def draw_box(self):
-        if len(self.box_vx) == 0:
-            self.init_box()
-        for i, vx in enumerate(self.box_vx):
-            vx.draw(self.box_modes[i])
 
     def handle_region(self, name, handler, x, y, w, h):
         self.click_regions[name] = (x, y, w, h)

@@ -1,33 +1,32 @@
-from pyglet.graphics import vertex_list
+from pyglet.graphics import vertex_list, OrderedGroup
 from pyglet.gl import GL_QUADS
 from birch.ui_element import UIElement
 from birch.util import fix_origin
 
 class Cursor(UIElement):
 
-    def __init__(self, x, y, width, window_height):
-        super().__init__(x, y, window_height)
+    def __init__(self, x, y, width, window_height, batch=None):
+        self.line_width = 2
+        super().__init__(x, y, window_height, batch=batch)
         self.width = width
         self.height = width
-        self.line_width = 2
-        self.init_box()
 
     @property
     def position(self):
         return self.x, self.y
 
-    def fix_pos(self):
-        sharts = self.vx_pos()
+    def fix_pos(self, camera):
+        sharts = self.vx_pos(camera)
         for i, b in enumerate(self.box_vx):
             for z, vx in enumerate(b.vertices):
                 if vx != sharts[i][z]:
                     b.vertices[z] = sharts[i][z]
 
-    def vx_pos(self):
+    def vx_pos(self, camera=(0, 0)):
         w = self.width
         h = self.height
-        x = self.x
-        y = self.y
+        x = self.x - camera[0]
+        y = self.y - camera[1]
         lw = self.line_width
 
         sets = (
@@ -68,11 +67,9 @@ class Cursor(UIElement):
         sets = self.vx_pos()
 
         for s in sets:
-            self.box_vx.append(vertex_list(4,
+            self.box_vx.append(self.batch.add(4,
+                GL_QUADS,
+                OrderedGroup(self.groupNumber),
                 ('v2i', fix_origin(s, self.window_height)),
                 ('c3B', (0, 0, 0) * 4)
                 ))
-            self.box_modes.append(GL_QUADS)
-
-    def draw(self):
-        self.draw_box()
