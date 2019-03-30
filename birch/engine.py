@@ -8,6 +8,7 @@ from pyglet.gl import *
 from pyglet import resource
 from pyglet.sprite import Sprite
 import pyglet
+import numpy as np
 from PIL import Image, ImageDraw
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
@@ -68,7 +69,6 @@ class Engine:
         self._demand_calc()
         self.world = World()
         self.deferred_inserts = deque([])
-        self.randoms = []
 
     def in_range(self, camera, pos):
         return pos[0] > camera[0] - 1000 or \
@@ -82,7 +82,6 @@ class Engine:
         changed = []
         cr = checkrect.inflate(checkrect.width, checkrect.height)
         in_range_cells = self.world.get(*cr.topleft, cr.width, cr.height)
-        self.gen_random()
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
@@ -248,50 +247,33 @@ class Engine:
         r = Rect(x, y, w, h).inflate(w, h)
         return self.world.get_batches(*r.topleft, r.width, r.height)
 
-    def gen_random(self):
-        maxd = self.world.chunk_size * self.world.chunk_size
-        if len(self.randoms) < maxd:
-            for z in range(2048):
-                self.randoms.append(random())
-
-    def rands(self):
-        if len(self.randoms) == 0:
-            self.gen_random()
-        x = self.randoms.pop()
-        return x
-
     def create_background(self, ix, iy):
-        dims = [int(self.world.chunk_size / 2)] * 2
-        img = Image.new('RGBA', dims)
+        dim = int(self.world.chunk_size / 2)
+        img = Image.new('RGBA', (dim, dim))
         draw = ImageDraw.Draw(img)
-        draw.rectangle((0, 0, dims[0], dims[1]), fill=(255, 255, 255, 0))
+        draw.rectangle((0, 0, dim, dim), fill=(255, 255, 255, 0))
         pixels = img.load()
         # draw dirt stuff
-        octaves = 1
-        freq = 32.0
+        octaves = 3
+        freq = 256.0
         dirts = 0
-        size = 8
-        for x in range(0, dims[0], size):
-            for y in range(0, dims[1], size):
+        size = 16
+        lower_bound = -1
+        upper_bound = 1
+        range_amount = upper_bound - lower_bound
+        tex_count = 5
+        fract = range_amount / tex_count
+        for x in range(0, dim, size):
+            for y in range(0, dim, size):
                 ox, oy = ix + x, iy + y
-                noised = snoise2(ox / freq * 2, oy / freq * 2) * 0.2 + 0.5
-                thresh = self.rands()
-                if noised > thresh: #noised % 2 == 0:
-                    dirts  = dirts + 1
-                    color = (0, 0, 0, 255)
-                    r = size / 2
-                    center = x + r, y + r
-                    for a in range(x, x + size):
-                        for b in range(y, y + size):
-                            vector = a - center[0], b - center[1]
-                            highpot = hypot(*vector)
-                            thresh = self.rands() + (highpot / r) * 0.5
-                            peed = snoise2(ox / freq * 2, oy / freq * 2) * 0.2 + 0.1
-                            if peed > thresh:
-                                pixels[a, b] = color
-                    #pixels[x + 1, y] = color
-                    #pixels[x + 1, y + 1] = color
-                    #pixels[x, y + 1] = color
+                noised = snoise2(ox / freq, oy / freq)
+                for i, lower in enumerate(np.arange(lower_bound, upper_bound, fract)):
+                    if i == 0:
+                        continue
+                    if noised > lower and noised < lower + fract:
+                        tex_key = 'dirt_%d_%d' % (i - 1, randint(0,1))
+                        self.textures.paste(x, y, img, tex_key)
+
         filename = '%s.png' % (str(uuid4())[:8])
         img.save('/tmp/' + filename)
         key = 'bg_%d_%d' % (ix, iy)

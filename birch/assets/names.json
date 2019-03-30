@@ -171,8 +171,44 @@
         "size": 8,
         "position": [112, 56]
     },
-    "button": {
-        "size": [24, 10],
+    "dirt_0_0": {
+        "size": 16,
         "position": [0, 64]
+    },
+    "dirt_0_1": {
+        "size": 16,
+        "position": [16, 64]
+    },
+    "dirt_1_0": {
+        "size": 16,
+        "position": [32, 64]
+    },
+    "dirt_1_1": {
+        "size": 16,
+        "position": [48, 64]
+    },
+    "dirt_2_0": {
+        "size": 16,
+        "position": [64, 64]
+    },
+    "dirt_2_1": {
+        "size": 16,
+        "position": [80, 64]
+    },
+    "dirt_3_0": {
+        "size": 16,
+        "position": [96, 64]
+    },
+    "dirt_3_1": {
+        "size": 16,
+        "position": [112, 64]
+    },
+    "dirt_4_0": {
+        "size": 16,
+        "position": [0, 80]
+    },
+    "dirt_4_1": {
+        "size": 16,
+        "position": [16, 80]
     }
 }
