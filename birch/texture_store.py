@@ -1,6 +1,9 @@
 import json
 import pyglet
+import numpy as np
 from pyglet import sprite, resource
+from pyglet.image import Texture
+from pyglet.gl import GL_NEAREST
 from PIL import Image
 
 class TextureStore(dict):
@@ -18,6 +21,17 @@ class TextureStore(dict):
         self['c_1_0'] = self['c_0_0']
         self['i_1_0'] = self['i_0_0']
         self.pil_cache = {}
+        self.data_cache = {}
+
+    def data(self, key):
+        if key not in self.data_cache:
+            tex = self[key]
+            data = self[key].get_image_data().get_data('RGBA', (tex.width * 4))
+            npdata = np.frombuffer(data, dtype='uint8').reshape((tex.height, tex.width * 4))
+            self.data_cache[key] = npdata
+            #np.savetxt('/tmp/%s' % key, npdata, fmt='%d')
+        return self.data_cache[key]
+
 
     def load_pil(self, key):
         if key not in self.pil_cache:
