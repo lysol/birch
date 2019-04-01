@@ -275,6 +275,12 @@ class Engine:
         return np.sqrt(2)*((1-t[:,:,1])*n0 + t[:,:,1]*n1)
 
 
+    def speck(self, arr, y, x, color=(0, 0, 0, 255)):
+        arr[y, x] = color[0]
+        arr[y, x + 1] = color[1]
+        arr[y, x + 2] = color[2]
+        arr[y, x + 3] = color[3]
+
     def create_background(self, ix, iy):
         dim = int(self.world.chunk_size / 2)
         img = Image.new('RGBA', (dim, dim))
@@ -292,7 +298,12 @@ class Engine:
         tex_count = 5
         fract = range_amount / tex_count
         imgdata = np.zeros((dim, dim * 4), dtype='uint8')
-        noises = self.generate_perlin_noise_2d((dim / size, dim / size), (16, 32))
+        noises = self.generate_perlin_noise_2d((dim / size * 2, dim / size * 2), (32, 16))
+        clear = (0, 0, 0, 0)
+        black = (0, 0, 0, 255)
+        def rc():
+            return black if randint(0,1) == 0 else clear
+
         for x in range(0, dim, size):
             for y in range(0, dim, size):
                 ox, oy = ix + x, iy + y
@@ -302,8 +313,19 @@ class Engine:
                     if i == 0:
                         continue
                     if noised > lower and noised < lower + fract:
-                        tex_key = 'dirt_%d_%d' % (i - 1, randint(0,1))
-                        texdata = self.textures.data(tex_key)
+                        #tex_key = 'dirt_%d_%d' % (i - 1, randint(0,1))
+                        #texdata = self.textures.data(tex_key)
+                        texdata = np.zeros((size, size * 4), dtype='uint8')
+                        for z in range(randint(0, 4**i)):
+                            a, b = randint(0, size - 1), randint(0, size - 1) * 4
+                            if a < 14 and a > 0 and b < 14 and random() > 0.9:
+                                # big dirt
+                                self.speck(texdata, a, b + 4, color=rc())
+                                self.speck(texdata, a, b + 8, color=rc())
+                                self.speck(texdata, a + 1, b, color=rc())
+                                self.speck(texdata, a + 1, b + 4, color=rc())
+                                self.speck(texdata, a + 1, b + 8, color=rc())
+                            self.speck(texdata, a, b)
                         imgdata[y:y + texdata.shape[0], x * 4: x * 4 + texdata.shape[1]] = texdata
         tex_data = (GLubyte * imgdata.size).from_buffer(imgdata)
         target = GL_TEXTURE_2D
