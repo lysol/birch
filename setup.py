@@ -1,4 +1,11 @@
 from setuptools import setup
+from distutils.core import setup, Extension
+
+open_simplex = Extension('birch.open_simplex',
+                    sources = [
+                        'birch/open_simplex.c',
+                        'birch/_opensimplex.c'
+                        ])
 
 setup(name='birch',
       version='0.0.1',
@@ -13,4 +20,5 @@ setup(name='birch',
           'noise',
           'pillow'
           ],
-      zip_safe=False)
+      zip_safe=False,
+      ext_modules=[open_simplex])
