@@ -1,3 +1,6 @@
 *.pyc
 __pycache__/*
 birch/assets/*.png
+build
+dist
+birch.egg*
