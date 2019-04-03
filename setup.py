@@ -1,7 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from distutils.core import setup, Extension
 
 open_simplex = Extension('birch.open_simplex',
+                    define_macros = [('_DEBUG', '1')],
                     sources = [
                         'birch/open_simplex.c',
                         'birch/_opensimplex.c'
@@ -14,7 +15,9 @@ setup(name='birch',
       author='Derek Arnold',
       author_email='derek@derekarnold.net',
       license='ISC',
-      packages=['birch'],
+      packages=find_packages(),
+      package_dir={'birch': 'birch'},
+      package_data={'birch': ['assets/*']},
       install_requires=[
           'pyglet',
           'noise',
