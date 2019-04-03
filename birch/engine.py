@@ -3,13 +3,11 @@ from random import choice, randint, random
 from math import sin, pi, hypot
 from collections import deque
 from uuid import uuid4
-from noise import pnoise2, snoise2
 from pyglet.gl import *
 from pyglet import resource
 from pyglet.sprite import Sprite
 from pyglet.image import Texture, ImageData
 import pyglet
-import numpy as np
 from PIL import Image, ImageDraw
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
@@ -282,7 +280,10 @@ class Engine:
             cells.append(BirchTree(self.textures, xy()))
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
-        image_key = self.textures.create_background(int(self.world.chunk_size / 2), bounds[0], bounds[1])
+        image_key = self.textures.create_background(
+            int(self.world.chunk_size / 2),
+            int(bounds[0] / 2),
+            int(bounds[1] / 2))
         bg_sprite = Sprite(self.textures[image_key], bounds[0], bounds[1])
         bg_sprite.scale = 2
         self.world.set_bg(bg_sprite, bounds[0], bounds[1])
