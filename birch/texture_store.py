@@ -26,7 +26,7 @@ class TextureStore(dict):
         self.pil_cache = {}
         self.data_cache = {}
         self.res_angle_cache = {}
-        self.open_simplex = OpenSimplex(randint(0,999999))
+        self.open_simplex = OpenSimplex(randint(0,9999))
 
     def data(self, key):
         if key not in self.data_cache:
@@ -66,7 +66,7 @@ class TextureStore(dict):
 
     def create_background(self, dim, ix, iy):
         # draw dirt stuff
-        freq = 256.0
+        freq = 4096
         imgdata = self.open_simplex.noise2_array(ix, iy, freq, dim)
         target = GL_TEXTURE_2D
         gid = GLuint()
