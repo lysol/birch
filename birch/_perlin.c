@@ -4,7 +4,8 @@
 #include </usr/lib/python3/dist-packages/numpy/core/include/numpy/arrayobject.h>
 #include <stdio.h>
 #define RANDCOUNT (1024 * 1024)
-#define GOOSE 2
+#define GOOSE .4
+#define GANDER 0.01
 
 typedef struct {
     PyObject_HEAD
@@ -139,7 +140,7 @@ static double perlin(double x, double y, double z) {
 static double perlin_octave(double x, double y, double z, double frequency,
         int octaves, double persistence) {
     double total = 0;
-    double amplitude = .5;
+    double amplitude = .2;
     double maxValue = 0; // Used for normalizing result to 0.0 - 1.0
     for(int i=0;i<octaves;i++) {
         total += perlin(x * frequency, y * frequency, z * frequency) * amplitude;
@@ -250,14 +251,15 @@ static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
     double freq;
     int size;
     int octaves;
-    if (!PyArg_ParseTuple(args, "iidii", &x, &y, &freq, &octaves, &size))
+    int pixvalue;
+    if (!PyArg_ParseTuple(args, "iidiii", &x, &y, &freq, &octaves, &size, &pixvalue))
         return NULL;
     int total = size * size * 4;
     char *data = malloc(total);
     char pix;
-    int idx, a, b, row_offset, col_offset;
+    int idx, a, b, row_offset, col_offset, ridx, ridx2;
     double rx, ry;
-    double thresh, ranz;
+    double thresh, ranz, repz;
     for(b = 0; b < size; b++) {
         for(a = 0; a < size; a++) {
             row_offset = b * size * 4;
@@ -267,16 +269,21 @@ static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
             rx = (x + a);
             thresh = perlin_octave(rx, ry, 1.0, freq, octaves, 1.0);
             // noise2(rx, ry ...)
-            ranz = randoms[idx % RANDCOUNT];
-            if (b == 0 && a == 0) {
-                printf("ranz %.2f\n", ranz);
+            ridx = idx % RANDCOUNT;
+            ridx2 = (idx + 666) % RANDCOUNT;
+            ranz = randoms[ridx];
+            repz = randoms[ridx2];
+            pix = pixvalue;
+            if (ranz < GANDER) {
+                pix = 0;
+            } else if (repz < thresh - GOOSE) {
+                pix = 0;
             }
-            pix = thresh > ranz / GOOSE ? 0 : 255;
 
-            data[idx] = pix ^ 255;
-            data[idx + 1] = pix ^ 255;
-            data[idx + 2] = pix ^ 255;
-            data[idx + 3] = pix;
+            data[idx] = pix;
+            data[idx + 1] = pix;
+            data[idx + 2] = pix;
+            data[idx + 3] = pix ^ pixvalue;
         }
     }
     //dither_buffer(data, total, size * 4);
