@@ -274,7 +274,7 @@ class BirchGame:
 
     def update(self, dt):
         self.kf_countdown -= 1
-        self.engine.tick(checkrect=self.camera_rect)
+        self.engine.tick(dt, checkrect=self.camera_rect)
         view_changed = False
         for point in (self.camera_rect.topleft, self.camera_rect.topright,
             self.camera_rect.bottomleft, self.camera_rect.bottomright):

@@ -12,7 +12,7 @@ class Cell(sprite.Sprite):
         self.texture_name = texture_name
         self.textures = textures
         self.position = position
-        self.next_tick = 0
+        self.next_update = -1
         self._impassible = False
         self.id = uuid4()
         self.priority = priority
@@ -132,7 +132,7 @@ class Cell(sprite.Sprite):
     def viewed_position(self, camera):
         return self._shift(negate(camera))
 
-    def update(self, dt):
+    def update(self, dt, engine):
         return False
 
     def impassible(self, cell):

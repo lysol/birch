@@ -3,6 +3,7 @@ from random import choice, randint, random
 from math import sin, pi, hypot
 from collections import deque
 from uuid import uuid4
+from datetime import datetime
 from pyglet.gl import *
 from pyglet import resource
 from pyglet.sprite import Sprite
@@ -75,7 +76,8 @@ class Engine:
             pos[1] < camera[1] - 1000 or \
             pos[1] < camera[1] + 1000
 
-    def tick(self, checkrect=None):
+    def tick(self, dt, checkrect=None):
+        dort = datetime.now()
         damage = False
         self.ticks += self.state["speed"]
         changed = []
@@ -93,6 +95,9 @@ class Engine:
                         changed.append(item)
             else:
                 changed.extend(inserted)
+        for cell in self.state["cells"]:
+            if cell.next_update != -1 and dort > cell.next_update:
+                cell.update(dort, self)
         return changed
 
     def _demand_calc(self):
@@ -239,6 +244,8 @@ class Engine:
                 new_cell = ICell(self.textures, (x, y))
             elif name == "rail_h":
                 new_cell = RailCell(self.textures, (x, y))
+            elif name == "road_h":
+                new_cell = RoadCell(self.textures, (x, y))
         if new_cell is not None:
             self.set_cell(new_cell, alias=False)
 
