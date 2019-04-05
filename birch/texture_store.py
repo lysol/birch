@@ -7,7 +7,7 @@ from pyglet import sprite, resource
 from pyglet.image import Texture
 from pyglet.gl import *
 from PIL import Image
-from birch.open_simplex import OpenSimplex
+from birch._perlin import Perlin
 
 class TextureStore(dict):
 
@@ -26,7 +26,7 @@ class TextureStore(dict):
         self.pil_cache = {}
         self.data_cache = {}
         self.res_angle_cache = {}
-        self.open_simplex = OpenSimplex(randint(0,9999))
+        self.perlin = Perlin(randint(0,9999))
 
     def data(self, key):
         if key not in self.data_cache:
@@ -66,8 +66,8 @@ class TextureStore(dict):
 
     def create_background(self, dim, ix, iy):
         # draw dirt stuff
-        freq = 4096
-        imgdata = self.open_simplex.noise2_array(ix, iy, freq, dim)
+        freq = 1/20
+        imgdata = self.perlin.noise2_bytes(ix, iy, freq, 1, dim)
         target = GL_TEXTURE_2D
         gid = GLuint()
         glGenTextures(1, byref(gid))

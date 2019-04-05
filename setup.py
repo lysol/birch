@@ -1,11 +1,9 @@
 from setuptools import setup, find_packages
 from distutils.core import setup, Extension
 
-open_simplex = Extension('birch.open_simplex',
-                    define_macros = [('_DEBUG', '1')],
+_perlin = Extension('birch._perlin',
                     sources = [
-                        'birch/open_simplex.c',
-                        'birch/_opensimplex.c'
+                        'birch/_perlin.c'
                         ])
 
 setup(name='birch',
@@ -24,4 +22,4 @@ setup(name='birch',
           'pillow'
           ],
       zip_safe=False,
-      ext_modules=[open_simplex])
+      ext_modules=[_perlin])
