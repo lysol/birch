@@ -1,5 +1,4 @@
 from random import randint
-from datetime import timedelta, datetime
 from birch.cells.cell import Cell
 
 class Tree(Cell):
@@ -8,7 +7,7 @@ class Tree(Cell):
         super().__init__(texture_name, textures, position, texture_name, batch=batch)
         self.age = age if age is not None else randint(0, 100)
         self.base_texture_name = texture_name
-        self.next_update = datetime.now() + timedelta(0, randint(25, 50))
+        self.next_update = randint(25, 50)
 
     def impassible(self, cell):
         return True
@@ -21,9 +20,9 @@ class Tree(Cell):
     def texture_name(self, value):
         self.base_texture_name = value
 
-    def update(self, dt, engine):
+    def update(self, ticks, engine):
         self.age += 1
-        self.next_update = self.next_update + timedelta(0, randint(25, 50))
+        self.next_update = ticks + randint(25, 50)
 
 
 class PineTree(Tree):

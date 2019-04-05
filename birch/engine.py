@@ -3,7 +3,7 @@ from random import choice, randint, random
 from math import sin, pi, hypot
 from collections import deque
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
 from pyglet.gl import *
 from pyglet import resource
 from pyglet.sprite import Sprite
@@ -65,7 +65,7 @@ class Engine:
         self.state = state
         self.ticks = 0
         self.textures = textures
-        self._next_rci = 0
+        self._next_rci = self.rci_interval
         self._demand_calc()
         self.world = World()
         self.deferred_inserts = deque([])
@@ -77,7 +77,6 @@ class Engine:
             pos[1] < camera[1] + 1000
 
     def tick(self, dt, checkrect=None):
-        dort = datetime.now()
         damage = False
         self.ticks += self.state["speed"]
         changed = []
@@ -96,8 +95,8 @@ class Engine:
             else:
                 changed.extend(inserted)
         for cell in self.state["cells"]:
-            if cell.next_update != -1 and dort > cell.next_update:
-                cell.update(dort, self)
+            if cell.next_update != -1 and self.ticks >= cell.next_update:
+                cell.update(self.ticks, self)
         return changed
 
     def _demand_calc(self):

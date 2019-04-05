@@ -132,7 +132,7 @@ class Cell(sprite.Sprite):
     def viewed_position(self, camera):
         return self._shift(negate(camera))
 
-    def update(self, dt, engine):
+    def update(self, ticks, engine):
         return False
 
     def impassible(self, cell):

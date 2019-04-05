@@ -43,6 +43,7 @@ class PopCell(Cell):
             next_level = level_thresholds[self.level + 1]
             if self.population > next_level and randint(0, 100) < 25:
                 self.level += 1
+                self.image = self.textures[self.texture_name]
 
     @property
     def texture_name(self):
