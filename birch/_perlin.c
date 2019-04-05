@@ -3,6 +3,8 @@
 #include </usr/include/python3.6m/structmember.h>
 #include </usr/lib/python3/dist-packages/numpy/core/include/numpy/arrayobject.h>
 #include <stdio.h>
+#define RANDCOUNT (1024 * 1024)
+#define GOOSE 2
 
 typedef struct {
     PyObject_HEAD
@@ -27,6 +29,7 @@ static int permutation[512] = { 151,160,137,91,90,15,
       };
 static int p[512];
 
+static double randoms[RANDCOUNT];
 
 static void Perlin_dealloc(PerlinObject *self)
 {
@@ -56,7 +59,9 @@ static int Perlin_init(PerlinObject *self, PyObject *args, PyObject *kwds)
     printf("seed: %d\n", self->seed);
     // Hash lookup table as defined by Ken Perlin.  This is a randomly
     // arranged array of all numbers from 0-255 inclusive.
-
+    for(int _z = 0; _z < RANDCOUNT; _z++) {
+        randoms[_z] = (double)(rand() % 100) / 100;
+    }
 
     return 0;
 }
@@ -68,7 +73,7 @@ static double fade(double t) {
     return t * t * t * (t * (t * 6 - 15) + 10); // 6t^5 - 15t^4 + 10t^3
 }
 
-static double grad(int hash, double x, double y) {
+static double grad(int hash, double x, double y, double z) {
     int h = hash & 15;                  // Take the hashed value and take the first 4 bits of it (15 == 0b1111)
     double u = h < 8 /* 0b1000 */ ? x : y;        // If the most significant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
     double v;                      // In Ken Perlin's original implementation this was another conditional operator (?:).  I
@@ -78,44 +83,66 @@ static double grad(int hash, double x, double y) {
     else if(h == 12 /* 0b1100 */ || h == 14 /* 0b1110*/)// If the first and second significant bits are 1 set v = x
         v = x;
     else                         // If the first and second significant bits are not equal (0/1, 1/0) set v = z
-        v = 0;
+        v = z;
     return ((h&1) == 0 ? u : -u)+((h&2) == 0 ? v : -v);
     // Use the last 2 bits to decide if u and v are positive or negative.  Then return their addition.
 }
 
 static double lerp(double start, double end, double x) {
-    return start + (end - start) * x;
+    return start + x * (end - start);
 }
 
-static double perlin(double x, double y) {
-    int xi = (int)x & 255;
-    int yi = (int)y & 255;
-    double xf = x-(int)x;
-    double yf = y-(int)y;
+int inc(int num) {
+  num++;
+  return num;
+}
+
+static double perlin(double x, double y, double z) {
+    int xi = (int)floor(x) & 255;
+    int yi = (int)floor(y) & 255;
+    int zi = (int)floor(z) & 255;
+    double xf = x-floor(x);
+    double yf = y-floor(y);
+    double zf = z-floor(z);
     double u = fade(xf);
     double v = fade(yf);
-    int aa, ab, bb, ba;
-    aa = p[p[xi]+yi];
-    ab = p[p[xi]+yi + 1];
-    bb = p[p[xi + 1]+yi + 1];
-    ba = p[p[xi + 1]+yi];
-    //if (x == 0 && y == 0) {
-    //    printf("aa %d ab %d bb %d ba %d\n", aa, ab, bb, ba);
-   // }
-    double x1, x2, y1;
-    x1 = lerp(grad(aa, xf, yf), grad(ba, xf - 1, yf), u);
-    x2 = lerp(grad(ab, xf, yf - 1), grad(bb, xf - 1, yf - 1), u);
+    double w = fade(zf);
+    int aaa, aba, aab, abb, baa, bba, bab, bbb;
+    aaa = p[p[p[    xi ]+    yi ]+    zi ];
+    aba = p[p[p[    xi ]+inc(yi)]+    zi ];
+    aab = p[p[p[    xi ]+    yi ]+inc(zi)];
+    abb = p[p[p[    xi ]+inc(yi)]+inc(zi)];
+    baa = p[p[p[inc(xi)]+    yi ]+    zi ];
+    bba = p[p[p[inc(xi)]+inc(yi)]+    zi ];
+    bab = p[p[p[inc(xi)]+    yi ]+inc(zi)];
+    bbb = p[p[p[inc(xi)]+inc(yi)]+inc(zi)];
+    double x1, x2, y1, y2;
+
+    x1 = lerp(grad(aaa, xf, yf, zf),
+                    grad (baa, xf-1, yf  , zf),
+                    u);
+    x2 = lerp(    grad (aba, xf  , yf-1, zf),
+                grad (bba, xf-1, yf-1, zf),
+                  u);
     y1 = lerp(x1, x2, v);
-    return (y1 + 1) / 2;
+
+    x1 = lerp(    grad (aab, xf  , yf  , zf-1),
+                grad (bab, xf-1, yf  , zf-1),
+                u);
+    x2 = lerp(    grad (abb, xf  , yf-1, zf-1),
+                  grad (bbb, xf-1, yf-1, zf-1),
+                  u);
+    y2 = lerp (x1, x2, v);
+    return (lerp (y1, y2, w)+1)/2;
 }
 
-static double perlin_octave(double x, double y, double frequency,
+static double perlin_octave(double x, double y, double z, double frequency,
         int octaves, double persistence) {
     double total = 0;
-    double amplitude = 1;
+    double amplitude = .5;
     double maxValue = 0; // Used for normalizing result to 0.0 - 1.0
     for(int i=0;i<octaves;i++) {
-        total += perlin(x * frequency, y * frequency) * amplitude;
+        total += perlin(x * frequency, y * frequency, z * frequency) * amplitude;
         maxValue += amplitude;
         amplitude *= persistence;
         frequency *= 2;
@@ -133,93 +160,16 @@ static PyObject *Perlin_perlin(PerlinObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "dd", &x, &y)) {
         return NULL;
     }
-    return PyFloat_FromDouble(perlin(x, y));
+    return PyFloat_FromDouble(perlin(x, y, 0));
 }
 
-static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
-    int x;
-    int y;
-    double freq;
-    int size;
+static PyObject *Perlin_perlin_octave(PerlinObject *self, PyObject *args) {
+    double x, y, frequency, persistence;
     int octaves;
-    if (!PyArg_ParseTuple(args, "iidii", &x, &y, &freq, &octaves, &size))
+    if (!PyArg_ParseTuple(args, "dddid", &x, &y, &frequency, &octaves, &persistence)) {
         return NULL;
-    int total = size * size * 4;
-    char *data = malloc(total);
-    char pix;
-    int idx, a, b, row_offset, col_offset;
-    double rx, ry;
-    double thresh;
-    for(b = 0; b < size; b++) {
-        for(a = 0; a < size; a++) {
-            row_offset = b * size * 4;
-            col_offset = a * 4;
-            idx = row_offset + col_offset;
-            ry = (y + b);
-            rx = (x + a);
-            thresh = perlin_octave(rx, ry, freq, octaves, 1.0);
-            if (a == 0 && b == 0) {
-                printf("thresh %.2f\n", thresh);
-            }
-            // noise2(rx, ry ...)
-
-            pix = (uint8_t) thresh * 255.0;
-
-            data[idx] = pix;
-            data[idx + 1] = pix;
-            data[idx + 2] = pix;
-            data[idx + 3] = 255;
-        }
     }
-    //dither_buffer(data, total, size * 4);
-    const char *derp = data;
-    PyObject *array = PyBytes_FromStringAndSize(derp, total);
-    free(data);
-    return array;
-}
-
-static PyMethodDef Perlin_methods[] = {
-    {"noise2_bytes", (PyCFunction) Perlin_noise2_bytes, METH_VARARGS,
-     "Perlin Noise 2D Array"
-    },
-    {"perlin", (PyCFunction) Perlin_perlin, METH_VARARGS,
-        "Perlin Noise"},
-    {NULL}  /* Sentinel */ };
-
-static PyTypeObject PerlinType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "perlin.Perlin",
-    .tp_doc = "A python wrapper for perlin noise c code",
-    .tp_basicsize = sizeof(PerlinObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = Perlin_new,
-    .tp_init = (initproc) Perlin_init,
-    .tp_dealloc = (destructor) Perlin_dealloc,
-    .tp_members = Perlin_members,
-    .tp_methods = Perlin_methods,
-};
-
-static PyModuleDef perlin_module = {
-    PyModuleDef_HEAD_INIT,
-    .m_name = "perlin",
-    .m_doc = "A python wrapper for perlin noise c code.",
-    .m_size = -1,
-};
-
-PyMODINIT_FUNC PyInit__perlin(void)
-{
-    PyObject *m;
-    if (PyType_Ready(&PerlinType) < 0)
-        return NULL;
-
-    m = PyModule_Create(&perlin_module);
-    if (m == NULL)
-        return NULL;
-
-    Py_INCREF(&PerlinType);
-    PyModule_AddObject(m, "Perlin", (PyObject *) &PerlinType);
-    return m;
+    return PyFloat_FromDouble(perlin_octave(x, y, 0, frequency, octaves, persistence));
 }
 
 void dither_buffer(char *data, int size, int stride) {
@@ -293,3 +243,92 @@ void dither_buffer(char *data, int size, int stride) {
         }
     }
 }
+
+static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
+    int x;
+    int y;
+    double freq;
+    int size;
+    int octaves;
+    if (!PyArg_ParseTuple(args, "iidii", &x, &y, &freq, &octaves, &size))
+        return NULL;
+    int total = size * size * 4;
+    char *data = malloc(total);
+    char pix;
+    int idx, a, b, row_offset, col_offset;
+    double rx, ry;
+    double thresh, ranz;
+    for(b = 0; b < size; b++) {
+        for(a = 0; a < size; a++) {
+            row_offset = b * size * 4;
+            col_offset = a * 4;
+            idx = row_offset + col_offset;
+            ry = (y + b);
+            rx = (x + a);
+            thresh = perlin_octave(rx, ry, 1.0, freq, octaves, 1.0);
+            // noise2(rx, ry ...)
+            ranz = randoms[idx % RANDCOUNT];
+            if (b == 0 && a == 0) {
+                printf("ranz %.2f\n", ranz);
+            }
+            pix = thresh > ranz / GOOSE ? 0 : 255;
+
+            data[idx] = pix ^ 255;
+            data[idx + 1] = pix ^ 255;
+            data[idx + 2] = pix ^ 255;
+            data[idx + 3] = pix;
+        }
+    }
+    //dither_buffer(data, total, size * 4);
+    const char *derp = data;
+    PyObject *array = PyBytes_FromStringAndSize(derp, total);
+    free(data);
+    return array;
+}
+
+static PyMethodDef Perlin_methods[] = {
+    {"noise2_bytes", (PyCFunction) Perlin_noise2_bytes, METH_VARARGS,
+     "Perlin Noise 2D Array"
+    },
+    {"perlin_octave", (PyCFunction) Perlin_perlin_octave, METH_VARARGS,
+        "Perlin Noise w/ octaves"},
+    {"perlin", (PyCFunction) Perlin_perlin, METH_VARARGS,
+        "Perlin Noise"},
+    {NULL}  /* Sentinel */ };
+
+static PyTypeObject PerlinType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "perlin.Perlin",
+    .tp_doc = "A python wrapper for perlin noise c code",
+    .tp_basicsize = sizeof(PerlinObject),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_new = Perlin_new,
+    .tp_init = (initproc) Perlin_init,
+    .tp_dealloc = (destructor) Perlin_dealloc,
+    .tp_members = Perlin_members,
+    .tp_methods = Perlin_methods,
+};
+
+static PyModuleDef perlin_module = {
+    PyModuleDef_HEAD_INIT,
+    .m_name = "perlin",
+    .m_doc = "A python wrapper for perlin noise c code.",
+    .m_size = -1,
+};
+
+PyMODINIT_FUNC PyInit__perlin(void)
+{
+    PyObject *m;
+    if (PyType_Ready(&PerlinType) < 0)
+        return NULL;
+
+    m = PyModule_Create(&perlin_module);
+    if (m == NULL)
+        return NULL;
+
+    Py_INCREF(&PerlinType);
+    PyModule_AddObject(m, "Perlin", (PyObject *) &PerlinType);
+    return m;
+}
+
