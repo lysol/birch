@@ -81,7 +81,6 @@ class Engine:
         self.ticks += self.state["speed"]
         changed = []
         cr = checkrect.inflate(checkrect.width, checkrect.height)
-        in_range_cells = self.world.get(*cr.topleft, cr.width, cr.height)
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
