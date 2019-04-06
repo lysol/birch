@@ -5,7 +5,7 @@ from birch.texture_store import TextureStore
 from birch.toolbox import Toolbox
 from birch.statusbox import Statusbox
 from birch.cursor import Cursor
-#from birch.rcibox import RCIbox
+from birch.rcibox import RCIbox
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
 
@@ -197,6 +197,8 @@ class BirchGame:
         sx, sy = self.toolbox.x + self.toolbox.width + 4, self.toolbox.y
         self.statusbox = Statusbox(sx, sy, self.window.height, self.textures, self.engine, self.main_batch)
         self.ui_elements.append(self.statusbox)
+        zx, zy = self.toolbox.x, self.toolbox.y + self.toolbox.height + 4
+        self.rcibox = RCIbox(zx, zy, self.window.height, self.main_batch, width=self.toolbox.width)
 
     def run(self):
         pyglet.clock.schedule_interval(self.update, self.sleeptime)
@@ -275,6 +277,9 @@ class BirchGame:
     def update(self, dt):
         self.kf_countdown -= 1
         self.engine.tick(dt, checkrect=self.camera_rect)
+        self.rcibox.r = self.engine.state["demand"]["r"]
+        self.rcibox.c = self.engine.state["demand"]["c"]
+        self.rcibox.i = self.engine.state["demand"]["i"]
         view_changed = False
         for point in (self.camera_rect.topleft, self.camera_rect.topright,
             self.camera_rect.bottomleft, self.camera_rect.bottomright):
