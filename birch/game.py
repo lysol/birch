@@ -299,7 +299,8 @@ class BirchGame:
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
         if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:
-            self.window.batches = self.engine.get_batches(*(self.camera_rect.center))
+            self.window.batches = self.engine.get_batches(*self.camera,
+                    self.camera_rect.width, self.camera_rect.height)
             self.last_camera = list(self.camera)
             self.first = True
         self.window.camera = self.camera
