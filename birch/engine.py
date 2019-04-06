@@ -57,8 +57,8 @@ class Engine:
     overall_factor = 1.0
 
     rci_interval = 40
-    cell_rci_interval = 120
-    max_rci_per_tick = 15
+    cell_rci_interval = 80
+    max_rci_per_tick = 25
 
     cell_minimum = 16
     insert_chunk = 15
@@ -138,7 +138,6 @@ class Engine:
                 ckey = 'i'
             if randint(0, 100) < 25 * abs(cell.demand):
                 cell.populate()
-                print('cell population now:', cell.population)
                 cell.level_check()
                 cell.last_rci = self.ticks
             neighbors = self.get_surrounding(cell, cells=workcells)
