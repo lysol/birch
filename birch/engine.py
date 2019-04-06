@@ -1,5 +1,5 @@
 from os import unlink
-from random import choice, randint, random
+from random import choice, randint, random, shuffle
 from math import sin, pi, hypot
 from collections import deque
 from uuid import uuid4
@@ -56,7 +56,9 @@ class Engine:
 
     overall_factor = 1.0
 
-    rci_interval = 20
+    rci_interval = 40
+    cell_rci_interval = 120
+    max_rci_per_tick = 15
 
     cell_minimum = 16
     insert_chunk = 15
@@ -109,63 +111,67 @@ class Engine:
                 (point + 1.0) / 2.0
 
     def _rci(self):
-        rci = ['r','c','i']
-        workcells = {k: [] for k in rci}
-        allworkcells = []
+        workcells = []
         self.state["population"] = 0
+        to_check = [RCell, CCell, ICell]
+        # we could index these by type somewhere else for
+        # more speed later
         for cell in self.state["cells"]:
-            if type(cell) is RCell:
-                workcells['r'].append(cell)
-                allworkcells.append(cell)
-            elif type(cell) is CCell:
-                workcells['c'].append(cell)
-                allworkcells.append(cell)
-            elif type(cell) is ICell:
-                workcells['i'].append(cell)
-                allworkcells.append(cell)
+            if type(cell) in to_check:
+                workcells.append(cell)
             if hasattr(cell, 'population'):
                 self.state["population"] += cell.population
-        for ct in rci:
-            for cell in workcells[ct]:
-                if type(cell) is RCell:
-                    ckey = 'r'
-                elif type(cell) is CCell:
-                    ckey = 'c'
-                elif type(cell) is ICell:
-                    ckey = 'i'
-                if randint(0, 100) < 25 * abs(cell.demand):
-                    cell.populate()
-                    cell.level_check()
-                neighbors = self.get_surrounding(cell, cells=allworkcells)
-                counts = {
-                    "r": 0,
-                    "c": 0,
-                    "i": 0
-                    }
-                populations = {
-                    "r": 0,
-                    "c": 0,
-                    "i": 0
-                    }
-                demand = 0
-                for n in neighbors:
-                    if n.id == cell.id:
-                        pass
-                    if type(n) is RCell:
-                        counts['r'] += 1
-                        populations['r'] += n.population
-                    elif type(n) is CCell:
-                        counts['c'] += 1
-                        populations['c'] += n.population
-                    elif type(n) is ICell:
-                        counts['i'] += 1
-                        populations['i'] += n.population
-                for ct in counts:
-                    demand += counts[ct] * \
-                        self.ratios[cell.base_texture_name][ct] * \
-                        clamp(populations[ct] / 100, -1, 1)
-                demand = clamp(demand + (self.state["demand"][ckey] - 0.5) * self.overall_factor, -1, 1)
-                cell.demand = demand
+        if len(workcells) == 0:
+            return False
+        targets = []
+        for yarp in range(self.max_rci_per_tick):
+            targets.append(choice(workcells))
+        for cell in targets:
+            if cell.last_rci + self.cell_rci_interval > self.ticks:
+                # not ready yet :)
+                continue
+            if type(cell) is RCell:
+                ckey = 'r'
+            elif type(cell) is CCell:
+                ckey = 'c'
+            elif type(cell) is ICell:
+                ckey = 'i'
+            if randint(0, 100) < 25 * abs(cell.demand):
+                cell.populate()
+                print('cell population now:', cell.population)
+                cell.level_check()
+                cell.last_rci = self.ticks
+            neighbors = self.get_surrounding(cell, cells=workcells)
+            counts = {
+                "r": 0,
+                "c": 0,
+                "i": 0
+                }
+            populations = {
+                "r": 0,
+                "c": 0,
+                "i": 0
+                }
+            demand = 0
+            for n in neighbors:
+                if n.id == cell.id:
+                    pass
+                if type(n) is RCell:
+                    counts['r'] += 1
+                    populations['r'] += n.population
+                elif type(n) is CCell:
+                    counts['c'] += 1
+                    populations['c'] += n.population
+                elif type(n) is ICell:
+                    counts['i'] += 1
+                    populations['i'] += n.population
+            for ct in counts:
+                demand += counts[ct] * \
+                    self.ratios[cell.base_texture_name][ct] * \
+                    clamp(populations[ct] / 100, -1, 1)
+            global_demand = self.state['demand'][ckey] - 0.5
+            demand = clamp(demand + global_demand * self.overall_factor, -1, 1)
+            cell.demand = demand
 
     def get_surrounding(self, cell, cells=None):
         bounds = cell.rect.inflate(cell.width * 2, cell.height * 2)

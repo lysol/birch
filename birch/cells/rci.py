@@ -21,6 +21,7 @@ class PopCell(Cell):
         self.texture_name = base_texture_name
         self.population = 0
         self.demand = 0
+        self.last_rci = 0
 
     def impassible(self, cell):
         return True
