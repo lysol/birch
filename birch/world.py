@@ -10,29 +10,12 @@ class World:
         self.vertex_lists = {}
         self.bg_batches = {}
         self.bgs = {}
-        self.cache_layers = {}
 
     def _alias(self, x, y):
         return (
             int((x - x % self.chunk_size) / self.chunk_size),
             int((y - y % self.chunk_size) / self.chunk_size)
             )
-
-    def cache_layer_exists(self, x, y):
-        ox, oy = self._alias(x, y)
-        res = '%d_%d' % (ox, oy) in self.cache_layers
-        return res
-
-    def add_cache_layer(self, sprite, x, y):
-        ox, oy = self._alias(x, y)
-        if (ox, oy) not in self.bg_batches:
-            self.bg_batches[(ox, oy)] = pyglet.graphics.Batch()
-        sprite.batch = self.bg_batches[(ox, oy)]
-        self.cache_layers['%d_%d' % (ox, oy)] = sprite
-
-    def update_cache_layer(self, image, x, y):
-        ox, oy = self._alias(x, y)
-        self.cache_layers['%d_%d' % (ox, oy)].image = image
 
     def unseeded(self, x, y):
         ox, oy = self._alias(x, y)
@@ -80,8 +63,7 @@ class World:
         ox, oy = self._alias(x, y)
         self._inflate(ox, oy)
         sprite.batch = None
-        if sprite.id in self.world[oy][ox]:
-            del self.world[oy][ox][sprite.id]
+        del self.world[oy][ox][sprite.id]
 
     def get(self, x, y, w, h):
         chunks = self.get_chunks(x, y, w, h)

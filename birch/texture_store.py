@@ -64,30 +64,6 @@ class TextureStore(dict):
         outsprite.scale = 2.0
         return outsprite
 
-    def update_cache_layer(self, image_key, dim, ix, iy, ox, oy):
-        # dim is expected to chunk size / 2, and ox and oy are ~image~ delta
-        key = 'cache_%d_%d' % (ix, iy)
-        img = self[image_key]
-        if key not in self:
-            data = bytes([0] * (dim * dim * 4))
-            target = GL_TEXTURE_2D
-            gid = GLuint()
-            glGenTextures(1, byref(gid))
-            glBindTexture(target, gid.value)
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            glTexImage2D(target, 0,
-                 GL_RGBA,
-                 dim, dim,
-                 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE,
-                 data)
-            image = Texture(dim, dim, target, gid.value)
-            self[key] = image
-        target = self[key]
-        target.blit_into(img.get_image_data(), ox, oy, 0)
-        return
-
     def create_background(self, dim, ix, iy):
         # draw dirt stuff
         freq = 1/100

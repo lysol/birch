@@ -32,7 +32,6 @@ class ConnectableCell(Cell):
         super().__init__(name, textures, position, texture_name, size=size)
         self.base_texture_name = name
         self.next_tick = 0
-        self.cacheable = True
 
     def _connected(self, cell):
         return cell.name == self.name and (self.position[0] == cell.position[0] or \
