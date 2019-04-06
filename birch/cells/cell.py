@@ -34,9 +34,14 @@ class Cell(sprite.Sprite):
                 *delta)
             self.visible = False
             self.cached = True
+            batch = self.batch
             self.batch = None
-            self.group = None
             self.delete()
+            batch.invalidate()
+
+    def draw(self):
+        if self.visible:
+            super().draw()
 
     def __setattr__(self, attrname, value):
         supper = super()
