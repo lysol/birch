@@ -24,7 +24,7 @@ class Cell(sprite.Sprite):
         self.cached = False
 
     def cache(self, dim, ix, iy):
-        if self.cacheable:
+        if self.cacheable and not self.cached:
             delta = [self.x - ix, self.y - iy]
             delta[0] = int(delta[0] / 2)
             delta[1] = int(delta[1] / 2)
@@ -36,6 +36,7 @@ class Cell(sprite.Sprite):
             self.cached = True
             self.batch = None
             self.group = None
+            self.delete()
 
     def __setattr__(self, attrname, value):
         supper = super()

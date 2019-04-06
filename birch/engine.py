@@ -208,11 +208,13 @@ class Engine:
                     ix = ix * swcs
                     iy = iy * swcs
                     other.cache(swcs, ix, iy)
+                    self.del_cell(other)
             ix, iy = self.world._alias(*cell.position)
             ix = ix * swcs
             iy = iy * swcs
             cell.cache(swcs, ix, iy)
             self.update_cache_layer(ix, iy)
+            self.del_cell(cell)
 
     def update_cache_layer(self, ix, iy):
         key = 'cache_%d_%d' % (ix, iy)

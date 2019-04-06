@@ -11,7 +11,6 @@ class World:
         self.bg_batches = {}
         self.bgs = {}
         self.cache_layers = {}
-        self.cache_batches = {}
 
     def _alias(self, x, y):
         return (
@@ -26,8 +25,9 @@ class World:
 
     def add_cache_layer(self, sprite, x, y):
         ox, oy = self._alias(x, y)
-        self.cache_batches[(ox, oy)] = pyglet.graphics.Batch()
-        sprite.batch = self.cache_batches[(ox, oy)]
+        if (ox, oy) not in self.bg_batches:
+            self.bg_batches[(ox, oy)] = pyglet.graphics.Batch()
+        sprite.batch = self.bg_batches[(ox, oy)]
         self.cache_layers['%d_%d' % (ox, oy)] = sprite
 
     def update_cache_layer(self, image, x, y):
@@ -80,7 +80,8 @@ class World:
         ox, oy = self._alias(x, y)
         self._inflate(ox, oy)
         sprite.batch = None
-        del self.world[oy][ox][sprite.id]
+        if sprite.id in self.world[oy][ox]:
+            del self.world[oy][ox][sprite.id]
 
     def get(self, x, y, w, h):
         chunks = self.get_chunks(x, y, w, h)
@@ -155,8 +156,6 @@ class World:
             for xes in list(range(ox, px + 1)):
                 if (xes, yes) in self.bg_batches:
                     batch_draws.append(self.bg_batches[(xes, yes)])
-                if (xes, yes) in self.cache_batches:
-                    batch_draws.append(self.cache_batches[(xes, yes)])
                 if (xes, yes) in self.batches:
                     bdict = self.batches[(xes, yes)]
                     pees = sorted(bdict.keys())
