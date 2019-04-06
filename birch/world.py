@@ -10,12 +10,29 @@ class World:
         self.vertex_lists = {}
         self.bg_batches = {}
         self.bgs = {}
+        self.cache_layers = {}
+        self.cache_batches = {}
 
     def _alias(self, x, y):
         return (
             int((x - x % self.chunk_size) / self.chunk_size),
             int((y - y % self.chunk_size) / self.chunk_size)
             )
+
+    def cache_layer_exists(self, x, y):
+        ox, oy = self._alias(x, y)
+        res = '%d_%d' % (ox, oy) in self.cache_layers
+        return res
+
+    def add_cache_layer(self, sprite, x, y):
+        ox, oy = self._alias(x, y)
+        self.cache_batches[(ox, oy)] = pyglet.graphics.Batch()
+        sprite.batch = self.cache_batches[(ox, oy)]
+        self.cache_layers['%d_%d' % (ox, oy)] = sprite
+
+    def update_cache_layer(self, image, x, y):
+        ox, oy = self._alias(x, y)
+        self.cache_layers['%d_%d' % (ox, oy)].image = image
 
     def unseeded(self, x, y):
         ox, oy = self._alias(x, y)
@@ -138,6 +155,8 @@ class World:
             for xes in list(range(ox, px + 1)):
                 if (xes, yes) in self.bg_batches:
                     batch_draws.append(self.bg_batches[(xes, yes)])
+                if (xes, yes) in self.cache_batches:
+                    batch_draws.append(self.cache_batches[(xes, yes)])
                 if (xes, yes) in self.batches:
                     bdict = self.batches[(xes, yes)]
                     pees = sorted(bdict.keys())

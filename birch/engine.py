@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from pyglet.gl import *
 from pyglet import resource
 from pyglet.sprite import Sprite
+from pyglet.graphics import OrderedGroup
 from pyglet.image import Texture, ImageData
 import pyglet
 from PIL import Image, ImageDraw
@@ -200,9 +201,26 @@ class Engine:
         if issubclass(type(cell), ConnectableCell):
             newbounds = cell.rect.inflate(cell.width * 2, cell.height * 2).bounds
             surrounding = self.world.get(*newbounds)
+            swcs = self.world.chunk_size
             for other in surrounding:
                 if type(other) == type(cell):
-                    other.cache_texture(self.get_surrounding(other))
+                    ix, iy = self.world._alias(*other.position)
+                    ix = ix * swcs
+                    iy = iy * swcs
+                    other.cache(swcs, ix, iy)
+            ix, iy = self.world._alias(*cell.position)
+            ix = ix * swcs
+            iy = iy * swcs
+            cell.cache(swcs, ix, iy)
+            self.update_cache_layer(ix, iy)
+
+    def update_cache_layer(self, ix, iy):
+        key = 'cache_%d_%d' % (ix, iy)
+        if not self.world.cache_layer_exists(ix, iy):
+            cache_sprite = Sprite(self.textures[key], ix, iy)
+            cache_sprite.scale = 2
+            cache_sprite.group = OrderedGroup(1)
+            self.world.add_cache_layer(cache_sprite, ix, iy)
 
     def del_cell(self, cell):
         self.world.delete(cell, *cell.position)

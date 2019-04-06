@@ -19,6 +19,23 @@ class Cell(sprite.Sprite):
         #self.size = size if size is not None else [self.sprite.width, self.sprite.height]
         self.scale = 2.0
         self.set_dimensions()
+        self.cacheable = False
+        self.visible = True
+        self.cached = False
+
+    def cache(self, dim, ix, iy):
+        if self.cacheable:
+            delta = [self.x - ix, self.y - iy]
+            delta[0] = int(delta[0] / 2)
+            delta[1] = int(delta[1] / 2)
+            dim = int(dim / 2)
+            # here ix and iy are not halved because they are used as indices
+            self.textures.update_cache_layer(self.texture_name, dim, ix, iy,
+                *delta)
+            self.visible = False
+            self.cached = True
+            self.batch = None
+            self.group = None
 
     def __setattr__(self, attrname, value):
         supper = super()
