@@ -91,7 +91,7 @@ class TextureStore(dict):
     def create_background(self, dim, ix, iy):
         # draw dirt stuff
         freq = 1/100
-        imgdata = self.perlin.noise2_bytes(ix, iy, freq, 2, dim, 32)
+        imgdata = self.perlin.noise2_bytes(ix, iy, freq, 2, dim, 64)
         target = GL_TEXTURE_2D
         gid = GLuint()
         glGenTextures(1, byref(gid))
