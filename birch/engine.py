@@ -111,14 +111,18 @@ class Engine:
     def _rci(self):
         rci = ['r','c','i']
         workcells = {k: [] for k in rci}
+        allworkcells = []
         self.state["population"] = 0
         for cell in self.state["cells"]:
             if type(cell) is RCell:
                 workcells['r'].append(cell)
+                allworkcells.append(cell)
             elif type(cell) is CCell:
                 workcells['c'].append(cell)
+                allworkcells.append(cell)
             elif type(cell) is ICell:
                 workcells['i'].append(cell)
+                allworkcells.append(cell)
             if hasattr(cell, 'population'):
                 self.state["population"] += cell.population
         for ct in rci:
@@ -132,7 +136,7 @@ class Engine:
                 if randint(0, 100) < 25 * abs(cell.demand):
                     cell.populate()
                     cell.level_check()
-                neighbors = self.get_surrounding(cell)
+                neighbors = self.get_surrounding(cell, cells=allworkcells)
                 counts = {
                     "r": 0,
                     "c": 0,
@@ -163,9 +167,15 @@ class Engine:
                 demand = clamp(demand + (self.state["demand"][ckey] - 0.5) * self.overall_factor, -1, 1)
                 cell.demand = demand
 
-    def get_surrounding(self, cell):
-        bounds = cell.rect.inflate(cell.width * 2, cell.height * 2).bounds
-        return self.world.get(*bounds)
+    def get_surrounding(self, cell, cells=None):
+        bounds = cell.rect.inflate(cell.width * 2, cell.height * 2)
+        if cells is None:
+            return self.world.get(*bounds.bounds)
+        out = []
+        for ccell in cells:
+            if ccell.rect.colliderect(bounds):
+                out.append(ccell)
+        return out
 
     def get_cell(self, x, y, w, h):
         return self.world.get(x, y, w, h)
