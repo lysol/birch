@@ -19,6 +19,7 @@ from birch.cells.uranium import Uranium
 from birch.cells.tree import PineTree, BirchTree
 from birch.util import clamp, pi2, Rect
 from birch.world import World
+from birch._perlin import Perlin
 
 class Engine:
 
@@ -63,6 +64,25 @@ class Engine:
     cell_minimum = 16
     insert_chunk = 15
 
+    seed_config = {
+        'birch_tree': {
+            'class': BirchTree,
+            'freq': 1/1700,
+            'octaves': 2,
+            'offset': [110, -43],
+            'threshold': 0.6,
+            'rand_thresh': 0.8
+            },
+        'pine_tree': {
+            'class': PineTree,
+            'freq': 1/2100,
+            'octaves': 2,
+            'offset': [77, 76],
+            'threshold': 0.85,
+            'rand_thresh': 0.9
+            }
+        }
+
     def __init__(self, state, textures):
         self.state = state
         self.ticks = 0
@@ -71,6 +91,7 @@ class Engine:
         self._demand_calc()
         self.world = World()
         self.deferred_inserts = deque([])
+        self.perlin = Perlin(818)
 
     def in_range(self, camera, pos):
         return pos[0] > camera[0] - 1000 or \
@@ -269,35 +290,23 @@ class Engine:
     def seed(self, x, y):
         if not self.world.unseeded(x, y):
             return
+        seed_config = self.seed_config
+
         tl = self.world._alias(x, y)
         ax, ay = tuple(map(lambda z: z * self.world.chunk_size, tl))
         bounds = (ax, ay, ax + self.world.chunk_size, ay + self.world.chunk_size)
         cells = []
-
-        def freq(perc):
-            maxcell = (self.world.chunk_size / 32) * (self.world.chunk_size / 32) / 2
-            res = int(maxcell * perc)
-            return res
-
-        def xy():
-            xx = randint(bounds[0], bounds[2])
-            yy = randint(bounds[1], bounds[3])
-            xx = xx - xx % 16
-            yy = yy - yy % 16
-            return (
-                xx, yy
-                )
-
-        uranium_freq = freq(.03)
-        pine_freq = freq(.05)
-        birch_freq = freq(.05)
-
-        for i in range(uranium_freq):
-            cells.append(Uranium(self.textures, xy()))
-        for i in range(pine_freq):
-            cells.append(PineTree(self.textures, xy()))
-        for i in range(birch_freq):
-            cells.append(BirchTree(self.textures, xy()))
+        for ix in range(bounds[0], bounds[2], 16):
+            for iy in range(bounds[1], bounds[3], 16):
+                for key in seed_config:
+                    cfg = seed_config[key]
+                    val = self.perlin.perlin_octave(
+                        ix + cfg['offset'][0],
+                        iy + cfg['offset'][1],
+                        cfg['freq'],
+                        cfg['octaves'], 1.0)
+                    if val > cfg['threshold'] and random() > cfg['rand_thresh']:
+                        cells.append(cfg['class'](self.textures, (ix, iy)))
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
         image_key = self.textures.create_background(
