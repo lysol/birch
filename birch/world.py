@@ -19,7 +19,7 @@ class World:
 
     def unseeded(self, x, y):
         ox, oy = self._alias(x, y)
-        return (ox, oy) not in self.seeded or not self.seeded[(ox, oy)]
+        return (ox, oy) not in self.seeded
 
     def _inflate(self, ix, iy, priority=10):
         changed = False
@@ -33,7 +33,6 @@ class World:
         if changed:
             self.batches[(ix, iy)] = {}
             self.batches[(ix, iy)][priority] = pyglet.graphics.Batch()
-            self.seeded[(ix, iy)] = False
 
     def bg_vertex(self, x, y, count, mode, group, *data):
         ox, oy = self._alias(x, y)
@@ -86,11 +85,12 @@ class World:
         return out
 
     def seed(self, ix, iy, sprites):
-        if (ix, iy) in self.seeded and self.seeded[(ix, iy)]:
+        if (ix, iy) in self.seeded:
             return False
         for sprite in sprites:
             self.insert(sprite, *sprite.position)
         self.seeded[(ix, iy)] = True
+        print('setting %d %d seeded' % (ix, iy))
         return True
 
     def draw_chunks(self, x, y, w = 1, h = 1):
