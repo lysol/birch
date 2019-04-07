@@ -67,19 +67,19 @@ class Engine:
     seed_config = {
         'birch_tree': {
             'class': BirchTree,
-            'freq': 1/1700,
-            'octaves': 2,
+            'freq': 1/400,
+            'octaves': 1,
             'offset': [110, -43],
-            'threshold': 0.6,
-            'rand_thresh': 0.8
+            'threshold': 0.5,
+            'rand_thresh': 0.95
             },
         'pine_tree': {
             'class': PineTree,
-            'freq': 1/2100,
-            'octaves': 2,
-            'offset': [77, 76],
-            'threshold': 0.85,
-            'rand_thresh': 0.9
+            'freq': 1/1400,
+            'octaves': 1,
+            'offset': [-1277, 76],
+            'threshold': 0.6,
+            'rand_thresh': 0.95
             }
         }
 
@@ -298,7 +298,9 @@ class Engine:
         cells = []
         for ix in range(bounds[0], bounds[2], 16):
             for iy in range(bounds[1], bounds[3], 16):
-                for key in seed_config:
+                seed_keys = list(seed_config.keys())
+                shuffle(seed_keys)
+                for key in seed_keys:
                     cfg = seed_config[key]
                     val = self.perlin.perlin_octave(
                         ix + cfg['offset'][0],
@@ -307,6 +309,7 @@ class Engine:
                         cfg['octaves'], 1.0)
                     if val > cfg['threshold'] and random() > cfg['rand_thresh']:
                         cells.append(cfg['class'](self.textures, (ix, iy)))
+                        break
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
         image_key = self.textures.create_background(
