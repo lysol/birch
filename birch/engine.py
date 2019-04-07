@@ -296,8 +296,12 @@ class Engine:
         ax, ay = tuple(map(lambda z: z * self.world.chunk_size, tl))
         bounds = (ax, ay, ax + self.world.chunk_size, ay + self.world.chunk_size)
         cells = []
-        for ix in range(bounds[0], bounds[2], 16):
-            for iy in range(bounds[1], bounds[3], 16):
+        xes = list(range(bounds[0], bounds[2], 16))
+        yes = list(range(bounds[1], bounds[3], 16))
+        shuffle(xes)
+        shuffle(yes)
+        for ix in xes:
+            for iy in yes:
                 seed_keys = list(seed_config.keys())
                 shuffle(seed_keys)
                 for key in seed_keys:
