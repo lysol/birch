@@ -90,7 +90,6 @@ class World:
         for sprite in sprites:
             self.insert(sprite, *sprite.position)
         self.seeded[(ix, iy)] = True
-        print('setting %d %d seeded' % (ix, iy))
         return True
 
     def draw_chunks(self, x, y, w = 1, h = 1):
