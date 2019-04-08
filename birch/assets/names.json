@@ -111,104 +111,64 @@
         "size": 12,
         "position": [48, 48]
     },
-    "road_bl": {
-        "size": 8,
-        "position": [64, 48]
-    },
-    "road_h": {
-        "size": 8,
-        "position": [72, 48]
-    },
-    "road_tr": {
-        "size": 8,
-        "position": [80, 48]
-    },
-    "road_v": {
-        "size": 8,
-        "position": [88, 48]
-    },
-    "road_x": {
-        "size": 8,
-        "position": [96, 48]
-    },
-    "road_tl": {
-        "size": 8,
-        "position": [104, 48]
-    },
-    "road_br": {
-        "size": 8,
-        "position": [112, 48]
-    },
-    "rail_bl": {
-        "size": 8,
-        "position": [120, 48]
-    },
-    "rail_h": {
-        "size": 8,
-        "position": [64, 56]
-    },
-    "rail_tr": {
-        "size": 8,
-        "position": [72, 56]
-    },
-    "rail_v": {
-        "size": 8,
-        "position": [80, 56]
-    },
-    "rail_x": {
-        "size": 8,
-        "position": [88, 56]
-    },
-    "rail_tl": {
-        "size": 8,
-        "position": [96, 56]
-    },
-    "rail_br": {
-        "size": 8,
-        "position": [104, 56]
-    },
     "cursor_16": {
         "size": 8,
         "position": [112, 56]
     },
-    "dirt_0_0": {
+    "road_h": {
         "size": 16,
         "position": [0, 64]
     },
-    "dirt_0_1": {
+    "road_v": {
         "size": 16,
         "position": [16, 64]
     },
-    "dirt_1_0": {
+    "road_br": {
         "size": 16,
         "position": [32, 64]
     },
-    "dirt_1_1": {
+    "road_tr": {
         "size": 16,
         "position": [48, 64]
     },
-    "dirt_2_0": {
+    "road_tl": {
         "size": 16,
         "position": [64, 64]
     },
-    "dirt_2_1": {
+    "road_bl": {
         "size": 16,
         "position": [80, 64]
     },
-    "dirt_3_0": {
+    "road_x": {
         "size": 16,
         "position": [96, 64]
     },
-    "dirt_3_1": {
-        "size": 16,
-        "position": [112, 64]
-    },
-    "dirt_4_0": {
+    "rail_h": {
         "size": 16,
         "position": [0, 80]
     },
-    "dirt_4_1": {
+    "rail_v": {
         "size": 16,
         "position": [16, 80]
+    },
+    "rail_br": {
+        "size": 16,
+        "position": [32, 80]
+    },
+    "rail_tr": {
+        "size": 16,
+        "position": [48, 80]
+    },
+    "rail_tl": {
+        "size": 16,
+        "position": [64, 80]
+    },
+    "rail_bl": {
+        "size": 16,
+        "position": [80, 80]
+    },
+    "rail_x": {
+        "size": 16,
+        "position": [96, 80]
     }
 }

@@ -27,7 +27,7 @@ for k in _masks:
 
 class ConnectableCell(Cell):
 
-    def __init__(self, name, textures, position, size=[16, 16]):
+    def __init__(self, name, textures, position, size=[32, 32]):
         texture_name = '%s_h' % name
         super().__init__(name, textures, position, texture_name, size=size)
         self.base_texture_name = name
