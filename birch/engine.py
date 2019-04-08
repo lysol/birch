@@ -296,24 +296,19 @@ class Engine:
         ax, ay = tuple(map(lambda z: z * self.world.chunk_size, tl))
         bounds = (ax, ay, ax + self.world.chunk_size, ay + self.world.chunk_size)
         cells = []
-        xes = list(range(bounds[0], bounds[2], 16))
-        yes = list(range(bounds[1], bounds[3], 16))
-        shuffle(xes)
-        shuffle(yes)
-        for ix in xes:
-            for iy in yes:
-                seed_keys = list(seed_config.keys())
-                shuffle(seed_keys)
-                for key in seed_keys:
-                    cfg = seed_config[key]
-                    val = self.perlin.perlin_octave(
-                        ix + cfg['offset'][0],
-                        iy + cfg['offset'][1],
-                        cfg['freq'],
-                        cfg['octaves'], 1.0)
+        seed_keys = list(seed_config.keys())
+        shuffle(seed_keys)
+        for key in seed_keys:
+            cfg = seed_config[key]
+            perlins = self.perlin.perlin_octave_array(
+                bounds[0], bounds[1], self.world.chunk_size, self.world.chunk_size,
+                cfg['freq'], cfg['octaves'], 1.0, 16)
+            for (oy, pees) in enumerate(perlins):
+                for (ox, val) in enumerate(pees):
+                    ix = bounds[0] + ox * 16
+                    iy = bounds[1] + oy * 16
                     if val > cfg['threshold'] and random() > cfg['rand_thresh']:
                         cells.append(cfg['class'](self.textures, (ix, iy)))
-                        break
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
         image_key = self.textures.create_background(

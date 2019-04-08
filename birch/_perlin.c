@@ -151,6 +151,30 @@ static double perlin_octave(double x, double y, double z, double frequency,
     return total/maxValue;
 }
 
+static PyObject *Perlin_perlin_octave_array(PerlinObject *self, PyObject *args) {
+    double x, y, width, height, frequency, persistence, step;
+    int octaves;
+    if (!PyArg_ParseTuple(args, "dddddidd", &x, &y, &width, &height,
+                &frequency, &octaves, &persistence, &step)) {
+        return NULL;
+    }
+    int row_count = floor(height / step);
+    int col_count = floor(width / step);
+    PyObject* row_list;
+    PyObject* list = PyTuple_New(row_count);
+    int a, b;
+    double res;
+    for (b=0; b<height / step; b++) {
+        row_list = PyTuple_New(col_count);
+        for (a=0; a<width / step; a++) {
+            res = perlin_octave((double)a*step+x, (double)b*step+y, 0, frequency, octaves, persistence);
+            PyTuple_SetItem(row_list, a, PyFloat_FromDouble(res));
+        }
+        PyTuple_SetItem(list, b, row_list);
+    }
+    return list;
+}
+
 static PyMemberDef Perlin_members[] = {
     {"seed", T_INT, offsetof(PerlinObject, seed), 0,
      "random seed"},
@@ -299,6 +323,8 @@ static PyMethodDef Perlin_methods[] = {
     },
     {"perlin_octave", (PyCFunction) Perlin_perlin_octave, METH_VARARGS,
         "Perlin Noise w/ octaves"},
+    {"perlin_octave_array", (PyCFunction) Perlin_perlin_octave_array, METH_VARARGS,
+        "Perlin Noise Array w/ octaves"},
     {"perlin", (PyCFunction) Perlin_perlin, METH_VARARGS,
         "Perlin Noise"},
     {NULL}  /* Sentinel */ };
