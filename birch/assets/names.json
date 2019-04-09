@@ -170,5 +170,125 @@
     "rail_x": {
         "size": 16,
         "position": [96, 80]
+    },
+    "water_v_0": {
+        "size": 8,
+        "position": [120, 64]
+    },
+    "water_v_1": {
+        "size": 8,
+        "position": [120, 72]
+    },
+    "water_h_0": {
+        "size": 8,
+        "position": [112, 80]
+    },
+    "water_h_1": {
+        "size": 8,
+        "position": [120, 80]
+    },
+    "water_o_0": {
+        "size": 8,
+        "position": [112, 64]
+    },
+    "water_o_1": {
+        "size": 8,
+        "position": [112, 72]
+    },
+    "water_vr_0": {
+        "size": 8,
+        "position": [112, 88]
+    },
+    "water_vr_1": {
+        "size": 8,
+        "position": [112, 96]
+    },
+    "water_vl_0": {
+        "size": 8,
+        "position": [120, 88]
+    },
+    "water_vl_1": {
+        "size": 8,
+        "position": [120, 96]
+    },
+    "water_hb_0": {
+        "size": 8,
+        "position": [112, 104]
+    },
+    "water_hb_1": {
+        "size": 8,
+        "position": [120, 104]
+    },
+    "water_ht_0": {
+        "size": 8,
+        "position": [112, 112]
+    },
+    "water_ht_1": {
+        "size": 8,
+        "position": [120, 112]
+    },
+    "water_i_0": {
+        "size": 8,
+        "position": [112, 120]
+    },
+    "water_i_1": {
+        "size": 8,
+        "position": [120, 120]
+    },
+    "water_tl_0": {
+        "size": 8,
+        "position": [80, 96]
+    },
+    "water_tr_0": {
+        "size": 8,
+        "position": [88, 96]
+    },
+    "water_bl_0": {
+        "size": 8,
+        "position": [80, 104]
+    },
+    "water_br_0": {
+        "size": 8,
+        "position": [88, 104]
+    },
+    "water_i_tl_0": {
+        "size": 8,
+        "position": [96, 96]
+    },
+    "water_i_tr_0": {
+        "size": 8,
+        "position": [104, 96]
+    },
+    "water_i_bl_0": {
+        "size": 8,
+        "position": [96, 104]
+    },
+    "water_i_br_0": {
+        "size": 8,
+        "position": [104, 104]
+    },
+    "water_0": {
+        "size": 8,
+        "position": [96, 112]
+    },
+    "water_1": {
+        "size": 8,
+        "position": [104, 112]
+    },
+    "water_hl_0": {
+        "size": 8,
+        "position": [80, 112]
+    },
+    "water_hr_0": {
+        "size": 8,
+        "position": [88, 112]
+    },
+    "water_vt_0": {
+        "size": 8,
+        "position": [80, 120]
+    },
+    "water_vb_0": {
+        "size": 8,
+        "position": [88, 120]
     }
 }
