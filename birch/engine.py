@@ -12,6 +12,7 @@ import pyglet
 from PIL import Image, ImageDraw
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
+from birch.cells.blueprint import BlueprintCell
 from birch.cells.connectable import ConnectableCell
 from birch.cells.road import RoadCell
 from birch.cells.rail import RailCell
@@ -211,8 +212,8 @@ class Engine:
         for z in range(self.insert_chunk):
             if len(self.deferred_inserts) == 0:
                 break
-            cell = self.deferred_inserts.popleft()
-            cells.append(cell)
+            bp = self.deferred_inserts.popleft()
+            cells.append(bp.to_cell())
         if len(cells) > 0:
             self.state['cells'].extend(cells)
             for cell in cells:
@@ -308,7 +309,7 @@ class Engine:
                     ix = bounds[0] + ox * 16
                     iy = bounds[1] + oy * 16
                     if val > cfg['threshold'] and random() > cfg['rand_thresh']:
-                        cells.append(cfg['class'](self.textures, (ix, iy)))
+                        cells.append(BlueprintCell(cfg['class'], (self.textures, (ix, iy))))
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
         image_key = self.textures.create_background(
