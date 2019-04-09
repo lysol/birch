@@ -3,7 +3,7 @@ from birch.cells.connectable import ConnectableCell
 class RoadCell(ConnectableCell):
 
     def __init__(self, textures, position):
-        super().__init__('road', textures, position, size=[32, 32])
+        super().__init__('road', textures, position, size=[16, 16])
         self.priority = 2
 
     def impassible(self, cell_name):
