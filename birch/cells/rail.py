@@ -11,6 +11,8 @@ class RailCell(ConnectableCell):
         '_x': ['11112222', '11102222', '11012222', '10112222', '01112222']
         }
 
+    _default_texture = 'rail_h'
+
     def __init__(self, textures, position):
         super().__init__('rail', textures, position, size=[16, 16])
         self.priority = 3

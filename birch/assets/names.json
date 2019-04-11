@@ -275,19 +275,39 @@
         "size": 8,
         "position": [120, 120]
     },
+    "water_x_0": {
+        "size": 8,
+        "position": [96, 120]
+    },
     "water_tl_0": {
         "size": 8,
-        "position": [80, 96]
+        "position": [64, 112]
     },
     "water_tr_0": {
         "size": 8,
-        "position": [88, 96]
+        "position": [72, 112]
     },
     "water_bl_0": {
         "size": 8,
-        "position": [80, 104]
+        "position": [64, 120]
     },
     "water_br_0": {
+        "size": 8,
+        "position": [72, 120]
+    },
+    "water_u_tl_0": {
+        "size": 8,
+        "position": [80, 96]
+    },
+    "water_u_tr_0": {
+        "size": 8,
+        "position": [88, 96]
+    },
+    "water_u_bl_0": {
+        "size": 8,
+        "position": [80, 104]
+    },
+    "water_u_br_0": {
         "size": 8,
         "position": [88, 104]
     },
@@ -307,11 +327,11 @@
         "size": 8,
         "position": [104, 104]
     },
-    "water_0": {
+    "water_f_0": {
         "size": 8,
         "position": [96, 112]
     },
-    "water_1": {
+    "water_f_1": {
         "size": 8,
         "position": [104, 112]
     },
@@ -330,5 +350,93 @@
     "water_vb_0": {
         "size": 8,
         "position": [88, 120]
+    },
+    "water_ltee_0": {
+        "size": 8,
+        "position": [64, 96]
+    },
+    "water_ttee_0": {
+        "size": 8,
+        "position": [72, 96]
+    },
+    "water_rtee_0": {
+        "size": 8,
+        "position": [64, 104]
+    },
+    "water_btee_0": {
+        "size": 8,
+        "position": [72, 104]
+    },
+    "water_yl": {
+        "size": 8,
+        "position": [56, 96]
+    },
+    "water_yr": {
+        "size": 8,
+        "position": [56, 104]
+    },
+    "water_yt": {
+        "size": 8,
+        "position": [56, 112]
+    },
+    "water_yb": {
+        "size": 8,
+        "position": [56, 120]
+    },
+    "water_ytlt": {
+        "size": 8,
+        "position": [40, 96]
+    },
+    "water_ytrt": {
+        "size": 8,
+        "position": [48, 96]
+    },
+    "water_yblb": {
+        "size": 8,
+        "position": [40, 104]
+    },
+    "water_ybrb": {
+        "size": 8,
+        "position": [48, 104]
+    },
+    "water_ytll": {
+        "size": 8,
+        "position": [40, 112]
+    },
+    "water_ytrr": {
+        "size": 8,
+        "position": [48, 112]
+    },
+    "water_ybll": {
+        "size": 8,
+        "position": [40, 120]
+    },
+    "water_ybrr": {
+        "size": 8,
+        "position": [48, 120]
+    },
+    "water_ytlx": {
+        "size": 8,
+        "position": [24, 96]
+    },
+    "water_ytrx": {
+        "size": 8,
+        "position": [32, 96]
+    },
+    "water_yblx": {
+        "size": 8,
+        "position": [24, 104]
+    },
+    "water_ybrx": {
+        "size": 8,
+        "position": [32, 104]
+    },
+    "water_ydl": {
+        "size": 8,
+        "position": [24, 112]
+    },
+    "water_ydr": {
+        "size": 8,
+        "position": [32, 112]
     }
 }

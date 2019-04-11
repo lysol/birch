@@ -16,6 +16,7 @@ from birch.cells.blueprint import BlueprintCell
 from birch.cells.connectable import ConnectableCell
 from birch.cells.road import RoadCell
 from birch.cells.rail import RailCell
+from birch.cells.water import WaterCell
 from birch.cells.uranium import Uranium
 from birch.cells.tree import PineTree, BirchTree
 from birch.util import clamp, pi2, Rect
@@ -281,6 +282,8 @@ class Engine:
                 new_cell = RailCell(self.textures, (x, y))
             elif name == "road_h":
                 new_cell = RoadCell(self.textures, (x, y))
+            elif name == "water_o_0":
+                new_cell = WaterCell(self.textures, (x, y))
         if new_cell is not None:
             self.set_cell(new_cell, alias=False)
 

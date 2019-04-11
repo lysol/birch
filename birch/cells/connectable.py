@@ -5,37 +5,56 @@ from random import shuffle
 class ConnectableCell(Cell):
     _masks = {
         '': ['00000000'],
-        '_h': ['01100000'],
-        '_v': ['10010000'],
-        '_tl': ['11000000'],
-        '_tr': ['10100000'],
-        '_bl': ['01010000'],
-        '_br': ['00110000'],
+        '_h': ['01102222'],
+        '_v': ['10012222'],
+        '_tl': ['00112220'],
+        '_tr': ['01012202'],
+        '_bl': ['10102022'],
+        '_br': ['11000222'],
         '_x': ['11110000'],
         '_o': ['00000000'],
-        '_i_tl': ['10011101'],
-        '_i_tr': ['11001110'],
-        '_i_bl': ['00111011'],
-        '_i_br': ['01100111'],
-        '_u_tl': ['01100010'],
-        '_u_tr': ['00110001'],
-        '_u_bl': ['01100010'],
-        '_u_br': ['10011000'],
+        '_i_tl': ['11111110'],
+        '_i_tr': ['11111101'],
+        '_i_bl': ['11111011'],
+        '_i_br': ['11110111'],
+        '_u_tl': ['00112221'],
+        '_u_tr': ['01012212'],
+        '_u_br': ['11001222'],
+        '_u_bl': ['10102122'],
         '_f': ['11111111'],
-        '_hl': ['01000000'],
-        '_hr': ['00100000'],
-        '_vt': ['10000000'],
-        '_vb': ['00100000'],
-        '_vr': ['11100110'],
-        '_vl': ['10111001'],
-        '_hb': ['01110011'],
-        '_ht': ['11011100'],
-        '_ltee': ['11100000'],
-        '_ttee': ['01110000'],
-        '_rtee': ['10110000'],
-        '_btee': ['11010000']
+        '_hl': ['00102222'],
+        '_hr': ['01002222'],
+        '_vt': ['00012222'],
+        '_vb': ['10002222'],
+        '_vl': ['10112121'],
+        '_vr': ['11011212'],
+        '_hb': ['11101122'],
+        '_ht': ['01112211'],
+        '_ltee': ['10112020'],
+        '_ttee': ['01112200'],
+        '_rtee': ['11010202'],
+        '_btee': ['11100022'],
+        '_yt': ['11110011'],
+        '_yb': ['11111100'],
+        '_yl': ['11110101'],
+        '_yr': ['11111010'],
+        '_ytlt': ['10112021'],
+        '_ytll': ['01112201'],
+        '_ytrt': ['11010212'],
+        '_ytrr': ['01112210'],
+        '_ybrb': ['11011202'],
+        '_ybrr': ['11101022'],
+        '_yblb': ['10112120'],
+        '_ybll': ['11100122'],
+        '_ydr': ['11110110'],
+        '_ydl': ['11111001'],
+        '_ytlx': ['11110001'],
+        '_ytrx': ['11110010'],
+        '_yblx': ['11110100'],
+        '_ybrx': ['11111000']
         }
 
+    _default_texture = ''
     _connection_mask_map = {}
     _connection_masks = {}
 
@@ -48,16 +67,15 @@ class ConnectableCell(Cell):
                     z.append(int(item))
                 self._connection_masks[k].append(z)
 
-        texture_name = '%s_h' % name
+        texture_name = self._default_texture
         super().__init__(name, textures, position, texture_name, size=size)
         self.base_texture_name = name
         self.next_tick = 0
 
     def mask_matched(self, mask1, mask2):
-        for i, item in enumerate(mask2):
-            if item == 2:
-                # wildcard in the second
-                mask1[i] = 2
+        # wildcard checks
+        mask1 = list(map(lambda z: 2 if mask2[z[0]] == 2 else z[1], enumerate(mask1)))
+        mask2 = list(map(lambda z: 2 if mask1[z[0]] == 2 else z[1], enumerate(mask2)))
         res = mask1 == mask2
         return res
 
@@ -69,19 +87,22 @@ class ConnectableCell(Cell):
         shuffle(suffixes)
         items = ['']
         items.extend(suffixes)
-        mask = [0, 0, 0, 0, 0, 0, 0, 0]
+        zoro = [0, 0, 0, 0, 0, 0, 0, 0]
+        mask = list(zoro)
         for cell in surrounding:
             if type(cell) != type(self) or cell == self:
                 continue
-            mask[0] = mask[0] or self.left == cell.left and cell.bottom == self.top
-            mask[1] = mask[1] or self.right == cell.left and cell.top == self.top
-            mask[2] = mask[2] or self.left == cell.right and cell.top == self.top
-            mask[3] = mask[3] or self.left == cell.left and cell.top == self.bottom
-            mask[4] = mask[4] or self.left == cell.right and cell.bottom == self.top
-            mask[5] = mask[5] or self.right == cell.left and cell.bottom == self.top
-            mask[6] = mask[6] or self.left == cell.right and cell.top == self.bottom
-            mask[7] = mask[7] or self.right == cell.left and cell.top == self.bottom
+            mask[0] = mask[0] or self.left == cell.left and cell.top == self.bottom
+            mask[1] = mask[1] or self.left == cell.right and cell.bottom == self.bottom
+            mask[2] = mask[2] or self.right == cell.left and cell.bottom == self.bottom
+            mask[3] = mask[3] or self.left == cell.left and cell.bottom == self.top
+            mask[4] = mask[4] or self.left == cell.right and cell.top == self.bottom
+            mask[5] = mask[5] or self.right == cell.left and cell.top == self.bottom
+            mask[6] = mask[6] or self.left == cell.right and cell.bottom == self.top
+            mask[7] = mask[7] or self.right == cell.left and cell.bottom == self.top
             mask = list(map(lambda item: int(item), mask))
+        if mask == zoro:
+            return
 
         """
         ok here's how this works.
@@ -116,5 +137,5 @@ class ConnectableCell(Cell):
                             self.texture_name = retex_key
                             self.image = self.textures[self.texture_name]
                             return
-        self.texture_name = '%s_h' % self.base_texture_name
+        self.texture_name = self._default_texture
         self.image = self.textures[self.texture_name]
