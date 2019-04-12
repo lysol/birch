@@ -1,14 +1,7 @@
 #include </usr/include/python3.6m/Python.h>
 #include </usr/include/python3.6m/structmember.h>
 #include <stdio.h>
-
-typedef struct {
-    PyObject_HEAD
-    int x;
-    int y;
-    int width;
-    int height;
-} RectObject;
+#include "_rect.h"
 
 static void Rect_dealloc(RectObject *self)
 {
@@ -35,6 +28,26 @@ static PyObject *Rect___str__(RectObject *self) {
                 self->width, self->height);
     return PyUnicode_FromString(buffer);
 }
+
+static PyObject *Rect_inflate(RectObject *self, PyObject *args) {
+    int w, h;
+    if (!PyArg_ParseTuple(args, "ii", &w, &h)) {
+        return NULL;
+    }
+    int whalf = w / 2;
+    int hhalf = h / 2;
+    int newx = self->x - whalf;
+    int newy = self->y - hhalf;
+    int newwidth = self->width + whalf;
+    int newheight = self->height + hhalf;
+    PyObject *nargs = Py_BuildValue("iiii", newx, newy, newwidth, newheight);
+    RectObject *newrect;
+    newrect = (RectObject *) RectType.tp_alloc(&RectType, 0);
+    Rect_init(newrect, nargs, NULL);
+    Py_DECREF(nargs);
+    return (PyObject *)newrect;
+}
+
 
 static PyObject* Rect_get_right(RectObject* self, void* closure) {
     return PyLong_FromLong(self->x + self->width);
@@ -68,8 +81,6 @@ static int Rect_set_bottom(RectObject* self, PyObject* value, void* closure) {
     return 0;
 }
 
-
-
 static PyMemberDef Rect_members[] = {
     {"x", T_INT, offsetof(RectObject, x), 0,
      "The horizontal coordinate of the top left origin point."},
@@ -88,6 +99,8 @@ static PyMemberDef Rect_members[] = {
 static PyMethodDef Rect_methods[] = {
     {"__str__", (PyCFunction) Rect___str__, METH_NOARGS,
         "String representation of a Rect."},
+    {"inflate", (PyCFunction) Rect_inflate, METH_VARARGS,
+        "Inflate a rectangle and return a new instance."},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef Rect_getsets[] = {
