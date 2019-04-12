@@ -81,6 +81,27 @@ static int Rect_set_bottom(RectObject* self, PyObject* value, void* closure) {
     return 0;
 }
 
+static PyObject* Rect_get_center(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x + self->width / 2,
+            self->y + self->height / 2);
+    return point;
+}
+
+static int Rect_set_center(RectObject* self, PyObject* value, void* closure) {
+    if (PySequence_Length(value) != 2) {
+        PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a two value (x,y) sequence.");
+        return -1;
+    }
+    PyObject *newcx = PySequence_GetItem(value, 0);
+    PyObject *newcy = PySequence_GetItem(value, 1);
+    int ncx = (int)PyLong_AsLong(newcx);
+    int ncy = (int)PyLong_AsLong(newcy);
+    self->x = ncx - self->width / 2;
+    self->y = ncy - self->height / 2;
+    return 0;
+}
+
 static PyMemberDef Rect_members[] = {
     {"x", T_INT, offsetof(RectObject, x), 0,
      "The horizontal coordinate of the top left origin point."},
@@ -112,6 +133,11 @@ static PyGetSetDef Rect_getsets[] = {
     {"bottom",  /* name */
         (getter) Rect_get_bottom,
         (setter) Rect_set_bottom,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"center",  /* name */
+        (getter) Rect_get_center,
+        (setter) Rect_set_center,
         NULL,  /* doc */
         NULL /* closure */},
     {NULL}

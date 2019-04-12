@@ -19,6 +19,8 @@ static PyObject* Rect_get_right(RectObject* self, void* closure);
 static int Rect_set_right(RectObject* self, PyObject* value, void* closure);
 static PyObject* Rect_get_bottom(RectObject* self, void* closure);
 static int Rect_set_bottom(RectObject* self, PyObject* value, void* closure);
+static PyObject* Rect_get_center(RectObject* self, void* closure);
+static int Rect_set_center(RectObject* self, PyObject* value, void* closure);
 static PyMemberDef Rect_members[];
 static PyMethodDef Rect_methods[];
 static PyGetSetDef Rect_getsets[];
