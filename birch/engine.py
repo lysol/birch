@@ -82,6 +82,14 @@ class Engine:
             'offset': [-1277, 76],
             'threshold': 0.6,
             'rand_thresh': 0.95
+            },
+        'water': {
+            'class': WaterCell,
+            'freq': 1/1560,
+            'octaves': 2,
+            'offset': [-999, -321],
+            'threshold': 0.7,
+            'rand_thresh': 0.0
             }
         }
 
@@ -311,7 +319,7 @@ class Engine:
                 for (ox, val) in enumerate(pees):
                     ix = bounds[0] + ox * 16
                     iy = bounds[1] + oy * 16
-                    if val > cfg['threshold'] and random() > cfg['rand_thresh']:
+                    if val > cfg['threshold'] and (cfg['rand_thresh'] == 0 or random() > cfg['rand_thresh']):
                         cells.append(BlueprintCell(cfg['class'], (self.textures, (ix, iy))))
         self.world.seed(*tl, [])
         self.deferred_inserts.extend(cells)
