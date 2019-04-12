@@ -5,6 +5,7 @@ class Tree(Cell):
 
     def __init__(self, texture_name, textures, position, age=None, batch=None):
         super().__init__(texture_name, textures, position, texture_name, batch=batch)
+        self.priority = 5
         self.age = age if age is not None else randint(0, 100)
         self.base_texture_name = texture_name
         self.next_update = randint(25, 50)

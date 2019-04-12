@@ -4,54 +4,54 @@ from random import shuffle
 
 class ConnectableCell(Cell):
     _masks = {
-        '': ['00000000'],
-        '_h': ['01102222'],
-        '_v': ['10012222'],
-        '_tl': ['00112220'],
-        '_tr': ['01012202'],
-        '_bl': ['10102022'],
-        '_br': ['11000222'],
-        '_x': ['11110000'],
-        '_o': ['00000000'],
-        '_i_tl': ['11111110'],
-        '_i_tr': ['11111101'],
-        '_i_bl': ['11111011'],
-        '_i_br': ['11110111'],
-        '_u_tl': ['00112221'],
-        '_u_tr': ['01012212'],
-        '_u_br': ['11001222'],
-        '_u_bl': ['10102122'],
-        '_f': ['11111111'],
-        '_hl': ['00102222'],
-        '_hr': ['01002222'],
-        '_vt': ['00012222'],
-        '_vb': ['10002222'],
-        '_vl': ['10112121'],
-        '_vr': ['11011212'],
-        '_hb': ['11101122'],
-        '_ht': ['01112211'],
-        '_ltee': ['10112020'],
-        '_ttee': ['01112200'],
-        '_rtee': ['11010202'],
-        '_btee': ['11100022'],
-        '_yt': ['11110011'],
-        '_yb': ['11111100'],
-        '_yl': ['11110101'],
-        '_yr': ['11111010'],
-        '_ytlt': ['10112021'],
-        '_ytll': ['01112201'],
-        '_ytrt': ['11010212'],
-        '_ytrr': ['01112210'],
-        '_ybrb': ['11011202'],
-        '_ybrr': ['11101022'],
-        '_yblb': ['10112120'],
-        '_ybll': ['11100122'],
-        '_ydr': ['11110110'],
-        '_ydl': ['11111001'],
-        '_ytlx': ['11110001'],
-        '_ytrx': ['11110010'],
-        '_yblx': ['11110100'],
-        '_ybrx': ['11111000']
+        '': '00000000',
+        '_h': '01102222',
+        '_v': '10012222',
+        '_tl': '00112220',
+        '_tr': '01012202',
+        '_bl': '10102022',
+        '_br': '11000222',
+        '_x': '11110000',
+        '_o': '00000000',
+        '_i_tl': '11111110',
+        '_i_tr': '11111101',
+        '_i_bl': '11111011',
+        '_i_br': '11110111',
+        '_u_tl': '00112221',
+        '_u_tr': '01012212',
+        '_u_br': '11001222',
+        '_u_bl': '10102122',
+        '_f': '11111111',
+        '_hl': '00102222',
+        '_hr': '01002222',
+        '_vt': '00012222',
+        '_vb': '10002222',
+        '_vl': '10112121',
+        '_vr': '11011212',
+        '_hb': '11101122',
+        '_ht': '01112211',
+        '_ltee': '10112020',
+        '_ttee': '01112200',
+        '_rtee': '11010202',
+        '_btee': '11100022',
+        '_yt': '11110011',
+        '_yb': '11111100',
+        '_yl': '11110101',
+        '_yr': '11111010',
+        '_ytlt': '10112021',
+        '_ytll': '01112201',
+        '_ytrt': '11010212',
+        '_ytrr': '01112210',
+        '_ybrb': '11011202',
+        '_ybrr': '11101022',
+        '_yblb': '10112120',
+        '_ybll': '11100122',
+        '_ydr': '11110110',
+        '_ydl': '11111001',
+        '_ytlx': '11110001',
+        '_ytrx': '11110010',
+        '_yblx': '11110100',
+        '_ybrx': '11111000'
         }
 
     _default_texture = ''
@@ -59,9 +59,10 @@ class ConnectableCell(Cell):
     _connection_masks = {}
 
     def __init__(self, name, textures, position, size=[16, 16]):
-        for k in self._masks:
-            self._connection_masks[k] = []
-            for mask in self._masks[k]:
+        if len(self._connection_masks) == 0:
+            for k in self._masks:
+                self._connection_masks[k] = []
+                mask = self._masks[k]
                 z = []
                 for item in list(mask):
                     z.append(int(item))
@@ -71,13 +72,6 @@ class ConnectableCell(Cell):
         super().__init__(name, textures, position, texture_name, size=size)
         self.base_texture_name = name
         self.next_tick = 0
-
-    def mask_matched(self, mask1, mask2):
-        # wildcard checks
-        mask1 = list(map(lambda z: 2 if mask2[z[0]] == 2 else z[1], enumerate(mask1)))
-        mask2 = list(map(lambda z: 2 if mask1[z[0]] == 2 else z[1], enumerate(mask2)))
-        res = mask1 == mask2
-        return res
 
     # expects order to be [top, left, right, bottom]
     def cache_texture(self, surrounding):
@@ -92,14 +86,20 @@ class ConnectableCell(Cell):
         for cell in surrounding:
             if type(cell) != type(self) or cell == self:
                 continue
-            mask[0] = mask[0] or self.left == cell.left and cell.top == self.bottom
-            mask[1] = mask[1] or self.left == cell.right and cell.bottom == self.bottom
-            mask[2] = mask[2] or self.right == cell.left and cell.bottom == self.bottom
-            mask[3] = mask[3] or self.left == cell.left and cell.bottom == self.top
-            mask[4] = mask[4] or self.left == cell.right and cell.top == self.bottom
-            mask[5] = mask[5] or self.right == cell.left and cell.top == self.bottom
-            mask[6] = mask[6] or self.left == cell.right and cell.bottom == self.top
-            mask[7] = mask[7] or self.right == cell.left and cell.bottom == self.top
+            tb = cell.top == self.bottom
+            bb = cell.bottom == self.bottom
+            bt = cell.bottom == self.top
+            ll = self.left == cell.left
+            lr = self.left == cell.right
+            rl = self.right == cell.left
+            mask[0] = mask[0] or ll and tb
+            mask[1] = mask[1] or lr and bb
+            mask[2] = mask[2] or rl and bb
+            mask[3] = mask[3] or ll and bt
+            mask[4] = mask[4] or lr and tb
+            mask[5] = mask[5] or rl and tb
+            mask[6] = mask[6] or lr and bt
+            mask[7] = mask[7] or rl and bt
             mask = list(map(lambda item: int(item), mask))
         if mask == zoro:
             return
@@ -124,6 +124,15 @@ class ConnectableCell(Cell):
         for k in self._connection_masks:
             for checkmask in self._connection_masks[k]:
                 mapped = [k]
+                matched = True
+                for (i, z) in enumerate(mask):
+                    if checkmask[i] == 2:
+                        continue
+                    if z != checkmask[i]:
+                        matched = False
+                        break
+                if not matched:
+                    continue
                 # look for other suffixes that should be checked instead of this
                 # name.
                 if k in self._connection_mask_map:
@@ -133,7 +142,7 @@ class ConnectableCell(Cell):
                     # cycle through our prebuilt list of suffixes and see if a tex exists
                     for item in items:
                         retex_key = '%s%s' % (tex_key, item)
-                        if self.mask_matched(mask, checkmask) and retex_key in self.textures:
+                        if retex_key in self.textures:
                             self.texture_name = retex_key
                             self.image = self.textures[self.texture_name]
                             return

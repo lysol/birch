@@ -118,15 +118,13 @@ class Cell(sprite.Sprite):
             y = sprite.y
             w = sprite.w
             h = sprite.h
-        l = x
-        t = y
         b = y + h - 1
         r = x + w - 1
         return not (
-            r < self.left or \
-            l > self.right - 1 or \
-            b < self.top or \
-            t > self.bottom - 1
+            r < self._dimensions['left'] or \
+            x > self._dimensions['right'] - 1 or \
+            b < self._dimensions['top'] or \
+            y > self._dimensions['bottom'] - 1
             )
 
     def viewed_position(self, camera):
