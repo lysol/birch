@@ -102,6 +102,90 @@ static int Rect_set_center(RectObject* self, PyObject* value, void* closure) {
     return 0;
 }
 
+static PyObject* Rect_get_position(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x,
+            self->y);
+    return point;
+}
+
+static int Rect_set_position(RectObject* self, PyObject* value, void* closure) {
+    if (PySequence_Length(value) != 2) {
+        PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a two value (x,y) sequence.");
+        return -1;
+    }
+    PyObject *newx = PySequence_GetItem(value, 0);
+    PyObject *newy = PySequence_GetItem(value, 1);
+    int nx = (int)PyLong_AsLong(newx);
+    int ny = (int)PyLong_AsLong(newy);
+    self->x = nx;
+    self->y = ny;
+    return 0;
+}
+
+static PyObject* Rect_get_topright(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x + self->width,
+            self->y);
+    return point;
+}
+
+static int Rect_set_topright(RectObject* self, PyObject* value, void* closure) {
+    if (PySequence_Length(value) != 2) {
+        PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a two value (x,y) sequence.");
+        return -1;
+    }
+    PyObject *newr = PySequence_GetItem(value, 0);
+    PyObject *newy = PySequence_GetItem(value, 1);
+    int nr = (int)PyLong_AsLong(newr);
+    int ny = (int)PyLong_AsLong(newy);
+    self->x = nr - self->width;
+    self->y = ny;
+    return 0;
+}
+
+static PyObject* Rect_get_bottomleft(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x,
+            self->y + self->height);
+    return point;
+}
+
+static int Rect_set_bottomleft(RectObject* self, PyObject* value, void* closure) {
+    if (PySequence_Length(value) != 2) {
+        PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a two value (x,y) sequence.");
+        return -1;
+    }
+    PyObject *newx = PySequence_GetItem(value, 0);
+    PyObject *newb = PySequence_GetItem(value, 1);
+    int nx = (int)PyLong_AsLong(newx);
+    int nb = (int)PyLong_AsLong(newb);
+    self->x = nx;
+    self->y = nb - self->height;
+    return 0;
+}
+
+static PyObject* Rect_get_bottomright(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x + self->width,
+            self->y + self->height);
+    return point;
+}
+
+static int Rect_set_bottomright(RectObject* self, PyObject* value, void* closure) {
+    if (PySequence_Length(value) != 2) {
+        PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a two value (x,y) sequence.");
+        return -1;
+    }
+    PyObject *newr = PySequence_GetItem(value, 0);
+    PyObject *newb = PySequence_GetItem(value, 1);
+    int nr = (int)PyLong_AsLong(newr);
+    int nb = (int)PyLong_AsLong(newb);
+    self->x = nr - self->width;
+    self->y = nb - self->height;
+    return 0;
+}
+
 static PyMemberDef Rect_members[] = {
     {"x", T_INT, offsetof(RectObject, x), 0,
      "The horizontal coordinate of the top left origin point."},
@@ -138,6 +222,31 @@ static PyGetSetDef Rect_getsets[] = {
     {"center",  /* name */
         (getter) Rect_get_center,
         (setter) Rect_set_center,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"position",  /* name */
+        (getter) Rect_get_position,
+        (setter) Rect_set_position,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"topleft",  /* name */
+        (getter) Rect_get_position,
+        (setter) Rect_set_position,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"topright",  /* name */
+        (getter) Rect_get_topright,
+        (setter) Rect_set_topright,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"bottomleft",  /* name */
+        (getter) Rect_get_bottomleft,
+        (setter) Rect_set_bottomleft,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"bottomright",  /* name */
+        (getter) Rect_get_bottomright,
+        (setter) Rect_set_bottomright,
         NULL,  /* doc */
         NULL /* closure */},
     {NULL}
