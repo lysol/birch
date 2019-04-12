@@ -5,6 +5,10 @@ _perlin = Extension('birch._perlin',
                     sources = [
                         'birch/_perlin.c'
                         ])
+_rect = Extension('birch._rect',
+                    sources = [
+                        'birch/_rect.c'
+                        ])
 
 setup(name='birch',
       version='0.0.1',
@@ -22,4 +26,4 @@ setup(name='birch',
           'pillow'
           ],
       zip_safe=False,
-      ext_modules=[_perlin])
+      ext_modules=[_perlin, _rect])
