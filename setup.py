@@ -9,6 +9,10 @@ _rect = Extension('birch._rect',
                     sources = [
                         'birch/_rect.c'
                         ])
+_world = Extension('birch._world',
+                    sources = [
+                        'birch/_world.c'
+                        ])
 
 setup(name='birch',
       version='0.0.1',
@@ -26,4 +30,4 @@ setup(name='birch',
           'pillow'
           ],
       zip_safe=False,
-      ext_modules=[_perlin, _rect])
+      ext_modules=[_perlin, _rect, _world])
