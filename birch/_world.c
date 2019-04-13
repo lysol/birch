@@ -23,7 +23,19 @@ static int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
     self->vertex_lists = PyDict_New();
     self->bg_batches = PyDict_New();
     self->bgs = PyDict_New();
+    self->chunk_size = 1024;
     return 0;
+}
+
+static PyObject *World__alias(WorldObject *self, PyObject *args) {
+    int x, y;
+    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+        return NULL;
+    }
+    return Py_BuildValue("ii",
+        (x - x % self->chunk_size) / self->chunk_size,
+        (y - y % self->chunk_size) / self->chunk_size
+        );
 }
 
 static PyMemberDef World_members[] = {
@@ -44,8 +56,8 @@ static PyMemberDef World_members[] = {
     {NULL}  /* Sentinel */ };
 
 static PyMethodDef World_methods[] = {
-    //{"__str__", (PyCFunction) World___str__, METH_NOARGS,
-    //    "String representation of a World."},
+    {"_alias", (PyCFunction) World__alias, METH_VARARGS,
+        "Alias a pair of coordinates to a chunk coordinate."},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
