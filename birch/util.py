@@ -1,4 +1,5 @@
 from math import pi
+from functools import reduce
 
 def clamp(i, mini, maxi):
     return min(max(i, mini), maxi)
@@ -13,6 +14,14 @@ def fix_origin(vertexes, height):
         outvx.append(height - vertexes[o + 1])
     return tuple(outvx)
 
+def join_rects(rects):
+    bounds = (
+        reduce(lambda a, r: r.left if r.left < a else a, rects, rects[0].left),
+        reduce(lambda a, r: r.top if r.top < a else a, rects, rects[0].top),
+        reduce(lambda a, r: r.right if r.right > a else a, rects, rects[0].right),
+        reduce(lambda a, r: r.bottom if r.bottom > a else a, rects, rects[0].bottom),
+        )
+    return Rect(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1])
 
 class Rect:
 
