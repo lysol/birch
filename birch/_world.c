@@ -46,6 +46,20 @@ static PyObject *World__alias(WorldObject *self, PyObject *args) {
         );
 }
 
+static PyObject *World_unseeded(WorldObject *self, PyObject *args) {
+    int x, y;
+    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+        return NULL;
+    }
+    int ox, oy;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    if (PyDict_Contains(self->seeded, Py_BuildValue("ii", ox, oy))) {
+        Py_RETURN_FALSE;
+    } else {
+        Py_RETURN_TRUE;
+    }
+}
+
 static PyMemberDef World_members[] = {
     {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
      "The size of a world chunk"},
@@ -66,6 +80,8 @@ static PyMemberDef World_members[] = {
 static PyMethodDef World_methods[] = {
     {"_alias", (PyCFunction) World__alias, METH_VARARGS,
         "Alias a pair of coordinates to a chunk coordinate."},
+    {"unseeded", (PyCFunction) World_unseeded, METH_VARARGS,
+        "Check if a chunk has been seeded."},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
