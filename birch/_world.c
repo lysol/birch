@@ -27,14 +27,22 @@ static int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
+static int *alias(int *ox, int *oy, int chunk_size, int x, int y) {
+    *ox = (x - x % chunk_size) / chunk_size;
+    *oy = (y - y % chunk_size) / chunk_size;
+    return 0;
+}
+
 static PyObject *World__alias(WorldObject *self, PyObject *args) {
     int x, y;
     if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
         return NULL;
     }
+    int ox, oy;
+    alias(&ox, &oy, self->chunk_size, x, y);
     return Py_BuildValue("ii",
-        (x - x % self->chunk_size) / self->chunk_size,
-        (y - y % self->chunk_size) / self->chunk_size
+        ox,
+        oy
         );
 }
 
