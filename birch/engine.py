@@ -243,11 +243,12 @@ class Engine:
 
     def texture_check(self, cell):
         if issubclass(type(cell), ConnectableCell):
-            newbounds = cell.rect.inflate(cell.width * 2, cell.height * 2).bounds
+            newbounds = cell.rect.inflate(cell.width * 4, cell.height * 4).bounds
+            innerrect = cell.rect.inflate(cell.width * 2, cell.height * 2)
             surrounding = self.world.get(*newbounds)
             for other in surrounding:
-                if type(other) == type(cell):
-                    other.cache_texture(self.get_surrounding(other))
+                if type(other) == type(cell) and other.rect.colliderect(innerrect):
+                    other.cache_texture(surrounding)
 
     def del_cell(self, cell):
         self.world.delete(cell, *cell.position)
