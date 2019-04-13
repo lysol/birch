@@ -38,8 +38,8 @@ static PyObject *Rect_inflate(RectObject *self, PyObject *args) {
     int hhalf = h / 2;
     int newx = self->x - whalf;
     int newy = self->y - hhalf;
-    int newwidth = self->width + whalf;
-    int newheight = self->height + hhalf;
+    int newwidth = self->width + w;
+    int newheight = self->height + h;
     PyObject *nargs = Py_BuildValue("iiii", newx, newy, newwidth, newheight);
     RectObject *newrect;
     newrect = (RectObject *) RectType.tp_alloc(&RectType, 0);
@@ -62,17 +62,27 @@ static PyObject *Rect_collidepoint(RectObject *self, PyObject *args) {
 }
 
 static PyObject *Rect_colliderect(RectObject *self, PyObject *args) {
-    RectObject *other;
+    PyObject *other;
     if (!PyArg_ParseTuple(args, "O", &other)) {
         return NULL;
     }
-    if (other->x + other->width - 1 < self->x ||
-        other->x > self->x + self->width - 1 ||
-        other->y + other->height - 1 < self->y ||
-        other->y > self->y + self->height - 1) {
-        Py_RETURN_FALSE;
-    } else {
+    int x = (int)PyLong_AsLong(PyObject_GetAttrString(other, "x")),
+        y = (int)PyLong_AsLong(PyObject_GetAttrString(other, "y")),
+        w = (int)PyLong_AsLong(PyObject_GetAttrString(other, "width")),
+        h = (int)PyLong_AsLong(PyObject_GetAttrString(other, "height")),
+        l = x,
+        t = y,
+        b = y + h - 1,
+        r = x + w - 1,
+        right = self->x + self->width,
+        bottom = self->y + self->height;
+    printf("ok what is up (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)\n",
+            x,y,w,h,l,t,b,r,right,bottom);
+    if (!(r < self->x || l > (right - 1) ||
+            b < self->y || t > (bottom - 1))) {
         Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
     }
 }
 

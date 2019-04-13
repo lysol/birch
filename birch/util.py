@@ -1,5 +1,6 @@
 from math import pi
 from functools import reduce
+from birch._rect import Rect
 
 def clamp(i, mini, maxi):
     return min(max(i, mini), maxi)
@@ -23,7 +24,7 @@ def join_rects(rects):
         )
     return Rect(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1])
 
-class Rect:
+class _Rect:
 
     def __init__(self, x, y, w, h):
         self.x = x
