@@ -150,6 +150,35 @@ static int Rect_set_position(RectObject* self, PyObject* value, void* closure) {
     return 0;
 }
 
+static PyObject* Rect_get_bounds(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("iiii",
+            self->x,
+            self->y,
+            self->width,
+            self->height);
+    return point;
+}
+
+static int Rect_set_bounds(RectObject* self, PyObject* value, void* closure) {
+    if (PySequence_Length(value) != 2) {
+        PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a four value (x,y,w,h) sequence.");
+        return -1;
+    }
+    PyObject *newx = PySequence_GetItem(value, 0);
+    PyObject *newy = PySequence_GetItem(value, 1);
+    PyObject *neww = PySequence_GetItem(value, 2);
+    PyObject *newh = PySequence_GetItem(value, 3);
+    int nx = (int)PyLong_AsLong(newx);
+    int ny = (int)PyLong_AsLong(newy);
+    int nw = (int)PyLong_AsLong(neww);
+    int nh = (int)PyLong_AsLong(newh);
+    self->x = nx;
+    self->y = ny;
+    self->width = nw;
+    self->height = nh;
+    return 0;
+}
+
 static PyObject* Rect_get_topright(RectObject* self, void* closure) {
     PyObject *point = Py_BuildValue("ii",
             self->x + self->width,
@@ -226,6 +255,10 @@ static PyMemberDef Rect_members[] = {
      "The width of the rectangle."},
     {"height", T_INT, offsetof(RectObject, height), 0,
      "The height of the rectangle."},
+    {"w", T_INT, offsetof(RectObject, width), 0,
+     "The width of the rectangle."},
+    {"h", T_INT, offsetof(RectObject, height), 0,
+     "The height of the rectangle."},
     {NULL}  /* Sentinel */ };
 
 static PyMethodDef Rect_methods[] = {
@@ -258,6 +291,11 @@ static PyGetSetDef Rect_getsets[] = {
     {"position",  /* name */
         (getter) Rect_get_position,
         (setter) Rect_set_position,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"bounds",  /* name */
+        (getter) Rect_get_bounds,
+        (setter) Rect_set_bounds,
         NULL,  /* doc */
         NULL /* closure */},
     {"topleft",  /* name */
