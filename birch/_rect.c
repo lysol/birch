@@ -48,6 +48,18 @@ static PyObject *Rect_inflate(RectObject *self, PyObject *args) {
     return (PyObject *)newrect;
 }
 
+static PyObject *Rect_collidepoint(RectObject *self, PyObject *args) {
+    int x, y;
+    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+        return NULL;
+    }
+    if (x >= self->x && x < self->x + self->width &&
+            y >= self->y && y < self->y + self->height) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
+}
 
 static PyObject* Rect_get_right(RectObject* self, void* closure) {
     return PyLong_FromLong(self->x + self->width);
@@ -206,6 +218,8 @@ static PyMethodDef Rect_methods[] = {
         "String representation of a Rect."},
     {"inflate", (PyCFunction) Rect_inflate, METH_VARARGS,
         "Inflate a rectangle and return a new instance."},
+    {"collidepoint", (PyCFunction) Rect_collidepoint, METH_VARARGS,
+        "Check if another rect collides with this one"},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef Rect_getsets[] = {
