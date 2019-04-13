@@ -76,8 +76,6 @@ static PyObject *Rect_colliderect(RectObject *self, PyObject *args) {
         r = x + w - 1,
         right = self->x + self->width,
         bottom = self->y + self->height;
-    printf("ok what is up (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)\n",
-            x,y,w,h,l,t,b,r,right,bottom);
     if (!(r < self->x || l > (right - 1) ||
             b < self->y || t > (bottom - 1))) {
         Py_RETURN_TRUE;
