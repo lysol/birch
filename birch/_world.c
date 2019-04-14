@@ -285,6 +285,41 @@ static PyObject *World_seed(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
+static PyObject *World_get_batches(WorldObject *self, PyObject *args) {
+    int x, y, w, h;
+    if (!PyArg_ParseTuple(args, "iiii", &x, &y, &w, &h)) {
+        return NULL;
+    }
+    int ox, oy, px, py;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&px, &py, self->chunk_size, x + w, y + h);
+    PyObject *out = PyList_New(0);
+    for(int yes=oy; yes<py+1; yes++) {
+        for(int xes=ox; xes<px+1; xes++) {
+            PyObject *key = Py_BuildValue("ii", xes, yes);
+            if (PyDict_Contains(self->bg_batches, key)) {
+                PyObject *bg_batch = PyDict_GetItem(self->bg_batches, key);
+                PyList_Append(out, bg_batch);
+                Py_DECREF(bg_batch);
+            }
+            if (PyDict_Contains(self->batches, key)) {
+                // sort bdict later
+                PyObject *bdict = PyDict_GetItem(self->batches, key);
+                int size = PyDict_Size(bdict);
+                PyObject *vals = PyDict_Values(bdict);
+                for(int bind=0; bind<size; bind++) {
+                    PyObject *batch = PyList_GetItem(vals, bind);
+                    PyList_Append(out, batch);
+                    Py_DECREF(batch);
+                }
+                Py_DECREF(vals);
+            }
+            Py_DECREF(key);
+        }
+    }
+    return out;
+}
+
 static PyMemberDef World_members[] = {
     {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
      "The size of a world chunk"},
@@ -320,6 +355,8 @@ static PyMethodDef World_methods[] = {
     {"get_chunks", (PyCFunction) World_get_chunks, METH_VARARGS | METH_KEYWORDS,
         "Get chunks"},
     {"seed", (PyCFunction) World_seed, METH_VARARGS, "Seed a chunk"},
+    {"get_batches", (PyCFunction) World_get_batches, METH_VARARGS,
+        "Get batches"},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
