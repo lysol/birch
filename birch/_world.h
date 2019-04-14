@@ -12,6 +12,12 @@ typedef struct {
     PyObject *bgs;
 } WorldObject;
 
+// module
+static PyObject *_module;
+static PyObject *graphics;
+static PyObject *Batch;
+static PyObject *draw;
+
 static PyTypeObject WorldType;
 static void World_dealloc(WorldObject *self);
 static PyObject *World_new(PyTypeObject *type, PyObject *args, PyObject *kwds);

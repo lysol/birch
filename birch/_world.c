@@ -60,6 +60,39 @@ static PyObject *World_unseeded(WorldObject *self, PyObject *args) {
     }
 }
 
+static PyObject *World__inflate(WorldObject *self, PyObject *args, PyObject *kwargs) {
+    int ix, iy, priority = 10;
+    static char *keywords[] = {"ix", "iy", "priority", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|i", keywords, &ix, &iy, &priority)) {
+        return NULL;
+    }
+    int changed = 0;
+    PyObject *pix = PyLong_FromLong(ix);
+    PyObject *piy = PyLong_FromLong(iy);
+    PyObject *rdict, *cdict;
+    if (!PyDict_Contains(self->world, piy)) {
+        rdict = PyDict_New();
+        PyDict_SetItem(self->world, piy, rdict);
+        changed = 1;
+    } else {
+        rdict = PyDict_GetItem(self->world, piy);
+    }
+    if (!PyDict_Contains(rdict, pix)) {
+        cdict = PyDict_New();
+        PyDict_SetItem(rdict, pix, cdict);
+        changed = 1;
+    } else {
+        cdict = PyDict_GetItem(rdict, pix);
+    }
+    if (changed) {
+        PyObject *batch = PyDict_New();
+        PyObject *pgbatch = PyObject_CallObject(Batch, NULL);
+        PyDict_SetItem(self->batches, Py_BuildValue("ii", ix, iy), batch);
+        PyDict_SetItem(batch, PyLong_FromLong(priority), pgbatch);
+    }
+    return Py_None;
+}
+
 static PyMemberDef World_members[] = {
     {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
      "The size of a world chunk"},
@@ -82,6 +115,8 @@ static PyMethodDef World_methods[] = {
         "Alias a pair of coordinates to a chunk coordinate."},
     {"unseeded", (PyCFunction) World_unseeded, METH_VARARGS,
         "Check if a chunk has been seeded."},
+    {"_inflate", (PyCFunction) World__inflate, METH_VARARGS | METH_KEYWORDS,
+        "Inflate a chunk before population."},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
@@ -122,16 +157,19 @@ static PyModuleDef world_module = {
 
 PyMODINIT_FUNC PyInit__world(void)
 {
-    PyObject *m;
     if (PyType_Ready(&WorldType) < 0)
         return NULL;
 
-    m = PyModule_Create(&world_module);
-    if (m == NULL)
+    _module = PyModule_Create(&world_module);
+    if (_module == NULL)
         return NULL;
 
     Py_INCREF(&WorldType);
-    PyModule_AddObject(m, "World", (PyObject *) &WorldType);
-    return m;
+    PyModule_AddObject(_module, "World", (PyObject *) &WorldType);
+    graphics = PyImport_ImportModule("pyglet.graphics");
+    Batch = PyObject_GetAttrString(graphics, "Batch");
+    draw = PyObject_GetAttrString(graphics, "draw");
+
+    return _module;
 }
 
