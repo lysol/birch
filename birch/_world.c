@@ -164,6 +164,102 @@ static PyObject *World_delete(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
+static PyObject *World_get(WorldObject *self, PyObject *args) {
+    int x, y, w, h;
+    if (!PyArg_ParseTuple(args, "iiii", &x, &y, &w, &h)) {
+        return NULL;
+    }
+    int ox, oy, px, py;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&px, &py, self->chunk_size, x + w, y + h);
+    PyObject *out = PyList_New(0);
+    for(int yes=oy; yes<py+1; yes++) {
+        for(int xes=ox; xes<px+1; xes++) {
+            World__inflate(self, Py_BuildValue("ii", xes, yes), NULL);
+            PyObject *cell = get_cell(self, xes, yes);
+            PyObject *cellVals = PyDict_Values(cell);
+            PyObject *iterator = PyObject_GetIter(cellVals);
+            PyObject *item;
+
+            if (iterator == NULL) {
+                continue;
+            }
+
+            while (item = PyIter_Next(iterator)) {
+                // do the stuff here
+                PyList_Append(out, item);
+                Py_DECREF(item);
+            }
+
+            Py_DECREF(iterator);
+            Py_DECREF(cellVals);
+
+            if (PyErr_Occurred()) {
+                return NULL;
+            }
+
+        }
+    }
+    return out;
+}
+
+static PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *kwargs) {
+    int x, y, w = 1, h = 1;
+    static char *keywords[] = {"x", "y", "w", "h", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|Ii", keywords, &x, &y, &w, &h)) {
+        return NULL;
+    }
+    int ox, oy, px, py;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&px, &py, self->chunk_size, x + w, y + h);
+    PyObject *out = PyList_New(0);
+    for(int yes=oy; yes<py+1; yes++) {
+        for(int xes=ox; xes<px+1; xes++) {
+            World__inflate(self, Py_BuildValue("ii", xes, yes), NULL);
+            PyObject *cell = get_cell(self, xes, yes);
+            PyList_Append(out, cell);
+        }
+    }
+    return out;
+}
+
+static PyObject *World_seed(WorldObject *self, PyObject *args) {
+    int ix, iy;
+    PyObject *sprites;
+    if (!PyArg_ParseTuple(args, "iiO", &ix, &iy, &sprites)) {
+        return NULL;
+    }
+
+    PyObject *iterator = PyObject_GetIter(sprites);
+    PyObject *item;
+
+    if (iterator == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not iterate over sprites.");
+        return NULL;
+    }
+
+    while (item = PyIter_Next(iterator)) {
+        // do the stuff here
+        PyObject *x = PyObject_GetAttrString(item, "x");
+        PyObject *y = PyObject_GetAttrString(item, "y");
+        int xx = PyLong_AsLong(x);
+        int yy = PyLong_AsLong(y);
+        Py_DECREF(x);
+        Py_DECREF(y);
+        World_insert(self, Py_BuildValue("iiO", xx, yy, item));
+        Py_DECREF(item);
+    }
+
+    Py_DECREF(iterator);
+
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    PyObject *key = Py_BuildValue("ii", ix, iy);
+    PyDict_SetItem(self->seeded, key, Py_True);
+    return Py_None;
+}
+
 static PyMemberDef World_members[] = {
     {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
      "The size of a world chunk"},
@@ -194,6 +290,11 @@ static PyMethodDef World_methods[] = {
         "Insert a sprite"},
     {"delete", (PyCFunction) World_delete, METH_VARARGS,
         "Delete a sprite"},
+    {"get", (PyCFunction) World_get, METH_VARARGS,
+        "Get sprites in an area"},
+    {"get_chunks", (PyCFunction) World_get_chunks, METH_VARARGS | METH_KEYWORDS,
+        "Get chunks"},
+    {"seed", (PyCFunction) World_seed, METH_VARARGS, "Seed a chunk"},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
