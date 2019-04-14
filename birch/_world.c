@@ -207,7 +207,6 @@ static PyObject *World_get(WorldObject *self, PyObject *args) {
             while (item = PyIter_Next(iterator)) {
                 // do the stuff here
                 PyList_Append(out, item);
-                Py_DECREF(item);
             }
 
             Py_DECREF(iterator);
@@ -268,10 +267,10 @@ static PyObject *World_seed(WorldObject *self, PyObject *args) {
         int yy = PyLong_AsLong(y);
         Py_DECREF(x);
         Py_DECREF(y);
-        key = Py_BuildValue("iiO", xx, yy, item);
-        World_insert(self, key);
+        args = Py_BuildValue("iiO", xx, yy, item);
+        World_insert(self, args);
         Py_DECREF(item);
-        Py_DECREF(key);
+        //Py_DECREF(args);
     }
 
     Py_DECREF(iterator);
@@ -300,7 +299,6 @@ static PyObject *World_get_batches(WorldObject *self, PyObject *args) {
             if (PyDict_Contains(self->bg_batches, key)) {
                 PyObject *bg_batch = PyDict_GetItem(self->bg_batches, key);
                 PyList_Append(out, bg_batch);
-                Py_DECREF(bg_batch);
             }
             if (PyDict_Contains(self->batches, key)) {
                 // sort bdict later
@@ -310,7 +308,6 @@ static PyObject *World_get_batches(WorldObject *self, PyObject *args) {
                 for(int bind=0; bind<size; bind++) {
                     PyObject *batch = PyList_GetItem(vals, bind);
                     PyList_Append(out, batch);
-                    Py_DECREF(batch);
                 }
                 Py_DECREF(vals);
             }

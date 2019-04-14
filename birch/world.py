@@ -1,6 +1,7 @@
 import pyglet
+from birch._world import World
 
-class World:
+class _World:
 
     def __init__(self, chunk_size=2048):
         self.world = {}
