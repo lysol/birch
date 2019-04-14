@@ -1,4 +1,5 @@
-import pyglet, json
+import math, json
+import pyglet
 from pyglet.window import key
 from pyglet.gl import *
 from birch.texture_store import TextureStore
@@ -189,6 +190,10 @@ class BirchGame:
         self.mouse = 0, 0
         self.init_ui()
         self.set_cursor_size()
+        self.chonk = (
+            int(math.ceil(self.camera_rect.width / 3)),
+            int(math.ceil(self.camera_rect.height / 3))
+            )
 
     def init_ui(self):
         self.toolbox = Toolbox(self.window.height, self.textures, self.main_batch)
@@ -281,9 +286,6 @@ class BirchGame:
         self.rcibox.c = self.engine.state["demand"]["c"]
         self.rcibox.i = self.engine.state["demand"]["i"]
         view_changed = False
-        for point in (self.camera_rect.topleft, self.camera_rect.topright,
-            self.camera_rect.bottomleft, self.camera_rect.bottomright):
-            self.engine.seed(*point)
         if self.keys[key.LEFT]:
             self.camera[0] -= self.camera_speed
             view_changed = True
@@ -303,6 +305,11 @@ class BirchGame:
                     self.camera_rect.width, self.camera_rect.height)
             self.last_camera = list(self.camera)
             self.first = True
+            crect = self.camera_rect.inflate(256, 256)
+            xes = range(int(crect.left), int(crect.right), self.chonk[0])
+            yes = range(int(crect.top), int(crect.bottom), self.chonk[1])
+            for point in [[_x, _y] for _y in yes for _x in xes]:
+                self.engine.seed(*point)
         self.window.camera = self.camera
         if self.kf_countdown == 0:
             self.kf_countdown = self.kf_rate

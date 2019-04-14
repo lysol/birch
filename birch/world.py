@@ -3,7 +3,7 @@ from birch._world import World
 
 class _World:
 
-    def __init__(self, chunk_size=2048):
+    def __init__(self, chunk_size=512):
         self.world = {}
         self.chunk_size = chunk_size
         self.seeded = {}

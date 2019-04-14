@@ -23,7 +23,7 @@ static int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
     self->vertex_lists = PyDict_New();
     self->bg_batches = PyDict_New();
     self->bgs = PyDict_New();
-    self->chunk_size = 1024;
+    self->chunk_size = 512;
     return 0;
 }
 
