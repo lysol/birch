@@ -53,9 +53,12 @@ static PyObject *World_unseeded(WorldObject *self, PyObject *args) {
     }
     int ox, oy;
     alias(&ox, &oy, self->chunk_size, x, y);
-    if (PyDict_Contains(self->seeded, Py_BuildValue("ii", ox, oy))) {
+    PyObject *key = Py_BuildValue("ii", ox, oy);
+    if (PyDict_Contains(self->seeded, key)) {
+        Py_DECREF(key);
         Py_RETURN_FALSE;
     } else {
+        Py_DECREF(key);
         Py_RETURN_TRUE;
     }
 }
@@ -69,6 +72,7 @@ static PyObject *World__inflate(WorldObject *self, PyObject *args, PyObject *kwa
     int changed = 0;
     PyObject *pix = PyLong_FromLong(ix);
     PyObject *piy = PyLong_FromLong(iy);
+    PyObject *key = Py_BuildValue("ii", ix, iy);
     PyObject *rdict, *cdict;
     if (!PyDict_Contains(self->world, piy)) {
         rdict = PyDict_New();
@@ -87,9 +91,14 @@ static PyObject *World__inflate(WorldObject *self, PyObject *args, PyObject *kwa
     if (changed) {
         PyObject *batch = PyDict_New();
         PyObject *pgbatch = PyObject_CallObject(Batch, NULL);
-        PyDict_SetItem(self->batches, Py_BuildValue("ii", ix, iy), batch);
-        PyDict_SetItem(batch, PyLong_FromLong(priority), pgbatch);
+        PyDict_SetItem(self->batches, key, batch);
+        PyObject *ppri = PyLong_FromLong(priority);
+        PyDict_SetItem(batch, ppri, pgbatch);
+        Py_DECREF(ppri);
     }
+    Py_DECREF(pix);
+    Py_DECREF(piy);
+    Py_DECREF(key);
     return Py_None;
 }
 
@@ -113,6 +122,7 @@ static PyObject *World_set_bg(WorldObject *self, PyObject *args) {
     char bgs_key[30] = "";
     sprintf(bgs_key, "%d_%d", ox, oy);
     PyDict_SetItemString(self->bgs, bgs_key, sprite);
+    Py_DECREF(key);
     return Py_None;
 }
 
@@ -145,6 +155,9 @@ static PyObject *World_insert(WorldObject *self, PyObject *args) {
     }
     PyObject *cell = get_cell(self, ox, oy);
     PyDict_SetItem(cell, PyObject_GetAttrString(sprite, "id"), sprite);
+    Py_DECREF(key);
+    Py_DECREF(kwargs);
+    Py_DECREF(priority);
     return Py_None;
 }
 
@@ -160,7 +173,12 @@ static PyObject *World_delete(WorldObject *self, PyObject *args) {
     World__inflate(self, key, NULL);
     PyObject_SetAttrString(sprite, "batch", Py_None);
     PyObject *cell = get_cell(self, ox, oy);
-    PyDict_DelItem(cell, PyObject_GetAttrString(sprite, "id"));
+
+    PyObject *spriteId = PyObject_GetAttrString(sprite, "id");
+    PyDict_DelItem(cell, spriteId);
+    Py_DECREF(spriteId);
+
+    Py_DECREF(key);
     return Py_None;
 }
 
@@ -175,7 +193,8 @@ static PyObject *World_get(WorldObject *self, PyObject *args) {
     PyObject *out = PyList_New(0);
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
-            World__inflate(self, Py_BuildValue("ii", xes, yes), NULL);
+            PyObject *key = Py_BuildValue("ii", xes, yes);
+            World__inflate(self, key, NULL);
             PyObject *cell = get_cell(self, xes, yes);
             PyObject *cellVals = PyDict_Values(cell);
             PyObject *iterator = PyObject_GetIter(cellVals);
@@ -193,6 +212,7 @@ static PyObject *World_get(WorldObject *self, PyObject *args) {
 
             Py_DECREF(iterator);
             Py_DECREF(cellVals);
+            Py_DECREF(key);
 
             if (PyErr_Occurred()) {
                 return NULL;
@@ -215,9 +235,11 @@ static PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *k
     PyObject *out = PyList_New(0);
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
-            World__inflate(self, Py_BuildValue("ii", xes, yes), NULL);
+            PyObject *key = Py_BuildValue("ii", xes, yes);
+            World__inflate(self, key, NULL);
             PyObject *cell = get_cell(self, xes, yes);
             PyList_Append(out, cell);
+            Py_DECREF(key);
         }
     }
     return out;
@@ -231,7 +253,7 @@ static PyObject *World_seed(WorldObject *self, PyObject *args) {
     }
 
     PyObject *iterator = PyObject_GetIter(sprites);
-    PyObject *item;
+    PyObject *item, *key;
 
     if (iterator == NULL) {
         PyErr_SetString(PyExc_RuntimeError, "Could not iterate over sprites.");
@@ -246,8 +268,10 @@ static PyObject *World_seed(WorldObject *self, PyObject *args) {
         int yy = PyLong_AsLong(y);
         Py_DECREF(x);
         Py_DECREF(y);
-        World_insert(self, Py_BuildValue("iiO", xx, yy, item));
+        key = Py_BuildValue("iiO", xx, yy, item);
+        World_insert(self, key);
         Py_DECREF(item);
+        Py_DECREF(key);
     }
 
     Py_DECREF(iterator);
@@ -255,8 +279,9 @@ static PyObject *World_seed(WorldObject *self, PyObject *args) {
     if (PyErr_Occurred()) {
         return NULL;
     }
-    PyObject *key = Py_BuildValue("ii", ix, iy);
+    key = Py_BuildValue("ii", ix, iy);
     PyDict_SetItem(self->seeded, key, Py_True);
+    Py_DECREF(key);
     return Py_None;
 }
 
