@@ -195,7 +195,12 @@ static PyObject *World_get(WorldObject *self, PyObject *args) {
 
             while (item = PyIter_Next(iterator)) {
                 // do the stuff here
-                PyList_Append(out, item);
+                PyObject *args = Py_BuildValue("iiii", x, y, w, h);
+                PyObject *res = PyObject_CallMethod(item, "intersects", "iiii", x, y, w, h);
+                if (!PySequence_Contains(out, item) && res == Py_True) {
+                    PyList_Append(out, item);
+                }
+                Py_DECREF(args);
             }
 
             Py_DECREF(iterator);
