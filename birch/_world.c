@@ -110,11 +110,57 @@ static PyObject *World_set_bg(WorldObject *self, PyObject *args) {
         pgbatch = PyDict_GetItem(self->bg_batches, key);
     }
     PyObject_SetAttrString(sprite, "batch", pgbatch);
-    PyDict_SetItem(
-        PyDict_GetItem(
-            PyDict_GetItem(self->world, PyLong_FromLong(oy)), PyLong_FromLong(ox)),
-        PyObject_GetAttrString(sprite, "id"),
-        sprite);
+    char bgs_key[30] = "";
+    sprintf(bgs_key, "%d_%d", ox, oy);
+    PyDict_SetItemString(self->bgs, bgs_key, sprite);
+    return Py_None;
+}
+
+static PyObject *get_cell(WorldObject *self, int ox, int oy) {
+    PyObject *row = PyDict_GetItem(self->world, PyLong_FromLong(oy));
+    PyObject *cell = PyDict_GetItem(row, PyLong_FromLong(ox));
+    return cell;
+}
+
+static PyObject *World_insert(WorldObject *self, PyObject *args) {
+    PyObject *sprite;
+    int x, y;
+    if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
+        return NULL;
+    }
+    int ox, oy;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    PyObject *key = Py_BuildValue("ii", ox, oy);
+    PyObject *pgbatch;
+    PyObject *kwargs = PyDict_New();
+    PyObject *priority = PyObject_GetAttrString(sprite, "priority");
+    PyDict_SetItemString(kwargs, "priority", priority);
+    World__inflate(self, key, kwargs);
+    PyObject *chunk_batch_dict = PyDict_GetItem(self->batches, key);
+    if (!PyDict_Contains(chunk_batch_dict, priority)) {
+        pgbatch = PyObject_CallObject(Batch, NULL);
+        PyDict_SetItem(chunk_batch_dict, key, pgbatch);
+    } else {
+        pgbatch = PyDict_GetItem(chunk_batch_dict, priority);
+    }
+    PyObject *cell = get_cell(self, ox, oy);
+    PyDict_SetItem(cell, PyObject_GetAttrString(sprite, "id"), sprite);
+    return Py_None;
+}
+
+static PyObject *World_delete(WorldObject *self, PyObject *args) {
+    PyObject *sprite;
+    int x, y;
+    if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
+        return NULL;
+    }
+    int ox, oy;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    PyObject *key = Py_BuildValue("ii", ox, oy);
+    World__inflate(self, key, NULL);
+    PyObject_SetAttrString(sprite, "batch", Py_None);
+    PyObject *cell = get_cell(self, ox, oy);
+    PyDict_DelItem(cell, PyObject_GetAttrString(sprite, "id"));
     return Py_None;
 }
 
@@ -144,6 +190,10 @@ static PyMethodDef World_methods[] = {
         "Inflate a chunk before population."},
     {"set_bg", (PyCFunction) World_set_bg, METH_VARARGS,
         "Set background for a chunk."},
+    {"insert", (PyCFunction) World_insert, METH_VARARGS,
+        "Insert a sprite"},
+    {"delete", (PyCFunction) World_delete, METH_VARARGS,
+        "Delete a sprite"},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
