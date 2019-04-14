@@ -63,17 +63,16 @@ static PyObject *World_unseeded(WorldObject *self, PyObject *args) {
     }
 }
 
-static PyObject *World__inflate(WorldObject *self, PyObject *args, PyObject *kwargs) {
-    int ix, iy, priority = 10;
-    static char *keywords[] = {"ix", "iy", "priority", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|i", keywords, &ix, &iy, &priority)) {
+static PyObject *World__inflate(WorldObject *self, PyObject *args) {
+    int ix, iy;
+    if (!PyArg_ParseTuple(args, "ii", &ix, &iy)) {
         return NULL;
     }
     int changed = 0;
     PyObject *pix = PyLong_FromLong(ix);
     PyObject *piy = PyLong_FromLong(iy);
     PyObject *key = Py_BuildValue("ii", ix, iy);
-    PyObject *rdict, *cdict;
+    PyObject *rdict, *cdict, *batch;
     if (!PyDict_Contains(self->world, piy)) {
         rdict = PyDict_New();
         PyDict_SetItem(self->world, piy, rdict);
@@ -85,16 +84,10 @@ static PyObject *World__inflate(WorldObject *self, PyObject *args, PyObject *kwa
         cdict = PyDict_New();
         PyDict_SetItem(rdict, pix, cdict);
         changed = 1;
-    } else {
-        cdict = PyDict_GetItem(rdict, pix);
     }
     if (changed) {
-        PyObject *batch = PyDict_New();
-        PyObject *pgbatch = PyObject_CallObject(Batch, NULL);
+        batch = PyObject_CallObject(Batch, NULL);
         PyDict_SetItem(self->batches, key, batch);
-        PyObject *ppri = PyLong_FromLong(priority);
-        PyDict_SetItem(batch, ppri, pgbatch);
-        Py_DECREF(ppri);
     }
     Py_DECREF(pix);
     Py_DECREF(piy);
@@ -111,14 +104,14 @@ static PyObject *World_set_bg(WorldObject *self, PyObject *args) {
     int ox, oy;
     alias(&ox, &oy, self->chunk_size, x, y);
     PyObject *key = Py_BuildValue("ii", ox, oy);
-    PyObject *pgbatch;
+    PyObject *bgbatch;
     if (!PyDict_Contains(self->bg_batches, key)) {
-        pgbatch = PyObject_CallObject(Batch, NULL);
-        PyDict_SetItem(self->bg_batches, key, pgbatch);
+        bgbatch = PyObject_CallObject(Batch, NULL);
+        PyDict_SetItem(self->bg_batches, key, bgbatch);
     } else {
-        pgbatch = PyDict_GetItem(self->bg_batches, key);
+        bgbatch = PyDict_GetItem(self->bg_batches, key);
     }
-    PyObject_SetAttrString(sprite, "batch", pgbatch);
+    PyObject_SetAttrString(sprite, "batch", bgbatch);
     char bgs_key[30] = "";
     sprintf(bgs_key, "%d_%d", ox, oy);
     PyDict_SetItemString(self->bgs, bgs_key, sprite);
@@ -141,23 +134,19 @@ static PyObject *World_insert(WorldObject *self, PyObject *args) {
     int ox, oy;
     alias(&ox, &oy, self->chunk_size, x, y);
     PyObject *key = Py_BuildValue("ii", ox, oy);
-    PyObject *pgbatch;
-    PyObject *kwargs = PyDict_New();
-    PyObject *priority = PyObject_GetAttrString(sprite, "priority");
-    PyDict_SetItemString(kwargs, "priority", priority);
-    World__inflate(self, key, kwargs);
-    PyObject *chunk_batch_dict = PyDict_GetItem(self->batches, key);
-    if (!PyDict_Contains(chunk_batch_dict, priority)) {
-        pgbatch = PyObject_CallObject(Batch, NULL);
-        PyDict_SetItem(chunk_batch_dict, key, pgbatch);
-    } else {
-        pgbatch = PyDict_GetItem(chunk_batch_dict, priority);
-    }
+
+    World__inflate(self, key);
+
     PyObject *cell = get_cell(self, ox, oy);
-    PyDict_SetItem(cell, PyObject_GetAttrString(sprite, "id"), sprite);
+    PyObject *spriteId = PyObject_GetAttrString(sprite, "id");
+    PyDict_SetItem(cell, spriteId, sprite);
+
+    PyObject *chunk_batch = PyDict_GetItem(self->batches, key);
+    PyObject_SetAttrString(sprite, "batch", chunk_batch);
+
     Py_DECREF(key);
-    Py_DECREF(kwargs);
-    Py_DECREF(priority);
+    Py_DECREF(spriteId);
+
     return Py_None;
 }
 
@@ -170,7 +159,7 @@ static PyObject *World_delete(WorldObject *self, PyObject *args) {
     int ox, oy;
     alias(&ox, &oy, self->chunk_size, x, y);
     PyObject *key = Py_BuildValue("ii", ox, oy);
-    World__inflate(self, key, NULL);
+    World__inflate(self, key);
     PyObject_SetAttrString(sprite, "batch", Py_None);
     PyObject *cell = get_cell(self, ox, oy);
 
@@ -194,7 +183,7 @@ static PyObject *World_get(WorldObject *self, PyObject *args) {
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
             PyObject *key = Py_BuildValue("ii", xes, yes);
-            World__inflate(self, key, NULL);
+            World__inflate(self, key);
             PyObject *cell = get_cell(self, xes, yes);
             PyObject *cellVals = PyDict_Values(cell);
             PyObject *iterator = PyObject_GetIter(cellVals);
@@ -235,7 +224,7 @@ static PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *k
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
             PyObject *key = Py_BuildValue("ii", xes, yes);
-            World__inflate(self, key, NULL);
+            World__inflate(self, key);
             PyObject *cell = get_cell(self, xes, yes);
             PyList_Append(out, cell);
             Py_DECREF(key);
@@ -301,15 +290,8 @@ static PyObject *World_get_batches(WorldObject *self, PyObject *args) {
                 PyList_Append(out, bg_batch);
             }
             if (PyDict_Contains(self->batches, key)) {
-                // sort bdict later
-                PyObject *bdict = PyDict_GetItem(self->batches, key);
-                int size = PyDict_Size(bdict);
-                PyObject *vals = PyDict_Values(bdict);
-                for(int bind=0; bind<size; bind++) {
-                    PyObject *batch = PyList_GetItem(vals, bind);
-                    PyList_Append(out, batch);
-                }
-                Py_DECREF(vals);
+                PyObject *chunk_batch = PyDict_GetItem(self->batches, key);
+                PyList_Append(out, chunk_batch);
             }
             Py_DECREF(key);
         }
@@ -339,7 +321,7 @@ static PyMethodDef World_methods[] = {
         "Alias a pair of coordinates to a chunk coordinate."},
     {"unseeded", (PyCFunction) World_unseeded, METH_VARARGS,
         "Check if a chunk has been seeded."},
-    {"_inflate", (PyCFunction) World__inflate, METH_VARARGS | METH_KEYWORDS,
+    {"_inflate", (PyCFunction) World__inflate, METH_VARARGS,
         "Inflate a chunk before population."},
     {"set_bg", (PyCFunction) World_set_bg, METH_VARARGS,
         "Set background for a chunk."},
