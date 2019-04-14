@@ -28,8 +28,8 @@ static int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
 }
 
 static int *alias(int *ox, int *oy, int chunk_size, int x, int y) {
-    *ox = (x - x % chunk_size) / chunk_size;
-    *oy = (y - y % chunk_size) / chunk_size;
+    *ox = (int)floor((double)x / chunk_size);
+    *oy = (int)floor((double)y / chunk_size);
     return 0;
 }
 
