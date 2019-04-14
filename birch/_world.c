@@ -93,6 +93,31 @@ static PyObject *World__inflate(WorldObject *self, PyObject *args, PyObject *kwa
     return Py_None;
 }
 
+static PyObject *World_set_bg(WorldObject *self, PyObject *args) {
+    PyObject *sprite;
+    int x, y;
+    if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
+        return NULL;
+    }
+    int ox, oy;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    PyObject *key = Py_BuildValue("ii", ox, oy);
+    PyObject *pgbatch;
+    if (!PyDict_Contains(self->bg_batches, key)) {
+        pgbatch = PyObject_CallObject(Batch, NULL);
+        PyDict_SetItem(self->bg_batches, key, pgbatch);
+    } else {
+        pgbatch = PyDict_GetItem(self->bg_batches, key);
+    }
+    PyObject_SetAttrString(sprite, "batch", pgbatch);
+    PyDict_SetItem(
+        PyDict_GetItem(
+            PyDict_GetItem(self->world, PyLong_FromLong(oy)), PyLong_FromLong(ox)),
+        PyObject_GetAttrString(sprite, "id"),
+        sprite);
+    return Py_None;
+}
+
 static PyMemberDef World_members[] = {
     {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
      "The size of a world chunk"},
@@ -117,6 +142,8 @@ static PyMethodDef World_methods[] = {
         "Check if a chunk has been seeded."},
     {"_inflate", (PyCFunction) World__inflate, METH_VARARGS | METH_KEYWORDS,
         "Inflate a chunk before population."},
+    {"set_bg", (PyCFunction) World_set_bg, METH_VARARGS,
+        "Set background for a chunk."},
     {NULL}  /* Sentinel */ };
 
 static PyGetSetDef World_getsets[] = {
