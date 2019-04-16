@@ -171,7 +171,7 @@ class Engine:
                 cell.populate()
                 cell.level_check()
                 cell.last_rci = self.ticks
-            neighbors = self.get_surrounding(cell, cells=workcells)
+            neighbors = self.world.get_surrounding(cell, workcells)
             counts = {
                 "r": 0,
                 "c": 0,
@@ -202,16 +202,6 @@ class Engine:
             global_demand = self.state['demand'][ckey] - 0.5
             demand = clamp(demand + global_demand * self.overall_factor, -1, 1)
             cell.demand = demand
-
-    def get_surrounding(self, cell, cells=None):
-        bounds = cell.rect.inflate(cell.width * 2, cell.height * 2)
-        if cells is None:
-            return self.world.get(*bounds.bounds)
-        out = []
-        for ccell in cells:
-            if ccell.rect.colliderect(bounds):
-                out.append(ccell)
-        return out
 
     def get_cell(self, x, y, w, h):
         return self.world.get(x, y, w, h)

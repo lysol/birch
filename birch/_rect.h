@@ -1,6 +1,14 @@
 #include </usr/include/python3.6m/Python.h>
 #include </usr/include/python3.6m/structmember.h>
 
+#define collidepoint(rect, x, y) (x >= rect->x && x < rect->x + rect->width && \
+        y >= rect->y && y < rect->y + rect->height)
+
+#define colliderect(first, second) ( \
+        !((second->x + second->width - 1) < first->x || second->x > (first->x + first->width - 1) || \
+        (second->y + second->height - 1) < first->y || second->y > (first->y + first->height - 1)) \
+        )
+
 typedef struct {
     PyObject_HEAD
     int x;

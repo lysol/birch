@@ -1,7 +1,7 @@
 #include </usr/include/python3.6m/Python.h>
 #include </usr/include/python3.6m/structmember.h>
 #include <stdio.h>
-#include "_world.h"
+#include "_birch.h"
 
 static void World_dealloc(WorldObject *self)
 {
@@ -171,6 +171,29 @@ static PyObject *World_delete(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
+static PyObject *World_get_surrounding(WorldObject *self, PyObject *args) {
+    PyObject *cell, *cells, *item;
+    RectObject *itemrect, *inflated, *rect;
+    if (!PyArg_ParseTuple(args, "OO", &cell, &cells)) {
+        return NULL;
+    }
+    rect = (RectObject *)PyObject_GetAttrString(cell, "rect");
+    inflated = (RectObject *)PyObject_CallMethod((PyObject *)rect, "inflate", "ii", rect->width * 3, rect->height * 3);
+    Py_DECREF(rect);
+    PyObject *out = PyList_New(0);
+    int length = PyList_Size(cells);
+    for(int x=0; x<length; x++) {
+        item = PyList_GetItem(cells, x);
+        itemrect = (RectObject *)PyObject_GetAttrString(cell, "rect");
+        if (colliderect(inflated, itemrect)) {
+            PyList_Append(out, item);
+        }
+        Py_DECREF(itemrect);
+    }
+    Py_DECREF(inflated);
+    return out;
+}
+
 static PyObject *World_get(WorldObject *self, PyObject *args) {
     int x, y, w, h;
     if (!PyArg_ParseTuple(args, "iiii", &x, &y, &w, &h)) {
@@ -338,6 +361,8 @@ static PyMethodDef World_methods[] = {
         "Get sprites in an area"},
     {"get_chunks", (PyCFunction) World_get_chunks, METH_VARARGS | METH_KEYWORDS,
         "Get chunks"},
+    {"get_surrounding", (PyCFunction) World_get_surrounding, METH_VARARGS,
+        "Get cells from an area directly adjacent to the cell, based on its width."},
     {"seed", (PyCFunction) World_seed, METH_VARARGS, "Seed a chunk"},
     {"get_batches", (PyCFunction) World_get_batches, METH_VARARGS,
         "Get batches"},

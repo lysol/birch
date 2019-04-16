@@ -11,7 +11,7 @@ _rect = Extension('birch._rect',
                         ])
 _world = Extension('birch._world',
                     sources = [
-                        'birch/_world.c'
+                        'birch/_rect.c', 'birch/_world.c'
                         ])
 
 setup(name='birch',
