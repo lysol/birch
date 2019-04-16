@@ -37,15 +37,25 @@ static PyObject *Rect___str__(RectObject *self) {
     return PyUnicode_FromString(buffer);
 }
 
+static PyObject *Rect_inflate_in_place(RectObject * self, PyObject *args) {
+    int w, h;
+    if (!PyArg_ParseTuple(args, "ii", &w, &h)) {
+        return NULL;
+    }
+    self->x = self->x - w / 2;
+    self->y = self->y - h / 2;
+    self->width = self->width + w;
+    self->height = self->height + h;
+    return Py_None;
+}
+
 static PyObject *Rect_inflate(RectObject *self, PyObject *args) {
     int w, h;
     if (!PyArg_ParseTuple(args, "ii", &w, &h)) {
         return NULL;
     }
-    int whalf = w / 2;
-    int hhalf = h / 2;
-    int newx = self->x - whalf;
-    int newy = self->y - hhalf;
+    int newx = self->x - w / 2;
+    int newy = self->y - h / 2;
     int newwidth = self->width + w;
     int newheight = self->height + h;
     PyObject *nargs = Py_BuildValue("iiii", newx, newy, newwidth, newheight);
@@ -270,6 +280,8 @@ static PyMethodDef Rect_methods[] = {
         "String representation of a Rect."},
     {"inflate", (PyCFunction) Rect_inflate, METH_VARARGS,
         "Inflate a rectangle and return a new instance."},
+    {"inflate_in_place", (PyCFunction) Rect_inflate_in_place, METH_VARARGS,
+        "Inflate a rectangle in place."},
     {"collidepoint", (PyCFunction) Rect_collidepoint, METH_VARARGS,
         "Check if another point collides with this one"},
     {"colliderect", (PyCFunction) Rect_colliderect, METH_VARARGS,

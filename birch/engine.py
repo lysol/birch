@@ -113,13 +113,13 @@ class Engine:
         damage = False
         self.ticks += self.state["speed"]
         changed = []
-        cr = checkrect.inflate(checkrect.width, checkrect.height)
         if self._next_rci <= self.ticks:
             self._demand_calc()
             self._rci()
             self._next_rci = self.ticks + self.rci_interval
         if len(self.deferred_inserts) > 0:
             inserted = self.do_insert()
+            checkrect.inflate_in_place(checkrect.width, checkrect.height)
             if checkrect is not None:
                 for item in inserted:
                     if checkrect.colliderect(item.rect):
@@ -297,7 +297,8 @@ class Engine:
             self.set_cell(new_cell, alias=False)
 
     def get_batches(self, x, y, w=1, h=1):
-        r = Rect(x, y, w, h).inflate(w, h)
+        r = Rect(x, y, w, h)
+        r.inflate_in_place(w, h)
         return self.world.get_batches(*r.topleft, r.width, r.height)
 
     def seed(self, x, y):
