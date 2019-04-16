@@ -190,9 +190,11 @@ class BirchGame:
         self.mouse = 0, 0
         self.init_ui()
         self.set_cursor_size()
+        factor_w = int(self.camera_rect.width / self.engine.world.chunk_size) * 2
+        factor_h = int(self.camera_rect.height / self.engine.world.chunk_size) * 2
         self.chonk = (
-            int(math.ceil(self.camera_rect.width / 3)),
-            int(math.ceil(self.camera_rect.height / 3))
+            int(math.ceil(self.camera_rect.width / factor_w)),
+            int(math.ceil(self.camera_rect.height / factor_h))
             )
 
     def init_ui(self):
@@ -305,7 +307,8 @@ class BirchGame:
                     self.camera_rect.width, self.camera_rect.height)
             self.last_camera = list(self.camera)
             self.first = True
-            crect = self.camera_rect.inflate(256, 256)
+            inflatefactor = self.engine.world.chunk_size * 2
+            crect = self.camera_rect.inflate(inflatefactor, inflatefactor)
             xes = range(int(crect.left), int(crect.right), self.chonk[0])
             yes = range(int(crect.top), int(crect.bottom), self.chonk[1])
             for point in [[_x, _y] for _y in yes for _x in xes]:
