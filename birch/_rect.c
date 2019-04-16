@@ -3,6 +3,14 @@
 #include <stdio.h>
 #include "_rect.h"
 
+#define collidepoint(rect, x, y) (x >= rect->x && x < rect->x + rect->width && \
+        y >= rect->y && y < rect->y + rect->height)
+
+#define colliderect(first, second) ( \
+        !((second->x + second->width - 1) < first->x || second->x > (first->x + first->width - 1) || \
+        (second->y + second->height - 1) < first->y || second->y > (first->y + first->height - 1)) \
+        )
+
 static void Rect_dealloc(RectObject *self)
 {
     Py_TYPE(self)->tp_free((PyObject *) self);
@@ -53,8 +61,7 @@ static PyObject *Rect_collidepoint(RectObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
         return NULL;
     }
-    if (x >= self->x && x < self->x + self->width &&
-            y >= self->y && y < self->y + self->height) {
+    if (collidepoint(self, x, y)) {
         Py_RETURN_TRUE;
     } else {
         Py_RETURN_FALSE;
@@ -62,22 +69,11 @@ static PyObject *Rect_collidepoint(RectObject *self, PyObject *args) {
 }
 
 static PyObject *Rect_colliderect(RectObject *self, PyObject *args) {
-    PyObject *other;
+    RectObject *other;
     if (!PyArg_ParseTuple(args, "O", &other)) {
         return NULL;
     }
-    int x = (int)PyLong_AsLong(PyObject_GetAttrString(other, "x")),
-        y = (int)PyLong_AsLong(PyObject_GetAttrString(other, "y")),
-        w = (int)PyLong_AsLong(PyObject_GetAttrString(other, "width")),
-        h = (int)PyLong_AsLong(PyObject_GetAttrString(other, "height")),
-        l = x,
-        t = y,
-        b = y + h - 1,
-        r = x + w - 1,
-        right = self->x + self->width,
-        bottom = self->y + self->height;
-    if (!(r < self->x || l > (right - 1) ||
-            b < self->y || t > (bottom - 1))) {
+    if (colliderect(self, other)) {
         Py_RETURN_TRUE;
     } else {
         Py_RETURN_FALSE;
