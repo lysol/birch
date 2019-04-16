@@ -17,6 +17,13 @@ typedef struct {
     int height;
 } RectObject;
 
+typedef struct {
+    int x;
+    int y;
+    int width;
+    int height;
+} RectShallow;
+
 static PyTypeObject RectType;
 static void Rect_dealloc(RectObject *self);
 static PyObject *Rect_new(PyTypeObject *type, PyObject *args, PyObject *kwds);

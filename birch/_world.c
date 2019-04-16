@@ -173,12 +173,18 @@ static PyObject *World_delete(WorldObject *self, PyObject *args) {
 
 static PyObject *World_get_surrounding(WorldObject *self, PyObject *args) {
     PyObject *cell, *cells, *item;
-    RectObject *itemrect, *inflated, *rect;
+    RectObject *itemrect, *rect;
     if (!PyArg_ParseTuple(args, "OO", &cell, &cells)) {
         return NULL;
     }
     rect = (RectObject *)PyObject_GetAttrString(cell, "rect");
-    inflated = (RectObject *)PyObject_CallMethod((PyObject *)rect, "inflate", "ii", rect->width * 3, rect->height * 3);
+    RectShallow _inflated = {
+        .x = rect->x - rect->width,
+        .y = rect->y - rect->height,
+        .width = rect->width * 3,
+        .height = rect->height * 3
+    };
+    RectShallow *inflated = &_inflated;
     Py_DECREF(rect);
     PyObject *out = PyList_New(0);
     int length = PyList_Size(cells);
@@ -190,7 +196,6 @@ static PyObject *World_get_surrounding(WorldObject *self, PyObject *args) {
         }
         Py_DECREF(itemrect);
     }
-    Py_DECREF(inflated);
     return out;
 }
 
