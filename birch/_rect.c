@@ -330,18 +330,6 @@ static PyGetSetDef Rect_getsets[] = {
     {NULL}
 };
 
-/*
-static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
-    int x;
-    int y;
-    double freq;
-    int size;
-    int octaves;
-    int pixvalue;
-    if (!PyArg_ParseTuple(args, "iidiii", &x, &y, &freq, &octaves, &size, &pixvalue))
-        return NULL;
-*/
-
 static PyTypeObject RectType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "rect.Rect",
