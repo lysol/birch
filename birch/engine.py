@@ -21,7 +21,7 @@ from birch.cells.uranium import Uranium
 from birch.cells.tree import PineTree, BirchTree
 from birch.util import clamp, pi2, Rect
 from birch.world import World
-from birch._perlin import Perlin
+from birch._birch import Perlin
 
 class Engine:
 

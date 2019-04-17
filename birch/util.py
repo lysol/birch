@@ -1,6 +1,6 @@
 from math import pi
 from functools import reduce
-from birch._rect import Rect
+from birch._birch import Rect
 
 def clamp(i, mini, maxi):
     return min(max(i, mini), maxi)

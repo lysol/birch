@@ -1,17 +1,12 @@
 from setuptools import setup, find_packages
 from distutils.core import setup, Extension
 
-_perlin = Extension('birch._perlin',
+_birch = Extension('birch._birch',
                     sources = [
-                        'birch/_perlin.c'
-                        ])
-_rect = Extension('birch._rect',
-                    sources = [
-                        'birch/_rect.c'
-                        ])
-_world = Extension('birch._world',
-                    sources = [
-                        'birch/_rect.c', 'birch/_world.c'
+                        'birch/_perlin.c',
+                        'birch/_rect.c',
+                        'birch/_world.c',
+                        'birch/_birch.c'
                         ])
 
 setup(name='birch',
@@ -30,4 +25,4 @@ setup(name='birch',
           'pillow'
           ],
       zip_safe=False,
-      ext_modules=[_perlin, _rect, _world])
+      ext_modules=[_birch])

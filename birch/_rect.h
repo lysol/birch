@@ -1,3 +1,5 @@
+#ifndef RECT_H
+#define RECT_H
 #include </usr/include/python3.6m/Python.h>
 #include </usr/include/python3.6m/structmember.h>
 
@@ -50,5 +52,4 @@ static PyMemberDef Rect_members[];
 static PyMethodDef Rect_methods[];
 static PyGetSetDef Rect_getsets[];
 static PyTypeObject RectType;
-static PyModuleDef rect_module;
-PyMODINIT_FUNC PyInit__rect(void);
+#endif

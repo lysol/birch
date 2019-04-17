@@ -1,3 +1,5 @@
+#ifndef WORLD_H
+#define WORLD_H
 #include </usr/include/python3.6m/Python.h>
 #include </usr/include/python3.6m/structmember.h>
 
@@ -26,5 +28,4 @@ static PyMemberDef World_members[];
 static PyMethodDef World_methods[];
 static PyGetSetDef World_getsets[];
 static PyTypeObject WorldType;
-static PyModuleDef world_module;
-PyMODINIT_FUNC PyInit__world(void);
+#endif

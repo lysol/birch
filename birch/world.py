@@ -1,5 +1,5 @@
 import pyglet
-from birch._world import World
+from birch._birch import World
 
 class _World:
 

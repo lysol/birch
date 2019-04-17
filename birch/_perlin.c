@@ -1,21 +1,10 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include </usr/include/python3.6m/Python.h>
 #include </usr/include/python3.6m/structmember.h>
-#include </usr/lib/python3/dist-packages/numpy/core/include/numpy/arrayobject.h>
 #include <stdio.h>
-#define RANDCOUNT (1024 * 1024)
-#define GOOSE .4
-#define GANDER 0.01
+#include "_birch.h"
 
-typedef struct {
-    PyObject_HEAD
-    unsigned int seed; /* random seed */
-    int permutation[512];
-    int p[512];
-} PerlinObject;
-static double randoms[RANDCOUNT];
-
-static void Perlin_dealloc(PerlinObject *self)
+void Perlin_dealloc(PerlinObject *self)
 {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -35,7 +24,7 @@ void shuffle(int *array, size_t n)
     }
 }
 
-static PyObject *Perlin_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+PyObject *Perlin_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PerlinObject *self;
     self = (PerlinObject *) type->tp_alloc(type, 0);
@@ -49,7 +38,7 @@ static PyObject *Perlin_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *) self;
 }
 
-static int Perlin_init(PerlinObject *self, PyObject *args, PyObject *kwds)
+int Perlin_init(PerlinObject *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"seed", NULL};
 
@@ -70,14 +59,14 @@ static int Perlin_init(PerlinObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static double fade(double t) {
+double fade(double t) {
     // Fade function as defined by Ken Perlin.  This eases coordinate values
     // so that they will "ease" towards integral values.  This ends up smoothing
     // the final output.
     return t * t * t * (t * (t * 6 - 15) + 10); // 6t^5 - 15t^4 + 10t^3
 }
 
-static double grad(int hash, double x, double y, double z) {
+double grad(int hash, double x, double y, double z) {
     int h = hash & 15;                  // Take the hashed value and take the first 4 bits of it (15 == 0b1111)
     double u = h < 8 /* 0b1000 */ ? x : y;        // If the most significant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
     double v;                      // In Ken Perlin's original implementation this was another conditional operator (?:).  I
@@ -92,7 +81,7 @@ static double grad(int hash, double x, double y, double z) {
     // Use the last 2 bits to decide if u and v are positive or negative.  Then return their addition.
 }
 
-static double lerp(double start, double end, double x) {
+double lerp(double start, double end, double x) {
     return start + x * (end - start);
 }
 
@@ -101,7 +90,7 @@ int inc(int num) {
   return num;
 }
 
-static double perlin(int p[512], double x, double y, double z) {
+double perlin(int p[512], double x, double y, double z) {
     int xi = (int)floor(x) & 255;
     int yi = (int)floor(y) & 255;
     int zi = (int)floor(z) & 255;
@@ -141,7 +130,7 @@ static double perlin(int p[512], double x, double y, double z) {
 }
 
 
-static double perlin_octave(int p[512], double x, double y, double z, double frequency,
+double perlin_octave(int p[512], double x, double y, double z, double frequency,
         int octaves, double persistence) {
     double total = 0;
     double amplitude = .2;
@@ -155,7 +144,7 @@ static double perlin_octave(int p[512], double x, double y, double z, double fre
     return total/maxValue;
 }
 
-static PyObject *Perlin_perlin_octave_array(PerlinObject *self, PyObject *args) {
+PyObject *Perlin_perlin_octave_array(PerlinObject *self, PyObject *args) {
     double x, y, width, height, frequency, persistence, step;
     int octaves;
     if (!PyArg_ParseTuple(args, "dddddidd", &x, &y, &width, &height,
@@ -179,12 +168,12 @@ static PyObject *Perlin_perlin_octave_array(PerlinObject *self, PyObject *args) 
     return list;
 }
 
-static PyMemberDef Perlin_members[] = {
+PyMemberDef Perlin_members[] = {
     {"seed", T_INT, offsetof(PerlinObject, seed), 0,
      "random seed"},
     {NULL}  /* Sentinel */ };
 
-static PyObject *Perlin_perlin(PerlinObject *self, PyObject *args) {
+PyObject *Perlin_perlin(PerlinObject *self, PyObject *args) {
     double x, y;
     if (!PyArg_ParseTuple(args, "dd", &x, &y)) {
         return NULL;
@@ -192,7 +181,7 @@ static PyObject *Perlin_perlin(PerlinObject *self, PyObject *args) {
     return PyFloat_FromDouble(perlin(self->p, x, y, 0));
 }
 
-static PyObject *Perlin_perlin_octave(PerlinObject *self, PyObject *args) {
+PyObject *Perlin_perlin_octave(PerlinObject *self, PyObject *args) {
     double x, y, frequency, persistence;
     int octaves;
     if (!PyArg_ParseTuple(args, "dddid", &x, &y, &frequency, &octaves, &persistence)) {
@@ -273,7 +262,7 @@ void dither_buffer(char *data, int size, int stride) {
     }
 }
 
-static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
+PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
     int x;
     int y;
     double freq;
@@ -321,7 +310,7 @@ static PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args) {
     return array;
 }
 
-static PyMethodDef Perlin_methods[] = {
+PyMethodDef Perlin_methods[] = {
     {"noise2_bytes", (PyCFunction) Perlin_noise2_bytes, METH_VARARGS,
      "Perlin Noise 2D Array"
     },
@@ -333,7 +322,7 @@ static PyMethodDef Perlin_methods[] = {
         "Perlin Noise"},
     {NULL}  /* Sentinel */ };
 
-static PyTypeObject PerlinType = {
+PyTypeObject PerlinType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "perlin.Perlin",
     .tp_doc = "A python wrapper for perlin noise c code",
@@ -346,26 +335,3 @@ static PyTypeObject PerlinType = {
     .tp_members = Perlin_members,
     .tp_methods = Perlin_methods,
 };
-
-static PyModuleDef perlin_module = {
-    PyModuleDef_HEAD_INIT,
-    .m_name = "perlin",
-    .m_doc = "A python wrapper for perlin noise c code.",
-    .m_size = -1,
-};
-
-PyMODINIT_FUNC PyInit__perlin(void)
-{
-    PyObject *m;
-    if (PyType_Ready(&PerlinType) < 0)
-        return NULL;
-
-    m = PyModule_Create(&perlin_module);
-    if (m == NULL)
-        return NULL;
-
-    Py_INCREF(&PerlinType);
-    PyModule_AddObject(m, "Perlin", (PyObject *) &PerlinType);
-    return m;
-}
-

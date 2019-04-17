@@ -3,19 +3,19 @@
 #include <stdio.h>
 #include "_birch.h"
 
-static void World_dealloc(WorldObject *self)
+void World_dealloc(WorldObject *self)
 {
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
-static PyObject *World_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+PyObject *World_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     WorldObject *self;
     self = (WorldObject *) type->tp_alloc(type, 0);
     return (PyObject *) self;
 }
 
-static int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
+int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
 {
     self->world = PyDict_New();
     self->seeded = PyDict_New();
@@ -27,13 +27,13 @@ static int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static int *alias(int *ox, int *oy, int chunk_size, int x, int y) {
+int *alias(int *ox, int *oy, int chunk_size, int x, int y) {
     *ox = (int)floor((double)x / chunk_size);
     *oy = (int)floor((double)y / chunk_size);
     return 0;
 }
 
-static PyObject *World__alias(WorldObject *self, PyObject *args) {
+PyObject *World__alias(WorldObject *self, PyObject *args) {
     int x, y;
     if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
         return NULL;
@@ -46,7 +46,7 @@ static PyObject *World__alias(WorldObject *self, PyObject *args) {
         );
 }
 
-static PyObject *World_unseeded(WorldObject *self, PyObject *args) {
+PyObject *World_unseeded(WorldObject *self, PyObject *args) {
     int x, y;
     if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
         return NULL;
@@ -63,7 +63,7 @@ static PyObject *World_unseeded(WorldObject *self, PyObject *args) {
     }
 }
 
-static PyObject *World__inflate(WorldObject *self, PyObject *args) {
+PyObject *World__inflate(WorldObject *self, PyObject *args) {
     int ix, iy;
     if (!PyArg_ParseTuple(args, "ii", &ix, &iy)) {
         return NULL;
@@ -95,7 +95,7 @@ static PyObject *World__inflate(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
-static PyObject *World_set_bg(WorldObject *self, PyObject *args) {
+PyObject *World_set_bg(WorldObject *self, PyObject *args) {
     PyObject *sprite;
     int x, y;
     if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
@@ -119,13 +119,13 @@ static PyObject *World_set_bg(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
-static PyObject *get_cell(WorldObject *self, int ox, int oy) {
+PyObject *get_cell(WorldObject *self, int ox, int oy) {
     PyObject *row = PyDict_GetItem(self->world, PyLong_FromLong(oy));
     PyObject *cell = PyDict_GetItem(row, PyLong_FromLong(ox));
     return cell;
 }
 
-static PyObject *World_insert(WorldObject *self, PyObject *args) {
+PyObject *World_insert(WorldObject *self, PyObject *args) {
     PyObject *sprite;
     int x, y;
     if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
@@ -150,7 +150,7 @@ static PyObject *World_insert(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
-static PyObject *World_delete(WorldObject *self, PyObject *args) {
+PyObject *World_delete(WorldObject *self, PyObject *args) {
     PyObject *sprite;
     int x, y;
     if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
@@ -171,7 +171,7 @@ static PyObject *World_delete(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
-static PyObject *World_get_surrounding(WorldObject *self, PyObject *args) {
+PyObject *World_get_surrounding(WorldObject *self, PyObject *args) {
     PyObject *cell, *cells, *item;
     RectObject *itemrect, *rect;
     if (!PyArg_ParseTuple(args, "OO", &cell, &cells)) {
@@ -199,7 +199,7 @@ static PyObject *World_get_surrounding(WorldObject *self, PyObject *args) {
     return out;
 }
 
-static PyObject *World_get(WorldObject *self, PyObject *args) {
+PyObject *World_get(WorldObject *self, PyObject *args) {
     int x, y, w, h;
     if (!PyArg_ParseTuple(args, "iiii", &x, &y, &w, &h)) {
         return NULL;
@@ -244,7 +244,7 @@ static PyObject *World_get(WorldObject *self, PyObject *args) {
     return out;
 }
 
-static PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *kwargs) {
     int x, y, w = 1, h = 1;
     static char *keywords[] = {"x", "y", "w", "h", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|Ii", keywords, &x, &y, &w, &h)) {
@@ -266,7 +266,7 @@ static PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *k
     return out;
 }
 
-static PyObject *World_seed(WorldObject *self, PyObject *args) {
+PyObject *World_seed(WorldObject *self, PyObject *args) {
     int ix, iy;
     PyObject *sprites;
     if (!PyArg_ParseTuple(args, "iiO", &ix, &iy, &sprites)) {
@@ -306,7 +306,7 @@ static PyObject *World_seed(WorldObject *self, PyObject *args) {
     return Py_None;
 }
 
-static PyObject *World_get_batches(WorldObject *self, PyObject *args) {
+PyObject *World_get_batches(WorldObject *self, PyObject *args) {
     int x, y, w, h;
     if (!PyArg_ParseTuple(args, "iiii", &x, &y, &w, &h)) {
         return NULL;
@@ -332,7 +332,7 @@ static PyObject *World_get_batches(WorldObject *self, PyObject *args) {
     return out;
 }
 
-static PyMemberDef World_members[] = {
+PyMemberDef World_members[] = {
     {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
      "The size of a world chunk"},
     {"world", T_OBJECT_EX, offsetof(WorldObject, world), 0,
@@ -349,7 +349,7 @@ static PyMemberDef World_members[] = {
      "Chunk bgs"},
     {NULL}  /* Sentinel */ };
 
-static PyMethodDef World_methods[] = {
+PyMethodDef World_methods[] = {
     {"_alias", (PyCFunction) World__alias, METH_VARARGS,
         "Alias a pair of coordinates to a chunk coordinate."},
     {"unseeded", (PyCFunction) World_unseeded, METH_VARARGS,
@@ -373,7 +373,7 @@ static PyMethodDef World_methods[] = {
         "Get batches"},
     {NULL}  /* Sentinel */ };
 
-static PyGetSetDef World_getsets[] = {
+PyGetSetDef World_getsets[] = {
     //{"right",  /* name */
     //  (getter) World_get_right,
     //  (setter) World_set_right,
@@ -387,7 +387,7 @@ static PyGetSetDef World_getsets[] = {
     {NULL}
 };
 
-static PyTypeObject WorldType = {
+PyTypeObject WorldType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "rect.World",
     .tp_doc = "The world storage for birch",
@@ -401,29 +401,4 @@ static PyTypeObject WorldType = {
     .tp_methods = World_methods,
     .tp_getset = World_getsets
 };
-
-static PyModuleDef world_module = {
-    PyModuleDef_HEAD_INIT,
-    .m_name = "world",
-    .m_doc = "The world storage for birch",
-    .m_size = -1,
-};
-
-PyMODINIT_FUNC PyInit__world(void)
-{
-    if (PyType_Ready(&WorldType) < 0)
-        return NULL;
-
-    _module = PyModule_Create(&world_module);
-    if (_module == NULL)
-        return NULL;
-
-    Py_INCREF(&WorldType);
-    PyModule_AddObject(_module, "World", (PyObject *) &WorldType);
-    graphics = PyImport_ImportModule("pyglet.graphics");
-    Batch = PyObject_GetAttrString(graphics, "Batch");
-    draw = PyObject_GetAttrString(graphics, "draw");
-
-    return _module;
-}
 

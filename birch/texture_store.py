@@ -7,7 +7,7 @@ from pyglet import sprite, resource
 from pyglet.image import Texture
 from pyglet.gl import *
 from PIL import Image
-from birch._perlin import Perlin
+from birch._birch import Perlin
 
 class TextureStore(dict):
 
