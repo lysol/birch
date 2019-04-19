@@ -11,15 +11,26 @@ from birch._birch import Perlin
 
 class TextureStore(dict):
 
+    metadata_paths = (
+        'spritesheet.json',
+        'water.json'
+        )
+
     def __init__(self, asset_dir, *args, **kwargs):
         super(dict, self).__init__(*args, **kwargs);
         self.asset_dir = asset_dir
 
         pyglet.resource.path.extend([self.asset_dir, '/tmp'])
         pyglet.resource.reindex()
-        names = json.load(open('%s/names.json' % asset_dir))
-        for name in names:
-            self.load(name)
+        for pat in self.metadata_paths:
+            names = json.load(open('%s/%s' % (asset_dir, pat)))
+            if 'structure' in names and 'type' in names['structure'] and \
+                    names['structure']['type'] == 'sheet':
+                prefix = names['structure']['prefix'] + '_'
+            else:
+                prefix = ''
+            for name in names['names']:
+                self.load('%s%s' % (prefix, name))
         self['r_1_0'] = self['r_0_0']
         self['c_1_0'] = self['c_0_0']
         self['i_1_0'] = self['i_0_0']
