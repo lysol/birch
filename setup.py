@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
+import distutils
+import distutils.command.build
 from distutils.core import setup, Extension
+from build_assets import build_assets
 
 _birch = Extension('birch._birch',
                     sources = [
@@ -8,6 +11,13 @@ _birch = Extension('birch._birch',
                         'birch/_world.c',
                         'birch/_birch.c'
                         ])
+
+# Override build command
+class BuildCommand(distutils.command.build.build):
+
+    def run(self):
+        build_assets()
+        super().run()
 
 setup(name='birch',
       version='0.0.1',
@@ -25,4 +35,5 @@ setup(name='birch',
           'pillow'
           ],
       zip_safe=False,
+      cmdclass={"build": BuildCommand},
       ext_modules=[_birch])
