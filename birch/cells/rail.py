@@ -18,6 +18,6 @@ class RailCell(ConnectableCell):
         self.priority = 3
 
     def impassible(self, cell_name):
-        if cell_name == 'road_h':
+        if cell_name == 'road':
             return False
         return True

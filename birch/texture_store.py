@@ -13,7 +13,8 @@ class TextureStore(dict):
 
     metadata_paths = (
         'spritesheet.json',
-        'water.json'
+        'water.json',
+        'road.json'
         )
 
     def __init__(self, asset_dir, *args, **kwargs):
@@ -23,13 +24,20 @@ class TextureStore(dict):
         pyglet.resource.path.extend([self.asset_dir, '/tmp'])
         pyglet.resource.reindex()
         for pat in self.metadata_paths:
+            prefix = ''
             names = json.load(open('%s/%s' % (asset_dir, pat)))
             if 'structure' in names and 'type' in names['structure'] and \
                     names['structure']['type'] == 'sheet':
-                prefix = names['structure']['prefix'] + '_'
-            else:
-                prefix = ''
+                if 'inherit' in names['structure']:
+                    other = json.load(open('%s/%s' % (asset_dir, names['structure']['inherit'])))
+                    if 'names' not in names:
+                        names['names'] = other['names']
+                    if 'prefix' not in names['structure']:
+                        prefix = other['structure']['prefix'] + '_'
+                if 'prefix' in names['structure']:
+                    prefix = names['structure']['prefix'] + '_'
             for name in names['names']:
+                prefixed = '%s%s' % (prefix, name)
                 self.load('%s%s' % (prefix, name))
         self['r_1_0'] = self['r_0_0']
         self['c_1_0'] = self['c_0_0']

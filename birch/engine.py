@@ -279,7 +279,7 @@ class Engine:
                 new_cell = ICell(self.textures, (x, y))
             elif name == "rail_h":
                 new_cell = RailCell(self.textures, (x, y))
-            elif name == "road_h":
+            elif name == "road_h_0":
                 new_cell = RoadCell(self.textures, (x, y))
             elif name == "water_o_0":
                 new_cell = WaterCell(self.textures, (x, y))
