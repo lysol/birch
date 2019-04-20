@@ -115,34 +115,6 @@
             "size": 12,
             "position": [48, 48]
         },
-        "rail_bl": {
-            "size": 8,
-            "position": [120, 48]
-        },
-        "rail_h": {
-            "size": 8,
-            "position": [64, 56]
-        },
-        "rail_tr": {
-            "size": 8,
-            "position": [72, 56]
-        },
-        "rail_v": {
-            "size": 8,
-            "position": [80, 56]
-        },
-        "rail_x": {
-            "size": 8,
-            "position": [88, 56]
-        },
-        "rail_tl": {
-            "size": 8,
-            "position": [96, 56]
-        },
-        "rail_br": {
-            "size": 8,
-            "position": [104, 56]
-        },
         "cursor_16": {
             "size": 8,
             "position": [112, 56]

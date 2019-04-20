@@ -14,7 +14,8 @@ class TextureStore(dict):
     metadata_paths = (
         'spritesheet.json',
         'water.json',
-        'road.json'
+        'road.json',
+        'rail.json'
         )
 
     def __init__(self, asset_dir, *args, **kwargs):

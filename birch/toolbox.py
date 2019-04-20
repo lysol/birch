@@ -17,7 +17,7 @@ class Toolbox(UIElement):
         "c_0_0",
         "i_0_0",
         "road_h_0",
-        "rail_h",
+        "rail_h_0",
         "water_o_0"
         )
 

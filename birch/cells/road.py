@@ -9,6 +9,6 @@ class RoadCell(ConnectableCell):
         self.priority = 2
 
     def impassible(self, cell_name):
-        if cell_name == 'rail_h':
+        if cell_name == 'rail_h_0':
             return False
         return True

@@ -1,0 +1,10 @@
+{
+    "structure": {
+        "type": "sheet",
+        "size": 8,
+        "stride": 12,
+        "prefix": "rail",
+        "inherit": "water.json"
+    }
+}
+
