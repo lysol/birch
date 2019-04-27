@@ -18,7 +18,9 @@ class Toolbox(UIElement):
         "i_0_0",
         "road_h_0",
         "rail_h_0",
-        "water_o_0"
+        "water_o_0",
+        "brick_halfwall_o_0",
+        "brick_wall_o_0"
         )
 
     def __init__(self, window_height, textures, batch=None):

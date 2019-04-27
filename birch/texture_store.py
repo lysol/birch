@@ -15,7 +15,9 @@ class TextureStore(dict):
         'spritesheet.json',
         'water.json',
         'road.json',
-        'rail.json'
+        'rail.json',
+        'brick_halfwall.json',
+        'brick_wall.json'
         )
 
     def __init__(self, asset_dir, *args, **kwargs):

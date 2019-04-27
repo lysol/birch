@@ -7,7 +7,9 @@ def build_assets():
         'spritesheet.json',
         'water.json',
         'road.json',
-        'rail.json'
+        'rail.json',
+        'brick_halfwall.json',
+        'brick_wall.json'
         ]
 
     def cropit(im, name, position, size):
