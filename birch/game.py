@@ -3,13 +3,9 @@ import pyglet
 from pyglet.window import key
 from pyglet.gl import *
 from birch.texture_store import TextureStore
-from birch.toolbox import Toolbox
-from birch.statusbox import Statusbox
 from birch.cursor import Cursor
-from birch.rcibox import RCIbox
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
-
 
 class ObjectEncoder(json.JSONEncoder):
     def default(self, o):
@@ -188,34 +184,40 @@ class BirchGame:
         self.window.handle('mouse_drag', self.handle_mouse_drag)
         self.window.handle('draw', self.handle_draw)
         self.mouse = 0, 0
-        self.init_ui()
-        self.set_cursor_size()
+        self.set_cursor_size(32)
         factor_w = int(self.camera_rect.width / self.engine.world.chunk_size) * 2
         factor_h = int(self.camera_rect.height / self.engine.world.chunk_size) * 2
         self.chonk = (
             int(math.ceil(self.camera_rect.width / factor_w)),
             int(math.ceil(self.camera_rect.height / factor_h))
             )
+        self.mouse_handlers = []
+        self.mouse_press_handlers = []
+        self.seed_handlers = []
+        self.map_click_handlers = []
 
-    def init_ui(self):
-        self.toolbox = Toolbox(self.window.height, self.textures, self.main_batch)
-        self.ui_elements.append(self.toolbox)
-        self.toolbox.set_tool('bulldoze')
-        sx, sy = self.toolbox.x + self.toolbox.width + 4, self.toolbox.y
-        self.statusbox = Statusbox(sx, sy, self.window.height, self.textures, self.engine, self.main_batch)
-        self.ui_elements.append(self.statusbox)
-        zx, zy = self.toolbox.x, self.toolbox.y + self.toolbox.height + 4
-        self.rcibox = RCIbox(zx, zy, self.window.height, self.main_batch, width=self.toolbox.width)
+    def register_mouse_handler(self, handler):
+        self.mouse_handlers.append(handler)
+
+    def register_mouse_press_handler(self, handler):
+        self.mouse_press_handlers.append(handler)
+
+    def register_map_click_handler(self, handler):
+        self.map_click_handlers.append(handler)
+
+    def register_seed_handler(self, handler):
+        self.engine.seed_handlers.append(handler)
+
+    def register_tick_handler(self, handler):
+        return self.engine.register_tick_handler(handler)
 
     def run(self):
         pyglet.clock.schedule_interval(self.update, self.sleeptime)
         pyglet.app.run()
-        #self.init_panels()
 
-    def set_cursor_size(self):
-        if self.window.cursor is None or self.toolbox.tool_size != self.window.cursor.width:
-            self.window.cursor = Cursor(*self.mouse, self.toolbox.tool_size,
-                    self.window.height, batch=self.main_batch)
+    def set_cursor_size(self, size):
+        if self.window.cursor is None or size != self.window.cursor.width:
+            self.window.cursor = Cursor(*self.mouse, size, self.window.height, batch=self.main_batch)
 
     def set_cursor_pos(self):
         x, y = self.mouse
@@ -244,13 +246,14 @@ class BirchGame:
                 break
         if not hovered:
             self.set_cursor_pos()
+        for handler in self.mouse_handlers:
+            handler(x, y, dx, dy)
         self.window.set_mouse_visible(hovered)
 
     def handle_mouse_press(self, x, y, button, modifiers):
         self.mouse = x, y
         self.mouse_buttons = set(list(self.mouse_buttons) + [button])
         ui_clicked = False
-        self.set_cursor_size()
         self.set_cursor_pos()
         if len(self.mouse_buttons) > 0:
             for el in self.ui_elements:
@@ -258,13 +261,14 @@ class BirchGame:
         if not ui_clicked:
             # click map
             tool_pos = self.window.cursor.position
-            self.engine.use_tool(self.toolbox.selected, tool_pos[0], tool_pos[1],
-                tool_size=self.toolbox.tool_size)
+            for handler in self.map_click_handlers:
+                handler(*tool_pos)
             self.window.set_mouse_visible(False)
         else:
             self.window.set_mouse_visible(True)
-        self.set_cursor_size()
         self.set_cursor_pos()
+        for handler in self.mouse_press_handlers:
+            handler(x, y, button, modifiers)
 
     def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.handle_mouse_press(x, y, button, modifiers)
@@ -284,9 +288,6 @@ class BirchGame:
     def update(self, dt):
         self.kf_countdown -= 1
         self.engine.tick(dt, checkrect=self.camera_rect)
-        self.rcibox.r = self.engine.state["demand"]["r"]
-        self.rcibox.c = self.engine.state["demand"]["c"]
-        self.rcibox.i = self.engine.state["demand"]["i"]
         view_changed = False
         if self.keys[key.LEFT]:
             self.camera[0] -= self.camera_speed

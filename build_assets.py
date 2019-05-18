@@ -1,16 +1,12 @@
+from os import listdir
+from shutil import copyfile
 from PIL import Image
 import json
 
 
-def build_assets():
-    filenames = [
-        'spritesheet.json',
-        'water.json',
-        'road.json',
-        'rail.json',
-        'brick_halfwall.json',
-        'brick_wall.json'
-        ]
+def build_assets(incoming_src_dir, output_dir):
+
+    filenames = [infile for infile in listdir(incoming_src_dir) if infile.endswith('.json')]
 
     def cropit(im, name, position, size):
         print('Cropping %s' % name)
@@ -22,18 +18,18 @@ def build_assets():
             position[0] + size[0],
             position[1] + size[1]
             )
-        im.crop(region).save('birch/assets/%s.png' % name)
+        im.crop(region).save('%s/%s.png' % (output_dir, name))
 
     for fn in filenames:
         part = fn.split('.')[0]
-        data = json.load(open('birch/assets/%s' % fn, 'r'))
-        im = Image.open('assets/%s.png' % part)
+        data = json.load(open('%s/%s' % (incoming_src_dir, fn), 'r'))
+        im = Image.open('%s/%s.png' % (incoming_src_dir, part))
         out_images = {}
         if 'structure' in data and \
             'type' in data['structure'] and \
             data['structure']['type'] == 'sheet':
             if 'inherit' in data['structure']:
-                other = json.load(open('birch/assets/%s' % data['structure']['inherit'], 'r'))
+                other = json.load(open('%s/%s' % (incoming_src_dir, data['structure']['inherit']), 'r'))
                 if 'stride' not in data['structure']:
                     data['structure']['stride'] = other['structure']['stride']
                 if 'size' not in data['structure']:
@@ -52,7 +48,9 @@ def build_assets():
                 position = data['names'][name]['position']
                 size = data['names'][name]['size']
                 cropit(im, name, position, size)
+        copyfile('%s/%s' % (incoming_src_dir, fn), '%s/%s' % (output_dir, fn))
+
 
 
 if __name__ == "__main__":
-  build_assets()
+  build_assets('birch/examples/scamcity/assets_src', 'birch/examples/scamcity/assets')

@@ -16,7 +16,7 @@ _birch = Extension('birch._birch',
 class BuildCommand(distutils.command.build.build):
 
     def run(self):
-        build_assets()
+        build_assets('birch/examples/scamcity/assets_src', 'birch/examples/scamcity/assets')
         super().run()
 
 setup(name='birch',
@@ -28,7 +28,7 @@ setup(name='birch',
       license='ISC',
       packages=find_packages(),
       package_dir={'birch': 'birch'},
-      package_data={'birch': ['assets/*']},
+      package_data={'birch': ['examples/**/assets/*']},
       install_requires=[
           'pyglet',
           'noise',
