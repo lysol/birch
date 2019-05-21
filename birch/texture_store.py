@@ -11,18 +11,10 @@ from birch._birch import Perlin
 
 class TextureStore(dict):
 
-    metadata_paths = (
-        'spritesheet.json',
-        'water.json',
-        'road.json',
-        'rail.json',
-        'brick_halfwall.json',
-        'brick_wall.json'
-        )
-
-    def __init__(self, asset_dir, *args, **kwargs):
+    def __init__(self, asset_dir, metadata_paths, *args, **kwargs):
         super(dict, self).__init__(*args, **kwargs);
         self.asset_dir = asset_dir
+        self.metadata_paths = metadata_paths
 
         pyglet.resource.path.extend([self.asset_dir, '/tmp'])
         pyglet.resource.reindex()
@@ -42,9 +34,6 @@ class TextureStore(dict):
             for name in names['names']:
                 prefixed = '%s%s' % (prefix, name)
                 self.load('%s%s' % (prefix, name))
-        self['r_1_0'] = self['r_0_0']
-        self['c_1_0'] = self['c_0_0']
-        self['i_1_0'] = self['i_0_0']
         self.pil_cache = {}
         self.data_cache = {}
         self.res_angle_cache = {}

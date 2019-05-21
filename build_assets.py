@@ -50,7 +50,3 @@ def build_assets(incoming_src_dir, output_dir):
                 cropit(im, name, position, size)
         copyfile('%s/%s' % (incoming_src_dir, fn), '%s/%s' % (output_dir, fn))
 
-
-
-if __name__ == "__main__":
-  build_assets('birch/examples/scamcity/assets_src', 'birch/examples/scamcity/assets')

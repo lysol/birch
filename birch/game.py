@@ -1,8 +1,10 @@
 import math, json
 import pyglet
+import os
 from pyglet.window import key
 from pyglet.gl import *
 from birch.texture_store import TextureStore
+from birch.cells.player import Player
 from birch.cursor import Cursor
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
@@ -142,15 +144,14 @@ class BirchGame:
         self.main_batch = pyglet.graphics.Batch()
         self.size = 1280, 720
         self.asset_dir = asset_dir
-        self.textures = TextureStore(asset_dir)
+        md_paths = filter(lambda fn: fn.endswith('.json'), os.listdir(asset_dir))
+        self.textures = TextureStore(asset_dir, md_paths)
         glClearColor(1.0, 1.0, 1.0, 1.0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         self.ui_elements = []
         self.window = BirchWindow([], self.main_batch, self.ui_elements,
                 width=self.size[0], height=self.size[1])
-        self.window.set_caption('birch')
-        self.window.set_icon(self.textures['birch_tree'])
         self.engine = Engine({
             "cells": [],
             "money": 10000,
@@ -195,6 +196,19 @@ class BirchGame:
         self.mouse_press_handlers = []
         self.seed_handlers = []
         self.map_click_handlers = []
+        self.camera_controlled = False
+        self.player_controlled = False
+        self.player = None
+
+    def set_caption(self, *args, **kwargs):
+        return self.window.set_caption(*args, **kwargs)
+
+    def set_icon(self, *args, **kwargs):
+        return self.window.set_icon(*args, **kwargs)
+
+    def set_player(self, texture_prefix, name='player', position=[0, 0], size=None):
+        self.player = Player(name, self.textures, position, texture_prefix,
+            batch=self.main_batch, size=size)
 
     def register_mouse_handler(self, handler):
         self.mouse_handlers.append(handler)
@@ -282,25 +296,31 @@ class BirchGame:
     def camera_rect(self):
         return Rect(self.camera[0], self.camera[1], self.size[0], self.size[1])
 
-    #def handle_resize(self, width, height):
-    #    self.change_view(width, height)
-
     def update(self, dt):
         self.kf_countdown -= 1
         self.engine.tick(dt, checkrect=self.camera_rect)
-        view_changed = False
-        if self.keys[key.LEFT]:
-            self.camera[0] -= self.camera_speed
-            view_changed = True
-        if self.keys[key.RIGHT]:
-            self.camera[0] += self.camera_speed
-            view_changed = True
-        if self.keys[key.UP]:
-            self.camera[1] += self.camera_speed
-            view_changed = True
-        if self.keys[key.DOWN]:
-            self.camera[1] -= self.camera_speed
-            view_changed = True
+        if self.camera_controlled:
+            if self.keys[key.LEFT]:
+                self.camera[0] -= self.camera_speed
+            if self.keys[key.RIGHT]:
+                self.camera[0] += self.camera_speed
+            if self.keys[key.UP]:
+                self.camera[1] += self.camera_speed
+            if self.keys[key.DOWN]:
+                self.camera[1] -= self.camera_speed
+        if self.player is not None:
+            if self.player_controlled:
+                if self.keys[key.A]:
+                    self.player.go_left()
+                if self.keys[key.D]:
+                    self.player.go_right()
+                if self.keys[key.W]:
+                    self.player.go_up()
+                if self.keys[key.S]:
+                    self.player.go_down()
+            self.player.apply_movement()
+            self.camera[0] = self.player.position[0]
+            self.camera[1] = self.player.position[1]
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
         if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:

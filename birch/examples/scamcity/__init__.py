@@ -281,6 +281,11 @@ class ScamCity:
     def __init__(self):
         self.ticks = 0
         self.game = BirchGame('birch/examples/scamcity/assets')
+        self.game.set_caption('birch')
+        self.game.set_icon(self.textures['birch_tree'])
+        self.game.textures['r_1_0'] = self.game.textures['r_0_0']
+        self.game.textures['c_1_0'] = self.game.textures['c_0_0']
+        self.game.textures['i_1_0'] = self.game.textures['i_0_0']
         self.perlin = Perlin(818)
         self._next_rci = self.rci_interval
         self._demand_calc()
@@ -300,6 +305,7 @@ class ScamCity:
         self.game.ui_elements.append(self.toolbox)
         self.game.ui_elements.append(self.statusbox)
         self.game.ui_elements.append(self.rcibox)
+        self.game.camera_controlled = True
 
     def run(self):
         self.game.run()

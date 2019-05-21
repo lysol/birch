@@ -1,8 +1,10 @@
+import os
 from setuptools import setup, find_packages
 import distutils
 import distutils.command.build
 from distutils.core import setup, Extension
 from build_assets import build_assets
+
 
 _birch = Extension('birch._birch',
                     sources = [
@@ -16,7 +18,12 @@ _birch = Extension('birch._birch',
 class BuildCommand(distutils.command.build.build):
 
     def run(self):
-        build_assets('birch/examples/scamcity/assets_src', 'birch/examples/scamcity/assets')
+        examples_path = 'birch/examples'
+        for fn in filter(lambda fn: os.path.isdir(fn), os.listdir(examples_path)):
+            for dir in dirs:
+                print(dir)
+                tup = (examples_path, dir)
+                build_assets('%s/%s/assets_src' % tup, '%s/%s/assets' % tup)
         super().run()
 
 setup(name='birch',

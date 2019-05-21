@@ -1,0 +1,15 @@
+{
+    "structure": {
+        "type": "sheet",
+        "size": 16,
+        "stride": 2,
+        "prefix": "player"
+    },
+    "names": [
+        "u",
+        "l",
+        "d",
+        "r"
+    ]
+}
+
