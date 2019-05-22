@@ -1,15 +1,56 @@
 {
     "structure": {
         "type": "sheet",
-        "size": 16,
-        "stride": 2,
+        "size": 32,
+        "stride": 4,
         "prefix": "player"
     },
     "names": [
-        "u",
-        "l",
-        "d",
-        "r"
-    ]
+        "l_1",
+        "l_2",
+        "l_3",
+        "l_4",
+
+        "r_1",
+        "r_2",
+        "r_3",
+        "r_4",
+
+        "u_1",
+        "u_2",
+        "u_3",
+        "u_4",
+
+        "d_1",
+        "d_2",
+        "d_3",
+        "d_4"
+    ],
+    "animations": {
+        "u": [
+            { "name": "u_1", "duration": 0.2 },
+            { "name": "u_2", "duration": 0.2 },
+            { "name": "u_3", "duration": 0.2 },
+            { "name": "u_4", "duration": 0.2 }
+        ],
+        "d": [
+            { "name": "d_1", "duration": 0.2 },
+            { "name": "d_2", "duration": 0.2 },
+            { "name": "d_3", "duration": 0.2 },
+            { "name": "d_4", "duration": 0.2 }
+        ],
+        "l": [
+            { "name": "l_1", "duration": 0.2 },
+            { "name": "l_2", "duration": 0.2 },
+            { "name": "l_3", "duration": 0.2 },
+            { "name": "l_4", "duration": 0.2 }
+        ],
+        "r": [
+            { "name": "r_1", "duration": 0.2 },
+            { "name": "r_2", "duration": 0.2 },
+            { "name": "r_3", "duration": 0.2 },
+            { "name": "r_4", "duration": 0.2 }
+        ]
+    }
 }
 

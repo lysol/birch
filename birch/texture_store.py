@@ -4,7 +4,7 @@ import pyglet
 import numpy as np
 from ctypes import byref
 from pyglet import sprite, resource
-from pyglet.image import Texture
+from pyglet.image import Texture, Animation, AnimationFrame
 from pyglet.gl import *
 from PIL import Image
 from birch._birch import Perlin
@@ -25,8 +25,10 @@ class TextureStore(dict):
                     names['structure']['type'] == 'sheet':
                 if 'inherit' in names['structure']:
                     other = json.load(open('%s/%s' % (asset_dir, names['structure']['inherit'])))
-                    if 'names' not in names:
+                    if 'names' in other:
                         names['names'] = other['names']
+                    if 'animations' in other:
+                        names['animations'] = other['animations']
                     if 'prefix' not in names['structure']:
                         prefix = other['structure']['prefix'] + '_'
                 if 'prefix' in names['structure']:
@@ -34,6 +36,9 @@ class TextureStore(dict):
             for name in names['names']:
                 prefixed = '%s%s' % (prefix, name)
                 self.load('%s%s' % (prefix, name))
+            if 'animations' in names:
+                for anim in names['animations']:
+                    self.create_animation(prefix, anim, names['animations'][anim])
         self.pil_cache = {}
         self.data_cache = {}
         self.res_angle_cache = {}
@@ -68,6 +73,12 @@ class TextureStore(dict):
         self[key].anchor_x = 0
         self[key].anchor_y = 0
         return self[key]
+
+    def create_animation(self, prefix, key, framedefs):
+        frames = [AnimationFrame(self['%s%s' % (prefix, frame['name'])], frame['duration'])
+            for frame in framedefs]
+        anim_key = '%s%s' % (prefix, key)
+        self[anim_key] = Animation(frames)
 
     def get_sprite(self, key, x=0, y=0):
         image = self[key]

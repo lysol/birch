@@ -18,12 +18,12 @@ _birch = Extension('birch._birch',
 class BuildCommand(distutils.command.build.build):
 
     def run(self):
+        print('>>>>>> Running asset build')
         examples_path = 'birch/examples'
-        for fn in filter(lambda fn: os.path.isdir(fn), os.listdir(examples_path)):
-            for dir in dirs:
-                print(dir)
-                tup = (examples_path, dir)
-                build_assets('%s/%s/assets_src' % tup, '%s/%s/assets' % tup)
+        listing = os.listdir(examples_path)
+        for fn in filter(lambda fn: os.path.isdir(fn), map(lambda fn: '%s/%s' % (examples_path, fn), listing)):
+            print('Processing assets for example %s' % fn)
+            build_assets('%s/assets_src' % fn, '%s/assets' % fn)
         super().run()
 
 setup(name='birch',
