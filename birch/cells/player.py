@@ -14,23 +14,27 @@ class Player(Cell):
 
     def go_up(self):
         self.velocity = (self.velocity[0], self.speed)
-        self.direction = '_u'
-        self.set_image()
+        if self.direction != '_u':
+            self.direction = '_u'
+            self.set_image()
 
     def go_down(self):
         self.velocity = (self.velocity[0], -self.speed)
-        self.direction = '_d'
-        self.set_image()
+        if self.direction != '_d':
+            self.direction = '_d'
+            self.set_image()
 
     def go_left(self):
         self.velocity = (-self.speed, self.velocity[1])
-        self.direction = '_l'
-        self.set_image()
+        if self.direction != '_l':
+            self.direction = '_l'
+            self.set_image()
 
     def go_right(self):
         self.velocity = (self.speed, self.velocity[1])
-        self.direction = '_r'
-        self.set_image()
+        if self.direction != '_r':
+            self.direction = '_r'
+            self.set_image()
 
     def apply_movement(self):
         self.position = (
