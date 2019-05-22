@@ -208,7 +208,8 @@ class BirchGame:
 
     def set_player(self, texture_prefix, name='player', position=[0, 0], size=None):
         self.player = Player(name, self.textures, position, texture_prefix,
-            batch=self.main_batch, size=size)
+            batch=None, size=size)
+        self.engine.set_cell(self.player)
 
     def register_mouse_handler(self, handler):
         self.mouse_handlers.append(handler)
@@ -296,6 +297,12 @@ class BirchGame:
     def camera_rect(self):
         return Rect(self.camera[0], self.camera[1], self.size[0], self.size[1])
 
+    def centered(self, position):
+        return [
+            position[0] - int(self.camera_rect.width / 2),
+            position[1] - int(self.camera_rect.height / 2)
+            ]
+
     def update(self, dt):
         self.kf_countdown -= 1
         self.engine.tick(dt, checkrect=self.camera_rect)
@@ -319,8 +326,7 @@ class BirchGame:
                 if self.keys[key.S]:
                     self.player.go_down()
             self.player.apply_movement()
-            self.camera[0] = self.player.position[0]
-            self.camera[1] = self.player.position[1]
+            self.camera = self.centered(list(self.player.position))
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
         if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:

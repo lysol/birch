@@ -125,14 +125,24 @@ PyObject *get_cell(WorldObject *self, int ox, int oy) {
     return cell;
 }
 
-PyObject *World_insert(WorldObject *self, PyObject *args) {
+PyObject *World_move(WorldObject *self, PyObject *args) {
     PyObject *sprite;
-    int x, y;
-    if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
+    int fx, fy, tx, ty;
+    if (!PyArg_ParseTuple(args, "Oiiii", &sprite, &fx, &fy, &tx, &ty)) {
         return NULL;
     }
-    int ox, oy;
-    alias(&ox, &oy, self->chunk_size, x, y);
+    int ox, oy, px, py;
+    alias(&ox, &oy, self->chunk_size, fx, fy);
+    alias(&px, &py, self->chunk_size, tx, ty);
+
+    if (ox != px && oy != py) {
+        delete(self, ox, oy, sprite);
+        insert(self, px, py, sprite);
+    }
+    return Py_None;
+}
+
+void insert(WorldObject *self, int ox, int oy, PyObject *sprite) {
     PyObject *key = Py_BuildValue("ii", ox, oy);
 
     World__inflate(self, key);
@@ -146,11 +156,10 @@ PyObject *World_insert(WorldObject *self, PyObject *args) {
 
     Py_DECREF(key);
     Py_DECREF(spriteId);
-
-    return Py_None;
 }
 
-PyObject *World_delete(WorldObject *self, PyObject *args) {
+
+PyObject *World_insert(WorldObject *self, PyObject *args) {
     PyObject *sprite;
     int x, y;
     if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
@@ -158,6 +167,12 @@ PyObject *World_delete(WorldObject *self, PyObject *args) {
     }
     int ox, oy;
     alias(&ox, &oy, self->chunk_size, x, y);
+    insert(self, ox, oy, sprite);
+
+    return Py_None;
+}
+
+void delete(WorldObject *self, int ox, int oy, PyObject *sprite) {
     PyObject *key = Py_BuildValue("ii", ox, oy);
     World__inflate(self, key);
     PyObject_SetAttrString(sprite, "batch", Py_None);
@@ -168,6 +183,17 @@ PyObject *World_delete(WorldObject *self, PyObject *args) {
     Py_DECREF(spriteId);
 
     Py_DECREF(key);
+}
+
+PyObject *World_delete(WorldObject *self, PyObject *args) {
+    PyObject *sprite;
+    int x, y;
+    if (!PyArg_ParseTuple(args, "Oii", &sprite, &x, &y)) {
+        return NULL;
+    }
+    int ox, oy;
+    alias(&ox, &oy, self->chunk_size, x, y);
+    delete(self, ox, oy, sprite);
     return Py_None;
 }
 
@@ -362,6 +388,8 @@ PyMethodDef World_methods[] = {
         "Insert a sprite"},
     {"delete", (PyCFunction) World_delete, METH_VARARGS,
         "Delete a sprite"},
+    {"move", (PyCFunction) World_move, METH_VARARGS,
+        "Move a sprite from one cell to another"},
     {"get", (PyCFunction) World_get, METH_VARARGS,
         "Get sprites in an area"},
     {"get_chunks", (PyCFunction) World_get_chunks, METH_VARARGS | METH_KEYWORDS,

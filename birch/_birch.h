@@ -111,5 +111,7 @@ PyObject *World_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 int World_init(WorldObject *self, PyObject *args, PyObject *kwds);
 PyTypeObject WorldType;
 
+void insert(WorldObject *self, int ox, int oy, PyObject *sprite);
+void delete(WorldObject *self, int ox, int oy, PyObject *sprite);
 
 #endif
