@@ -27,29 +27,41 @@
         "d_4"
     ],
     "animations": {
-        "u": [
+        "u_walk": [
             { "name": "u_1", "duration": 0.2 },
             { "name": "u_2", "duration": 0.2 },
             { "name": "u_3", "duration": 0.2 },
             { "name": "u_4", "duration": 0.2 }
         ],
-        "d": [
+        "d_walk": [
             { "name": "d_1", "duration": 0.2 },
             { "name": "d_2", "duration": 0.2 },
             { "name": "d_3", "duration": 0.2 },
             { "name": "d_4", "duration": 0.2 }
         ],
-        "l": [
+        "l_walk": [
             { "name": "l_1", "duration": 0.2 },
             { "name": "l_2", "duration": 0.2 },
             { "name": "l_3", "duration": 0.2 },
             { "name": "l_4", "duration": 0.2 }
         ],
-        "r": [
+        "r_walk": [
             { "name": "r_1", "duration": 0.2 },
             { "name": "r_2", "duration": 0.2 },
             { "name": "r_3", "duration": 0.2 },
             { "name": "r_4", "duration": 0.2 }
+        ],
+        "u": [
+            { "name": "u_1", "duration": null }
+        ],
+        "d": [
+            { "name": "d_1", "duration": null }
+        ],
+        "l": [
+            { "name": "l_1", "duration": null }
+        ],
+        "r": [
+            { "name": "r_1", "duration": null }
         ]
     }
 }
