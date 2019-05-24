@@ -1,55 +1,43 @@
 {
     "structure": {
         "type": "sheet",
-        "size": 32,
-        "stride": 4,
+        "size": 16,
+        "stride": 3,
         "prefix": "player"
     },
     "names": [
+        "d_1",
+        "d_2",
+        "d_3",
+
         "l_1",
         "l_2",
         "l_3",
-        "l_4",
-
-        "r_1",
-        "r_2",
-        "r_3",
-        "r_4",
 
         "u_1",
         "u_2",
         "u_3",
-        "u_4",
 
-        "d_1",
-        "d_2",
-        "d_3",
-        "d_4"
+        "r_1",
+        "r_2",
+        "r_3"
     ],
     "animations": {
         "u_walk": [
-            { "name": "u_1", "duration": 0.2 },
-            { "name": "u_2", "duration": 0.2 },
-            { "name": "u_3", "duration": 0.2 },
-            { "name": "u_4", "duration": 0.2 }
+            { "name": "u_2", "duration": 0.3 },
+            { "name": "u_3", "duration": 0.3 }
         ],
         "d_walk": [
-            { "name": "d_1", "duration": 0.2 },
-            { "name": "d_2", "duration": 0.2 },
-            { "name": "d_3", "duration": 0.2 },
-            { "name": "d_4", "duration": 0.2 }
+            { "name": "d_2", "duration": 0.3 },
+            { "name": "d_3", "duration": 0.3 }
         ],
         "l_walk": [
-            { "name": "l_1", "duration": 0.2 },
-            { "name": "l_2", "duration": 0.2 },
-            { "name": "l_3", "duration": 0.2 },
-            { "name": "l_4", "duration": 0.2 }
+            { "name": "l_2", "duration": 0.3 },
+            { "name": "l_3", "duration": 0.3 }
         ],
         "r_walk": [
-            { "name": "r_1", "duration": 0.2 },
-            { "name": "r_2", "duration": 0.2 },
-            { "name": "r_3", "duration": 0.2 },
-            { "name": "r_4", "duration": 0.2 }
+            { "name": "r_2", "duration": 0.3 },
+            { "name": "r_3", "duration": 0.3 }
         ],
         "u": [
             { "name": "u_1", "duration": null }
