@@ -1,0 +1,17 @@
+{
+    "structure": {
+        "type": "sheet",
+        "size": 16,
+        "stride": 2,
+        "prefix": "short_grass"
+    },
+    "names": [
+        "1",
+        "2",
+        "3",
+        "4"
+    ],
+    "animations": {
+    }
+}
+
