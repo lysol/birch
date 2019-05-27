@@ -1,0 +1,52 @@
+{
+    "structure": {
+        "type": "variable",
+        "prefix": "jackoak"
+    },
+    "names": {
+        "full_0": {
+            "size": [16, 32],
+            "position": [0, 0]
+        },
+        "full_1": {
+            "size": [16, 32],
+            "position": [16, 0]
+        },
+        "full_2": {
+            "size": [16, 32],
+            "position": [32, 0]
+        },
+        "medium_0": {
+            "size": [8, 16],
+            "position": [48, 0]
+        },
+        "medium_1": {
+            "size": [8, 16],
+            "position": [48, 16]
+        },
+        "medium_2": {
+            "size": [8, 16],
+            "position": [56, 0]
+        },
+        "medium_3": {
+            "size": [8, 16],
+            "position": [56, 16]
+        },
+        "small_0": {
+            "size": [8, 8],
+            "position": [64, 0]
+        },
+        "small_1": {
+            "size": [8, 8],
+            "position": [64, 8]
+        },
+        "small_2": {
+            "size": [8, 8],
+            "position": [64, 16]
+        },
+        "small_3": {
+            "size": [8, 8],
+            "position": [64, 24]
+        }
+    }
+}
