@@ -1,0 +1,7 @@
+{
+    "structure": {
+        "type": "variable",
+        "prefix": "silver_maple",
+        "inherit": "jackoak.json"
+    }
+}
