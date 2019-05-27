@@ -1,0 +1,15 @@
+{
+    "structure": {
+        "type": "sheet",
+        "size": 16,
+        "stride": 2,
+        "prefix": "gravel"
+    },
+    "names": [
+        "h_1",
+        "h_2",
+        "v_1",
+        "v_2"
+    ]
+}
+

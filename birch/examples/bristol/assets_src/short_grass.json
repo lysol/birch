@@ -12,6 +12,27 @@
         "4"
     ],
     "animations": {
+        "breeze_1": [
+            { "name": "1", "duration": 0.4 },
+            { "name": "2", "duration": 0.2 },
+            { "name": "1", "duration": 0.3 },
+            { "name": "2", "duration": 0.2 },
+            { "name": "1", "duration": 0.6 }
+        ],
+        "breeze_2": [
+            { "name": "1", "duration": 0.3 },
+            { "name": "2", "duration": 0.2 },
+            { "name": "1", "duration": 0.4 },
+            { "name": "2", "duration": 0.2 },
+            { "name": "1", "duration": 0.7 }
+        ],
+        "breeze_3": [
+            { "name": "1", "duration": 0.8 },
+            { "name": "2", "duration": 0.2 },
+            { "name": "1", "duration": 0.4 },
+            { "name": "2", "duration": 0.2 },
+            { "name": "1", "duration": 0.6 }
+        ]
     }
 }
 
