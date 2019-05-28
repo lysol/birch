@@ -9,11 +9,11 @@ class Bristol:
     seed_config = {
         'short_grass': {
             'class': ShortGrass,
-            'freq': 1/400,
+            'freq': 1/10,
             'octaves': 1,
             'offset': [110, -43],
-            'threshold': 0.5,
-            'rand_thresh': 0.95
+            'threshold': 0.1,
+            'rand_thresh': 0.93
             },
         }
 
