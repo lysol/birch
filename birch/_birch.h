@@ -92,7 +92,6 @@ typedef struct {
     PyObject_HEAD
     int chunk_size;
     PyObject *world;
-    PyObject *world_meta;
     PyObject *seeded;
     PyObject *batches;
     PyObject *vertex_lists;

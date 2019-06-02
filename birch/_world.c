@@ -18,7 +18,6 @@ PyObject *World_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
 {
     self->world = PyDict_New();
-    self->world_meta = PyDict_New();
     self->seeded = PyDict_New();
     self->batches = PyDict_New();
     self->vertex_lists = PyDict_New();
@@ -64,42 +63,28 @@ PyObject *World_unseeded(WorldObject *self, PyObject *args) {
     }
 }
 
-int inflate(PyObject *dict, int ix, int iy) {
+PyObject *World__inflate(WorldObject *self, PyObject *args) {
+    int ix, iy;
+    if (!PyArg_ParseTuple(args, "ii", &ix, &iy)) {
+        return NULL;
+    }
+    int changed = 0;
     PyObject *pix = PyLong_FromLong(ix);
     PyObject *piy = PyLong_FromLong(iy);
     PyObject *key = Py_BuildValue("ii", ix, iy);
-    PyObject *rdict, *cdict;
-    int changed = 0;
-    if (!PyDict_Contains(dict, piy)) {
+    PyObject *rdict, *cdict, *batch;
+    if (!PyDict_Contains(self->world, piy)) {
         rdict = PyDict_New();
-        PyDict_SetItem(dict, piy, rdict);
+        PyDict_SetItem(self->world, piy, rdict);
         changed = 1;
     } else {
-        rdict = PyDict_GetItem(dict, piy);
+        rdict = PyDict_GetItem(self->world, piy);
     }
     if (!PyDict_Contains(rdict, pix)) {
         cdict = PyDict_New();
         PyDict_SetItem(rdict, pix, cdict);
         changed = 1;
     }
-    Py_DECREF(pix);
-    Py_DECREF(piy);
-    Py_DECREF(key);
-    return changed;
-}
-
-
-PyObject *World__inflate(WorldObject *self, PyObject *args) {
-    int ix, iy;
-    int changed;
-    PyObject *batch;
-    if (!PyArg_ParseTuple(args, "ii", &ix, &iy)) {
-        return NULL;
-    }
-    changed = inflate(self->world, ix, iy);
-    PyObject *pix = PyLong_FromLong(ix);
-    PyObject *piy = PyLong_FromLong(iy);
-    PyObject *key = Py_BuildValue("ii", ix, iy);
     if (changed) {
         batch = PyObject_CallObject(Batch, NULL);
         PyDict_SetItem(self->batches, key, batch);
@@ -209,46 +194,6 @@ PyObject *World_delete(WorldObject *self, PyObject *args) {
     int ox, oy;
     alias(&ox, &oy, self->chunk_size, x, y);
     delete(self, ox, oy, sprite);
-    return Py_None;
-}
-
-PyObject *get_meta(WorldObject *self, int ox, int oy) {
-    inflate(self->world_meta, ox, oy);
-    PyObject *row = PyDict_GetItem(self->world_meta, PyLong_FromLong(oy));
-    PyObject *meta = PyDict_GetItem(row, PyLong_FromLong(ox));
-    return meta;
-}
-
-PyObject *set_meta(WorldObject *self, PyObject *new_meta, int ox, int oy) {
-    inflate(self->world_meta, ox, oy);
-    PyObject *row = PyDict_GetItem(self->world_meta, PyLong_FromLong(oy));
-    PyDict_SetItem(row, PyLong_FromLong(ox), new_meta);
-    return Py_None;
-}
-
-PyObject *World_get_meta(WorldObject *self, PyObject *args) {
-    PyObject *meta_out;
-    int fx, fy;
-    if (!PyArg_ParseTuple(args, "ii", &fx, &fy)) {
-        return NULL;
-    }
-    int ox, oy;
-    alias(&ox, &oy, self->chunk_size, fx, fy);
-
-    meta_out = get_meta(self, ox, oy);
-    return meta_out;
-}
-
-PyObject *World_set_meta(WorldObject *self, PyObject *args) {
-    int fx, fy;
-    PyObject *new_meta;
-    if (!PyArg_ParseTuple(args, "Oii", &new_meta, &fx, &fy)) {
-        return NULL;
-    }
-    int ox, oy;
-    alias(&ox, &oy, self->chunk_size, fx, fy);
-
-    set_meta(self, new_meta, ox, oy);
     return Py_None;
 }
 
@@ -445,10 +390,6 @@ PyMethodDef World_methods[] = {
         "Delete a sprite"},
     {"move", (PyCFunction) World_move, METH_VARARGS,
         "Move a sprite from one cell to another"},
-    {"set_meta", (PyCFunction) World_set_meta, METH_VARARGS,
-        "Set metadata for a chunk."},
-    {"get_meta", (PyCFunction) World_get_meta, METH_VARARGS,
-        "Get metadata for a chunk."},
     {"get", (PyCFunction) World_get, METH_VARARGS,
         "Get sprites in an area"},
     {"get_chunks", (PyCFunction) World_get_chunks, METH_VARARGS | METH_KEYWORDS,
