@@ -82,6 +82,21 @@ PyObject *Rect_colliderect(RectObject *self, PyObject *args) {
     }
 }
 
+PyObject *Rect_bordered(RectObject *self, PyObject *args) {
+    int x, y;
+    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+        return NULL;
+    }
+    if (x == self->x - 1 ||
+        x == self->x + self->width ||
+        y == self->y - 1 ||
+        y == self->y + self->height) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
+}
+
 PyObject* Rect_get_right(RectObject* self, void* closure) {
     return PyLong_FromLong(self->x + self->width);
 }
@@ -278,6 +293,8 @@ PyMethodDef Rect_methods[] = {
         "Check if another point collides with this one"},
     {"colliderect", (PyCFunction) Rect_colliderect, METH_VARARGS,
         "Check if another rect collides with this one"},
+    {"bordered", (PyCFunction) Rect_bordered, METH_VARARGS,
+        "Check if a point is exactly adjacent to this one"},
     {NULL}  /* Sentinel */ };
 
 PyGetSetDef Rect_getsets[] = {
