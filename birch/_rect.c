@@ -207,6 +207,34 @@ PyObject* Rect_get_topright(RectObject* self, void* closure) {
     return point;
 }
 
+PyObject* Rect_get_topcenter(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x + self->width / 2,
+            self->y);
+    return point;
+}
+
+PyObject* Rect_get_bottomcenter(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x + self->width / 2,
+            self->y + self->height);
+    return point;
+}
+
+PyObject* Rect_get_centerleft(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x,
+            self->y + self->height / 2);
+    return point;
+}
+
+PyObject* Rect_get_centerright(RectObject* self, void* closure) {
+    PyObject *point = Py_BuildValue("ii",
+            self->x + self->width,
+            self->y + self->height / 2);
+    return point;
+}
+
 int Rect_set_topright(RectObject* self, PyObject* value, void* closure) {
     if (PySequence_Length(value) != 2) {
         PyErr_SetString(PyExc_RuntimeError, "Coordinates must be a two value (x,y) sequence.");
@@ -311,6 +339,26 @@ PyGetSetDef Rect_getsets[] = {
     {"center",  /* name */
         (getter) Rect_get_center,
         (setter) Rect_set_center,
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"topcenter",  /* name */
+        (getter) Rect_get_topcenter,
+        NULL, /* setter */
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"bottomcenter",  /* name */
+        (getter) Rect_get_bottomcenter,
+        NULL, /* setter */
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"centerright",  /* name */
+        (getter) Rect_get_centerright,
+        NULL, /* setter */
+        NULL,  /* doc */
+        NULL /* closure */},
+    {"centerleft",  /* name */
+        (getter) Rect_get_centerleft,
+        NULL, /* setter */
         NULL,  /* doc */
         NULL /* closure */},
     {"position",  /* name */
