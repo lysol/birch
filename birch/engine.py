@@ -35,6 +35,7 @@ class Engine:
         self.deferred_inserts = deque([])
         self.tick_handlers = []
         self.seed_handlers = []
+        self.world_meta = {}
 
     def in_range(self, camera, pos):
         return pos[0] > camera[0] - 1000 or \
@@ -67,6 +68,47 @@ class Engine:
         for handler in self.tick_handlers:
             handler(self, dt, self.ticks)
         return changed
+
+    def _alias_meta_key(self, x, y, alias_chunk=False):
+        return '%d_%d' % self.chunk_index(x, y)
+
+    def chunk_index(self, x, y):
+        return (
+            int(x / self.world.chunk_size) * self.world.chunk_size,
+            int(y / self.world.chunk_size) * self.world.chunk_size
+            )
+
+    def set_meta(self, new_meta, x=None, y=None, key=None):
+        if key is None:
+            key = self._alias_meta_key(x, y)
+        if key is None:
+            raise KeyError("Must supply x, y, or key arguments")
+        self.world_meta[key] = new_meta
+
+    def get_meta(self, x=None, y=None, key=None):
+        if key is None:
+            key = self._alias_meta_key(x, y)
+        if key is None:
+            raise KeyError("Must supply x, y, or key arguments")
+        if key in self.world_meta:
+            return self.world_meta[key]
+        else:
+            self.set_meta({}, key=key)
+            return {}
+
+    def get_metas(self, rect):
+        meta_dict = {}
+        for m in (
+            rect.topleft, rect.topcenter, rect.topright,
+            rect.centerleft, rect.center, rect.centerright,
+            rect.bottomleft, rect.bottomcenter, rect.bottomright
+            ):
+            fixed = self.chunk_index(*m)
+            if fixed[1] not in meta_dict:
+                meta_dict[fixed[1]] = {}
+            meta_dict[fixed[1]][fixed[0]] = self.get_meta(key=self._alias_meta_key(
+                fixed[0], fixed[1], alias_chunk=False))
+        return meta_dict
 
     def get_cell(self, x, y, w, h):
         return self.world.get(x, y, w, h)
