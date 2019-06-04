@@ -20,25 +20,23 @@ class TextureStore(dict):
         pyglet.resource.reindex()
         for pat in self.metadata_paths:
             prefix = ''
-            names = json.load(open('%s/%s' % (asset_dir, pat)))
-            if 'structure' in names and 'type' in names['structure'] and \
-                    names['structure']['type'] == 'sheet':
-                if 'inherit' in names['structure']:
-                    other = json.load(open('%s/%s' % (asset_dir, names['structure']['inherit'])))
-                    if 'names' in other:
-                        names['names'] = other['names']
-                    if 'animations' in other:
-                        names['animations'] = other['animations']
-                    if 'prefix' not in names['structure']:
-                        prefix = other['structure']['prefix'] + '_'
-                if 'prefix' in names['structure']:
-                    prefix = names['structure']['prefix'] + '_'
-            for name in names['names']:
+            data = json.load(open('%s/%s' % (asset_dir, pat)))
+            other = {}
+            if 'inherit' in data['structure']:
+                other = json.load(open('%s/%s' % (asset_dir, data['structure']['inherit'])))
+            if 'names' not in data:
+                data['names'] = other['names']
+            if 'prefix' not in data['structure']:
+                data['structure'] = other['structure']
+            if 'animations' not in data and 'animations' in other:
+                data['animations'] = other['animations']
+            prefix = '' if 'prefix' not in data['structure'] else data['structure']['prefix'] + '_'
+            for name in data['names']:
                 prefixed = '%s%s' % (prefix, name)
                 self.load('%s%s' % (prefix, name))
-            if 'animations' in names:
-                for anim in names['animations']:
-                    self.create_animation(prefix, anim, names['animations'][anim])
+            if 'animations' in data:
+                for anim in data['animations']:
+                    self.create_animation(prefix, anim, data['animations'][anim])
         self.pil_cache = {}
         self.data_cache = {}
         self.res_angle_cache = {}
