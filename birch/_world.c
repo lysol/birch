@@ -2,6 +2,7 @@
 #include </usr/include/python3.6m/structmember.h>
 #include <stdio.h>
 #include "_birch.h"
+#define CHUNK_SIZE 512
 
 void World_dealloc(WorldObject *self)
 {
@@ -23,7 +24,6 @@ int World_init(WorldObject *self, PyObject *args, PyObject *kwds)
     self->vertex_lists = PyDict_New();
     self->bg_batches = PyDict_New();
     self->bgs = PyDict_New();
-    self->chunk_size = 512;
     return 0;
 }
 
@@ -39,7 +39,7 @@ PyObject *World__alias(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy;
-    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
     return Py_BuildValue("ii",
         ox,
         oy
@@ -52,7 +52,7 @@ PyObject *World_unseeded(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy;
-    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
     PyObject *key = Py_BuildValue("ii", ox, oy);
     if (PyDict_Contains(self->seeded, key)) {
         Py_DECREF(key);
@@ -102,7 +102,7 @@ PyObject *World_set_bg(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy;
-    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
     PyObject *key = Py_BuildValue("ii", ox, oy);
     PyObject *bgbatch;
     if (!PyDict_Contains(self->bg_batches, key)) {
@@ -132,8 +132,8 @@ PyObject *World_move(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy, px, py;
-    alias(&ox, &oy, self->chunk_size, fx, fy);
-    alias(&px, &py, self->chunk_size, tx, ty);
+    alias(&ox, &oy, CHUNK_SIZE, fx, fy);
+    alias(&px, &py, CHUNK_SIZE, tx, ty);
 
     if (ox != px && oy != py) {
         delete(self, ox, oy, sprite);
@@ -166,7 +166,7 @@ PyObject *World_insert(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy;
-    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
     insert(self, ox, oy, sprite);
 
     return Py_None;
@@ -192,7 +192,7 @@ PyObject *World_delete(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy;
-    alias(&ox, &oy, self->chunk_size, x, y);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
     delete(self, ox, oy, sprite);
     return Py_None;
 }
@@ -231,8 +231,8 @@ PyObject *World_get(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy, px, py;
-    alias(&ox, &oy, self->chunk_size, x, y);
-    alias(&px, &py, self->chunk_size, x + w, y + h);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
+    alias(&px, &py, CHUNK_SIZE, x + w, y + h);
     PyObject *out = PyList_New(0);
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
@@ -277,8 +277,8 @@ PyObject *World_get_chunks(WorldObject *self, PyObject *args, PyObject *kwargs) 
         return NULL;
     }
     int ox, oy, px, py;
-    alias(&ox, &oy, self->chunk_size, x, y);
-    alias(&px, &py, self->chunk_size, x + w, y + h);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
+    alias(&px, &py, CHUNK_SIZE, x + w, y + h);
     PyObject *out = PyList_New(0);
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
@@ -338,8 +338,8 @@ PyObject *World_get_batches(WorldObject *self, PyObject *args) {
         return NULL;
     }
     int ox, oy, px, py;
-    alias(&ox, &oy, self->chunk_size, x, y);
-    alias(&px, &py, self->chunk_size, x + w, y + h);
+    alias(&ox, &oy, CHUNK_SIZE, x, y);
+    alias(&px, &py, CHUNK_SIZE, x + w, y + h);
     PyObject *out = PyList_New(0);
     for(int yes=oy; yes<py+1; yes++) {
         for(int xes=ox; xes<px+1; xes++) {
@@ -359,8 +359,6 @@ PyObject *World_get_batches(WorldObject *self, PyObject *args) {
 }
 
 PyMemberDef World_members[] = {
-    {"chunk_size", T_INT, offsetof(WorldObject, chunk_size), 0,
-     "The size of a world chunk"},
     {"world", T_OBJECT_EX, offsetof(WorldObject, world), 0,
      "The actual store of cells."},
     {"seeded", T_OBJECT_EX, offsetof(WorldObject, seeded), 0,

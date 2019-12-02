@@ -1,6 +1,7 @@
 from math import sin, pi
 from random import choice, randint, shuffle, random
 from pyglet.sprite import Sprite
+from birch import CHUNK_SIZE
 from birch.game import BirchGame
 from birch.toolbox import Toolbox
 from birch.statusbox import Statusbox
@@ -145,7 +146,7 @@ class ScamCity:
         for key in seed_keys:
             cfg = seed_config[key]
             perlins = self.perlin.perlin_octave_array(
-                bounds[0], bounds[1], engine.world.chunk_size, engine.world.chunk_size,
+                bounds[0], bounds[1], CHUNK_SIZE, CHUNK_SIZE,
                 cfg['freq'], cfg['octaves'], 1.0, 16)
             for (oy, pees) in enumerate(perlins):
                 for (ox, val) in enumerate(pees):
@@ -154,7 +155,7 @@ class ScamCity:
                     if val > cfg['threshold'] and (cfg['rand_thresh'] == 0 or random() > cfg['rand_thresh']):
                         cells.append(BlueprintCell(cfg['class'], (engine.textures, (ix, iy))))
         image_key = engine.textures.create_background(
-            int(engine.world.chunk_size / 2),
+            int(CHUNK_SIZE / 2),
             int(bounds[0] / 2),
             int(bounds[1] / 2))
         bg_sprite = Sprite(engine.textures[image_key], bounds[0], bounds[1])

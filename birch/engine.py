@@ -10,6 +10,7 @@ from pyglet.sprite import Sprite
 from pyglet.image import Texture, ImageData
 import pyglet
 from PIL import Image, ImageDraw
+from birch import CHUNK_SIZE
 from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
 from birch.cells.blueprint import BlueprintCell
@@ -74,8 +75,8 @@ class Engine:
 
     def chunk_index(self, x, y):
         return (
-            int(x / self.world.chunk_size) * self.world.chunk_size,
-            int(y / self.world.chunk_size) * self.world.chunk_size
+            int(x / CHUNK_SIZE) * CHUNK_SIZE,
+            int(y / CHUNK_SIZE) * CHUNK_SIZE
             )
 
     def set_meta(self, new_meta, x=None, y=None, key=None):
@@ -167,9 +168,9 @@ class Engine:
         if not self.world.unseeded(x, y):
             return
         tl = self.world._alias(x, y)
-        ax, ay = tuple(map(lambda z: z * self.world.chunk_size, tl))
+        ax, ay = tuple(map(lambda z: z * CHUNK_SIZE, tl))
         for handler in self.seed_handlers:
-            cells = handler(self, Rect(ax, ay, self.world.chunk_size, self.world.chunk_size))
+            cells = handler(self, Rect(ax, ay, CHUNK_SIZE, CHUNK_SIZE))
             self.deferred_inserts.extend(cells)
 
         self.world.seed(*tl, [])

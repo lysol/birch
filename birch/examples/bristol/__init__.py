@@ -1,3 +1,4 @@
+from birch import CHUNK_SIZE#, svgcell
 from birch.game import BirchGame
 from random import shuffle, random
 from birch._birch import Perlin

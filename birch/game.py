@@ -3,11 +3,13 @@ import pyglet
 import os
 from pyglet.window import key
 from pyglet.gl import *
+from birch import CHUNK_SIZE
 from birch.texture_store import TextureStore
 from birch.cells.player import Player
 from birch.cursor import Cursor
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
+
 
 class ObjectEncoder(json.JSONEncoder):
     def default(self, o):
@@ -161,8 +163,8 @@ class BirchGame:
         self.mouse_buttons = []
         self.scroll_speed = [2, 2]
         self.camera = [
-            int(self.window.width / 2 - self.engine.world.chunk_size / 2),
-            int(self.window.height / 2 - self.engine.world.chunk_size / 2)
+            int(self.window.width / 2 - CHUNK_SIZE / 2),
+            int(self.window.height / 2 - CHUNK_SIZE / 2)
             ]
         self.last_camera = [-1000000, -1000000]
         self.cursor_speed = 8
@@ -186,8 +188,8 @@ class BirchGame:
         self.window.handle('draw', self.handle_draw)
         self.mouse = 0, 0
         self.set_cursor_size(32)
-        factor_w = int(self.camera_rect.width / self.engine.world.chunk_size) * 2
-        factor_h = int(self.camera_rect.height / self.engine.world.chunk_size) * 2
+        factor_w = int(self.camera_rect.width / CHUNK_SIZE) * 2
+        factor_h = int(self.camera_rect.height / CHUNK_SIZE) * 2
         self.chonk = (
             int(math.ceil(self.camera_rect.width / factor_w)),
             int(math.ceil(self.camera_rect.height / factor_h))
@@ -334,7 +336,7 @@ class BirchGame:
                     self.camera_rect.width, self.camera_rect.height)
             self.last_camera = list(self.camera)
             self.first = True
-            inflatefactor = self.engine.world.chunk_size * 2
+            inflatefactor = CHUNK_SIZE * 2
             crect = self.camera_rect.inflate(inflatefactor, inflatefactor)
             xes = range(int(crect.left), int(crect.right), self.chonk[0])
             yes = range(int(crect.top), int(crect.bottom), self.chonk[1])
