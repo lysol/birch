@@ -35,11 +35,12 @@ setup(name='birch',
       license='ISC',
       packages=find_packages(),
       package_dir={'birch': 'birch'},
-      package_data={'birch': ['examples/**/assets/*']},
+      package_data={'birch': ['examples/**/assets/**/*']},
       install_requires=[
           'pyglet',
           'noise',
-          'pillow'
+          'pillow',
+          'cairosvg'
           ],
       zip_safe=False,
       cmdclass={"build": BuildCommand},

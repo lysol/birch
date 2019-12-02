@@ -1,7 +1,15 @@
 from os import listdir
-from shutil import copyfile
+from shutil import copyfile, copytree, rmtree
 from PIL import Image
 import json
+
+def process_manifest(indir, outdir):
+    data = json.load(open('%s/manifest.json' % (indir), 'r'))
+    if 'layers' in data:
+        for layername in data['layers']:
+            print('copying layer %s' % layername)
+            rmtree('%s/%s' % (outdir, layername), True)
+            copytree('%s/%s' % (indir, layername), '%s/%s' % (outdir, layername))
 
 
 def build_assets(incoming_src_dir, output_dir):
@@ -21,6 +29,9 @@ def build_assets(incoming_src_dir, output_dir):
         im.crop(region).save('%s/%s.png' % (output_dir, name))
 
     for fn in filenames:
+        if fn == 'manifest.json':
+            process_manifest(incoming_src_dir, output_dir)
+            continue # not a asset file
         part = fn.split('.')[0]
         data = json.load(open('%s/%s' % (incoming_src_dir, fn), 'r'))
         im = Image.open('%s/%s.png' % (incoming_src_dir, part))

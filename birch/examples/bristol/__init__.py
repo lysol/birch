@@ -1,9 +1,10 @@
 from birch import CHUNK_SIZE#, svgcell
 from birch.game import BirchGame
-from random import shuffle, random
+from random import shuffle, random, randint, uniform
 from birch._birch import Perlin
 from birch.cells.blueprint import BlueprintCell
 from birch.examples.bristol.cells.grass import ShortGrass
+from birch.examples.bristol.cells.water import Water
 
 class Bristol:
 
@@ -15,7 +16,7 @@ class Bristol:
             'offset': [110, -43],
             'threshold': 0.1,
             'rand_thresh': 0.93
-            },
+            }
         }
 
     @property
@@ -58,28 +59,32 @@ class Bristol:
         self.game.camera_controlled = False
         self.game.player_controlled = True
         self.game.set_player('player')
+        self.rivers = []
 
-    def seed_handler(self, engine, boundsRect):
+    def make_water(self, position):
+        return BlueprintCell(Water, (engine.textures, position))
+
+    def seed_handler(self, engine, bounds):
+        print("seeding", bounds.left, bounds.top)
         seed_config = self.seed_config
-        bounds = (
-            boundsRect.left, boundsRect.top,
-            boundsRect.right, boundsRect.bottom
-            )
         cells = []
         seed_keys = list(seed_config.keys())
         shuffle(seed_keys)
         for key in seed_keys:
             cfg = seed_config[key]
             perlins = self.perlin.perlin_octave_array(
-                bounds[0], bounds[1], engine.world.chunk_size, engine.world.chunk_size,
+                bounds.left, bounds.top, CHUNK_SIZE, CHUNK_SIZE,
                 cfg['freq'], cfg['octaves'], 1.0, 32)
             for (oy, pees) in enumerate(perlins):
                 for (ox, val) in enumerate(pees):
-                    ix = bounds[0] + ox * 32
-                    iy = bounds[1] + oy * 32
+                    ix = bounds.left + ox * 32
+                    iy = bounds.top + oy * 32
                     if val > cfg['threshold'] and (cfg['rand_thresh'] == 0 or random() > cfg['rand_thresh']):
                         cells.append(BlueprintCell(cfg['class'], (engine.textures, (ix, iy))))
 
+        #waters = svgcell.cell_layer(engine.textures.asset_dir + '/water/water',
+        #        bounds.left, bounds.top, CHUNK_SIZE, self.make_water)
+        #cells.extend(waters)
         return cells
 
     def run(self):
