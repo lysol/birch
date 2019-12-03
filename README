@@ -1,0 +1,13 @@
+DESIGN
+
+Games can be created and placed in examples/. The design of the engine expects a procedural approach,
+with chunks being seeded as needed when the view is scrolled. Implementing a seed_handler method and registering
+it with the engine is the way forward here.
+
+Game loop logic is placed in a "tick handler", which is not a zookeeper who deals with arachnids.
+
+Running games is goofy as oh heck jeez right now, just do python3 setup.py install, go to build/lib.linux-whatever,
+then run
+python3 -m birch.examples.bristol.__init__
+
+for example
