@@ -141,7 +141,7 @@ class BirchGame:
 
     camera_speed = 16
 
-    def __init__(self, asset_dir):
+    def __init__(self, asset_dir, world=None):
         pyglet.options['debug_gl'] = False
         self.main_batch = pyglet.graphics.Batch()
         self.size = 1280, 720
@@ -159,7 +159,7 @@ class BirchGame:
             "money": 10000,
             "population": 0,
             "speed": 1
-            }, self.textures)
+            }, self.textures, world=world)
         self.mouse_buttons = []
         self.scroll_speed = [2, 2]
         self.camera = [

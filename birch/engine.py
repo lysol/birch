@@ -10,11 +10,11 @@ from birch.world import World
 class Engine:
     insert_chunk = 15
 
-    def __init__(self, state, textures):
+    def __init__(self, state, textures, world=None):
         self.state = state
         self.ticks = 0
         self.textures = textures
-        self.world = World()
+        self.world = world if world is not None else World()
         self.deferred_inserts = deque([])
         self.tick_handlers = []
         self.seed_handlers = []
