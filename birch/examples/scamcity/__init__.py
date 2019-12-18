@@ -3,20 +3,20 @@ from random import choice, randint, shuffle, random
 from pyglet.sprite import Sprite
 from birch import CHUNK_SIZE
 from birch.game import BirchGame
-from birch.toolbox import Toolbox
-from birch.statusbox import Statusbox
-from birch.rcibox import RCIbox
-from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
-from birch.cells.blueprint import BlueprintCell
 from birch.cells.connectable import ConnectableCell
-from birch.cells.road import RoadCell
-from birch.cells.rail import RailCell
-from birch.cells.water import WaterCell
-from birch.cells.brick_halfwall import BrickHalfWallCell
-from birch.cells.brick_wall import BrickWallCell
-from birch.cells.uranium import Uranium
-from birch.cells.tree import PineTree, BirchTree
+from birch.cells.blueprint import BlueprintCell
+from birch.examples.scamcity.toolbox import Toolbox
+from birch.examples.scamcity.statusbox import Statusbox
+from birch.examples.scamcity.rcibox import RCIbox
+from birch.examples.scamcity.cells.rci import RCell, CCell, ICell
+from birch.examples.scamcity.cells.road import RoadCell
+from birch.examples.scamcity.cells.rail import RailCell
+from birch.examples.scamcity.cells.water import WaterCell
+from birch.examples.scamcity.cells.brick_halfwall import BrickHalfWallCell
+from birch.examples.scamcity.cells.brick_wall import BrickWallCell
+from birch.examples.scamcity.cells.uranium import Uranium
+from birch.examples.scamcity.cells.tree import PineTree, BirchTree
 from birch._birch import Perlin
 from birch.util import clamp, pi2, Rect
 

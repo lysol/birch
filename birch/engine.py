@@ -1,28 +1,10 @@
-from os import unlink
-from random import choice, randint, random, shuffle
-from math import sin, pi, hypot
 from collections import deque
-from uuid import uuid4
-from datetime import datetime, timedelta
 from pyglet.gl import *
-from pyglet import resource
-from pyglet.sprite import Sprite
-from pyglet.image import Texture, ImageData
 import pyglet
-from PIL import Image, ImageDraw
 from birch import CHUNK_SIZE
-from birch.cells.rci import RCell, CCell, ICell
 from birch.cells.cell import Cell
-from birch.cells.blueprint import BlueprintCell
 from birch.cells.connectable import ConnectableCell
-from birch.cells.road import RoadCell
-from birch.cells.rail import RailCell
-from birch.cells.water import WaterCell
-from birch.cells.brick_halfwall import BrickHalfWallCell
-from birch.cells.brick_wall import BrickWallCell
-from birch.cells.uranium import Uranium
-from birch.cells.tree import PineTree, BirchTree
-from birch.util import clamp, pi2, Rect
+from birch.util import clamp, Rect
 from birch.world import World
 
 class Engine:
