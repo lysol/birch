@@ -17,7 +17,6 @@ def build_assets(incoming_src_dir, output_dir):
     filenames = [infile for infile in listdir(incoming_src_dir) if infile.endswith('.json')]
 
     def cropit(im, name, position, size):
-        print('Cropping %s' % name)
         if type(size) == int:
             size = (size, size)
         region = (
@@ -26,6 +25,7 @@ def build_assets(incoming_src_dir, output_dir):
             position[0] + size[0],
             position[1] + size[1]
             )
+        print('Cropping to %s/%s.png' % (output_dir, name))
         im.crop(region).save('%s/%s.png' % (output_dir, name))
 
     for fn in filenames:
@@ -61,5 +61,6 @@ def build_assets(incoming_src_dir, output_dir):
                 size = data['names'][name]['size']
                 nname = '%s_%s' % (prefix, name)
                 cropit(im, nname, position, size)
+        print("Copying from %s/%s to %s/%s" % (incoming_src_dir, fn, output_dir, fn))
         copyfile('%s/%s' % (incoming_src_dir, fn), '%s/%s' % (output_dir, fn))
 
