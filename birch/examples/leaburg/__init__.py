@@ -54,6 +54,8 @@ class Leaburg:
         self.game.camera_controlled = False
         self.game.player_controlled = True
         self.game.set_player('player')
+        self.world.set_engine(self.game.engine)
+        self.world.spawn_maps()
 
     def run(self):
         self.game.run()

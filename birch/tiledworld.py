@@ -3,6 +3,29 @@ import sys
 import os
 from birch.cells.blueprint import BlueprintCell
 
+
+
+class Scene:
+    def __init__(self, name, blueprint=[[[]]]):
+        self.name = name
+        self.blueprint = blueprint
+        self.cells = []
+        self.spawned = False
+        for row in self.blueprint:
+            self.cells.append([])
+            for col in row:
+                self.cells[-1].append([])
+
+    def spawn(self, engine):
+        for y, row in enumerate(self.blueprint):
+            for x, cell in enumerate(row):
+                if y % 128 == 0 and x % 128 == 0:
+                    print('Working on spawning %d, %d' % (x, y), len(cell))
+                for bp in cell:
+                    bp.update((engine.textures, bp.args[1]))
+                    self.cells[y][x].append(bp.to_cell())
+        self.spawned = True
+
 """
 implements a world class that can
 * select different scenes/maps
@@ -10,15 +33,26 @@ implements a world class that can
 """
 class TiledWorld:
     def __init__(self, mapfiles, celldict):
+        # maps are the blueprints that scenes are generated from
         self.maps = {}
-        self.active_map = None
+        # scenes are instances of maps
+        self.scenes = {}
+
+        self.scene = None
+        self.active_scene = None
+
         self.celldict = celldict
         for mapfile in mapfiles:
             token = os.path.basename(mapfile)
             self.maps[token] = self.load_map(mapfile)
-            if self.active_map is None:
-                self.active_map = self.maps[token]
-        print(self.maps)
+            self.scenes[token] = Scene(token, self.maps[token])
+
+    def set_engine(self, engine):
+        self.engine = engine
+
+    def spawn_maps(self):
+        for token in self.scenes:
+            self.scenes[token].spawn(self.engine)
 
     def load_map(self, map_filename):
         print('loading', map_filename)
@@ -28,6 +62,10 @@ class TiledWorld:
         tiles = {}
         tilecounter = 0
         loadcells = []
+        for y in range(mapdata['height']):
+            loadcells.append([])
+            for x in range(mapdata['height']):
+                loadcells[-1].append([])
         for tileset in mapdata['tilesets']:
             for tile in tileset['tiles']:
                 found = False
@@ -47,10 +85,11 @@ class TiledWorld:
                     tileindex = layer['data'][curse] - 1
                     cls = tiles[tileindex]
                     # none will be replaced with the engine.textures object later
-                    loadcells.append(BlueprintCell(self.celldict[cls], (None, (x, y))))
+                    loadcells[y][x].append(BlueprintCell(self.celldict[cls], (None, (x, y))))
                 curse += 1
+                if curse % 1024 == 0:
+                    print('curse is %d (%d %d)' % (curse, x, y))
         return loadcells
-
 
     def insert(self, cell, x, y):
         pass
