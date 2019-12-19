@@ -35,7 +35,10 @@ setup(name='birch',
       license='ISC',
       packages=find_packages(),
       package_dir={'birch': 'birch'},
-      package_data={'birch': ['examples/**/assets/*']},
+      package_data={'birch': [
+          'examples/**/assets/*',
+          'examples/**/maps/*'
+          ]},
       install_requires=[
           'pyglet',
           'noise',

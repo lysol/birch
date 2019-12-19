@@ -3,6 +3,19 @@ from birch.tiledworld import TiledWorld
 from random import shuffle, random, randint, uniform
 from birch._birch import Perlin
 from birch.cells.blueprint import BlueprintCell
+from birch.examples.leaburg.cells.grass import Grass
+from birch.examples.leaburg.cells.small_spikes import SmallSpikes
+from birch.examples.leaburg.cells.spikes import Spikes
+from birch.examples.leaburg.cells.flower import Flower
+
+import os
+
+celldict = {
+    'Grass': Grass,
+    'SmallSpikes': SmallSpikes,
+    'Spikes': Spikes,
+    'Flower': Flower
+    }
 
 class Leaburg:
 
@@ -32,7 +45,7 @@ class Leaburg:
 
     def __init__(self):
         self.ticks = 0
-        self.world = TiledWorld()
+        self.world = TiledWorld(['birch/examples/leaburg/maps/dam.json'], celldict)
         self.game = BirchGame('birch/examples/leaburg/assets', self.world)
         self.game.register_tick_handler(self.tick_handler)
         #self.game.register_mouse_handler(self.mouse_handler)
