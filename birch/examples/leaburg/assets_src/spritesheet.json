@@ -1,0 +1,23 @@
+{
+    "structure": {
+        "type": "variable"
+    },
+    "names": {
+        "flower": {
+            "size": [32, 32],
+            "position": [0, 0]
+        },
+        "grass": {
+            "size": [32, 32],
+            "position": [32, 0]
+        },
+        "small_spikes": {
+            "size": [32, 32],
+            "position": [64, 0]
+        },
+        "spikes": {
+            "size": [32, 32],
+            "position": [96, 0]
+        }
+    }
+}
