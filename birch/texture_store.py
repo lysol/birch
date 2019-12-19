@@ -26,11 +26,12 @@ class TextureStore(dict):
                 other = json.load(open('%s/%s' % (asset_dir, data['structure']['inherit'])))
             if 'names' not in data:
                 data['names'] = other['names']
-            if 'prefix' not in data['structure']:
+            if 'structure' in data and 'structure' in other and 'prefix' not in data['structure']:
                 data['structure'] = other['structure']
             if 'animations' not in data and 'animations' in other:
                 data['animations'] = other['animations']
-            prefix = '' if 'prefix' not in data['structure'] else data['structure']['prefix'] + '_'
+            if 'structure' in data:
+                prefix = '' if 'prefix' not in data['structure'] else data['structure']['prefix'] + '_'
             for name in data['names']:
                 prefixed = '%s%s' % (prefix, name)
                 self.load('%s%s' % (prefix, name))

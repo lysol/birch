@@ -53,13 +53,13 @@ def build_assets(incoming_src_dir, output_dir):
             size = data['structure']['size']
             for i, name in enumerate(data['names']):
                 position = [(i % stride) * size, int(i / stride) * size]
-                nname = '%s_%s' % (prefix, name)
+                nname = '%s_%s' % (prefix, name) if prefix != '' else name
                 cropit(im, nname, position, size)
         else:
             for name in data['names']:
                 position = data['names'][name]['position']
                 size = data['names'][name]['size']
-                nname = '%s_%s' % (prefix, name)
+                nname = '%s_%s' % (prefix, name) if prefix != '' else name
                 cropit(im, nname, position, size)
         print("Copying from %s/%s to %s/%s" % (incoming_src_dir, fn, output_dir, fn))
         copyfile('%s/%s' % (incoming_src_dir, fn), '%s/%s' % (output_dir, fn))
