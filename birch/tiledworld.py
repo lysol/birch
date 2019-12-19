@@ -2,6 +2,7 @@ import json
 import sys
 import os
 from birch.cells.blueprint import BlueprintCell
+from pyglet.graphics import Batch
 
 
 
@@ -15,6 +16,7 @@ class Scene:
             self.cells.append([])
             for col in row:
                 self.cells[-1].append([])
+        self.batch = Batch()
 
     def spawn(self, engine):
         for y, row in enumerate(self.blueprint):
@@ -23,7 +25,9 @@ class Scene:
                     print('Working on spawning %d, %d' % (x, y), len(cell))
                 for bp in cell:
                     bp.update((engine.textures, bp.args[1]))
-                    self.cells[y][x].append(bp.to_cell())
+                    bp.to_cell()
+                    bp.batch = self.batch
+                    self.cells[y][x].append(bp)
         self.spawned = True
 
 """
@@ -37,8 +41,6 @@ class TiledWorld:
         self.maps = {}
         # scenes are instances of maps
         self.scenes = {}
-
-        self.scene = None
         self.active_scene = None
 
         self.celldict = celldict
@@ -46,6 +48,12 @@ class TiledWorld:
             token = os.path.basename(mapfile)
             self.maps[token] = self.load_map(mapfile)
             self.scenes[token] = Scene(token, self.maps[token])
+            if self.active_scene is None:
+                self.active_scene = token
+
+    @property
+    def scene(self):
+        return self.scenes[self.active_scene]
 
     def set_engine(self, engine):
         self.engine = engine
@@ -92,16 +100,23 @@ class TiledWorld:
         return loadcells
 
     def insert(self, cell, x, y):
-        pass
+        self.scene.cells[y][x].append(cell)
 
     def get(self, tlx, tly, w, h):
-        pass
+        x = tlx
+        y = tly
+        out = []
+        while y < tly + h:
+            while x < tlx + w:
+                out.extend(self.scene.cells[y][x])
+            x += 1
+        y += 1
 
     def delete(self, cell, x, y):
-        pass
+        self.scene.cells[y][x] = filter(lambda cell: cell != cell, self.scene.cells[y][x])
 
     def get_batches(self, tlx, tly, w, h):
-        return []
+        return [self.scene.batch]
 
     def unseeded(self, x, y):
         return False
@@ -111,7 +126,4 @@ class TiledWorld:
 
     def seed(self, x, y, cells):
         pass
-
-    def set_map(self, map_token):
-        self.active_map = self.maps[map_token]
 
