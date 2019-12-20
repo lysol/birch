@@ -1,7 +1,7 @@
 {
     "structure": {
         "type": "sheet",
-        "size": 16,
+        "size": 32,
         "stride": 3,
         "prefix": "player"
     },

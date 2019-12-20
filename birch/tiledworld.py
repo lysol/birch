@@ -7,11 +7,12 @@ from pyglet.graphics import Batch
 
 
 class Scene:
-    def __init__(self, name, blueprint=[[[]]]):
+    def __init__(self, name, blueprint=[[[]]], tile_size=32):
         self.name = name
         self.blueprint = blueprint
         self.cells = []
         self.spawned = False
+        self.tile_size = tile_size
         for row in self.blueprint:
             self.cells.append([])
             for col in row:
@@ -21,13 +22,11 @@ class Scene:
     def spawn(self, engine):
         for y, row in enumerate(self.blueprint):
             for x, cell in enumerate(row):
-                if y % 128 == 0 and x % 128 == 0:
-                    print('Working on spawning %d, %d' % (x, y), len(cell))
                 for bp in cell:
                     bp.update((engine.textures, bp.args[1]))
-                    bp.to_cell()
-                    bp.batch = self.batch
-                    self.cells[y][x].append(bp)
+                    cell = bp.to_cell()
+                    cell.batch = self.batch
+                    self.cells[y][x].append(cell)
         self.spawned = True
 
 """
@@ -67,6 +66,8 @@ class TiledWorld:
         fh = open(map_filename, 'r')
         contents = fh.read()
         mapdata = json.loads(contents)
+        tw = mapdata['tilewidth']
+        th = mapdata['tileheight']
         tiles = {}
         tilecounter = 0
         loadcells = []
@@ -81,7 +82,6 @@ class TiledWorld:
                     if prop['name'] == 'name':
                         tiles[tile['id']] = prop['value']
                         break
-        print('tiles', tiles)
         for layer in mapdata['layers']:
             curse = 0
             x = 0
@@ -89,18 +89,21 @@ class TiledWorld:
             while curse < len(layer['data']):
                 x = curse % mapdata['height']
                 y = int(curse / mapdata['height'])
+                y = mapdata['height'] - y - 1
                 if layer['data'][curse] != 0:
                     tileindex = layer['data'][curse] - 1
                     cls = tiles[tileindex]
                     # none will be replaced with the engine.textures object later
-                    loadcells[y][x].append(BlueprintCell(self.celldict[cls], (None, (x, y))))
+                    loadcells[y][x].append(BlueprintCell(self.celldict[cls], (None,
+                        (x * tw * 2, y * th * 2))))
                 curse += 1
-                if curse % 1024 == 0:
-                    print('curse is %d (%d %d)' % (curse, x, y))
         return loadcells
 
     def insert(self, cell, x, y):
-        self.scene.cells[y][x].append(cell)
+        p2tx = int(x / self.scene.tile_size / 2)
+        p2ty = int(y / self.scene.tile_size / 2)
+        self.scene.cells[p2ty][p2tx].append(cell)
+        cell.batch = self.scene.batch
 
     def get(self, tlx, tly, w, h):
         x = tlx
@@ -111,9 +114,11 @@ class TiledWorld:
                 out.extend(self.scene.cells[y][x])
             x += 1
         y += 1
+        return out
 
     def delete(self, cell, x, y):
-        self.scene.cells[y][x] = filter(lambda cell: cell != cell, self.scene.cells[y][x])
+        self.scene.cells[int(y / self.scene.tile_size / 2)][int(x / self.scene.tile_size / 2)] = \
+            filter(lambda cell: cell != cell, self.scene.cells[y][x])
 
     def get_batches(self, tlx, tly, w, h):
         return [self.scene.batch]

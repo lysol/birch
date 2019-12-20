@@ -53,7 +53,7 @@ class Leaburg:
         #self.game.register_map_click_handler(self.map_click_handler)
         self.game.camera_controlled = False
         self.game.player_controlled = True
-        self.game.set_player('player')
+        self.game.set_player('player', position=(64, 500 * 64))
         self.world.set_engine(self.game.engine)
         self.world.spawn_maps()
 
