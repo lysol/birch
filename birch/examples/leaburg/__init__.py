@@ -3,18 +3,21 @@ from birch.tiledworld import TiledWorld
 from random import shuffle, random, randint, uniform
 from birch._birch import Perlin
 from birch.cells.blueprint import BlueprintCell
-from birch.examples.leaburg.cells.grass import Grass
+from birch.examples.leaburg.cells.grass import Grass, Grass2, Grass3
 from birch.examples.leaburg.cells.small_spikes import SmallSpikes
 from birch.examples.leaburg.cells.spikes import Spikes
-from birch.examples.leaburg.cells.flower import Flower
+from birch.examples.leaburg.cells.flower import Flower, Flower2
 
 import os
 
 celldict = {
     'Grass': Grass,
+    'Grass2': Grass2,
+    'Grass3': Grass3,
     'SmallSpikes': SmallSpikes,
     'Spikes': Spikes,
-    'Flower': Flower
+    'Flower': Flower,
+    'Flower2': Flower2
     }
 
 class Leaburg:
@@ -46,7 +49,7 @@ class Leaburg:
     def __init__(self):
         self.ticks = 0
         self.world = TiledWorld(['birch/examples/leaburg/maps/dam.json'], celldict)
-        self.game = BirchGame('birch/examples/leaburg/assets', self.world)
+        self.game = BirchGame('birch/examples/leaburg/assets', world=self.world)
         self.game.register_tick_handler(self.tick_handler)
         #self.game.register_mouse_handler(self.mouse_handler)
         #self.game.register_mouse_press_handler(self.mouse_press_handler)
@@ -54,6 +57,7 @@ class Leaburg:
         self.game.camera_controlled = False
         self.game.player_controlled = True
         self.game.set_player('player', position=(64, 500 * 64))
+        self.game.player.speed = 4
         self.world.set_engine(self.game.engine)
         self.world.spawn_maps()
 

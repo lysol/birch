@@ -18,6 +18,18 @@
         "spikes": {
             "size": [32, 32],
             "position": [96, 0]
+        },
+        "flower2": {
+            "size": [32, 32],
+            "position": [0, 32]
+        },
+        "grass_light": {
+            "size": [32, 32],
+            "position": [32, 32]
+        },
+        "grass_light2": {
+            "size": [32, 32],
+            "position": [64, 32]
         }
     }
 }
