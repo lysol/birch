@@ -2,8 +2,8 @@ import json
 import sys
 import os
 from birch.cells.blueprint import BlueprintCell
+from birch.cells.tiled_cell import TiledCell
 from pyglet.graphics import Batch
-
 
 
 class Scene:
@@ -23,7 +23,7 @@ class Scene:
         for y, row in enumerate(self.blueprint):
             for x, cell in enumerate(row):
                 for bp in cell:
-                    bp.update((engine.textures, bp.args[1]))
+                    bp.update_arg(1, engine.textures)
                     cell = bp.to_cell()
                     cell.batch = self.batch
                     self.cells[y][x].append(cell)
@@ -35,14 +35,13 @@ implements a world class that can
 * use data from the Tiled map editor
 """
 class TiledWorld:
-    def __init__(self, mapfiles, celldict):
+    def __init__(self, mapfiles):
         # maps are the blueprints that scenes are generated from
         self.maps = {}
         # scenes are instances of maps
         self.scenes = {}
         self.active_scene = None
 
-        self.celldict = celldict
         for mapfile in mapfiles:
             token = os.path.basename(mapfile)
             self.maps[token] = self.load_map(mapfile)
@@ -69,6 +68,7 @@ class TiledWorld:
         tw = mapdata['tilewidth']
         th = mapdata['tileheight']
         tiles = {}
+        tile_properties = {}
         tilecounter = 0
         loadcells = []
         for y in range(mapdata['height']):
@@ -78,10 +78,14 @@ class TiledWorld:
         for tileset in mapdata['tilesets']:
             for tile in tileset['tiles']:
                 found = False
-                for prop in tile['properties']:
-                    if prop['name'] == 'name':
-                        tiles[tile['id']] = prop['value']
-                        break
+                properties = {}
+                if 'properties' in tile:
+                    for prop in tile['properties']:
+                        properties[prop['name']] = prop['value']
+                        if prop['name'] == 'name':
+                            tiles[tile['id']] = prop['value']
+                tile_properties[tile['id']] = properties
+                tile_properties[tile['id']]['name'] = os.path.basename(tile['image']).replace('.png','')
         for layer in mapdata['layers']:
             curse = 0
             x = 0
@@ -92,10 +96,9 @@ class TiledWorld:
                 y = mapdata['height'] - y - 1
                 if layer['data'][curse] != 0:
                     tileindex = layer['data'][curse] - 1
-                    cls = tiles[tileindex]
                     # none will be replaced with the engine.textures object later
-                    loadcells[y][x].append(BlueprintCell(self.celldict[cls], (None,
-                        (x * tw * 2, y * th * 2))))
+                    loadcells[y][x].append(BlueprintCell(TiledCell, [tile_properties[tileindex], None,
+                        (x * tw * 2, y * th * 2)]))
                 curse += 1
         return loadcells
 

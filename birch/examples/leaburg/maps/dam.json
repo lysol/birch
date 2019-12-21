@@ -39,13 +39,7 @@
                  "id":0,
                  "image":"..\/assets_src\/grass.png",
                  "imageheight":32,
-                 "imagewidth":32,
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Grass"
-                        }]
+                 "imagewidth":32
                 }, 
                 {
                  "id":2,
@@ -57,11 +51,6 @@
                          "name":"impassible",
                          "type":"bool",
                          "value":true
-                        }, 
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"SmallSpikes"
                         }]
                 }, 
                 {
@@ -74,60 +63,31 @@
                          "name":"impassible",
                          "type":"bool",
                          "value":true
-                        }, 
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Spikes"
                         }]
                 }, 
                 {
                  "id":4,
                  "image":"..\/assets_src\/flower.png",
                  "imageheight":32,
-                 "imagewidth":32,
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Flower"
-                        }]
+                 "imagewidth":32
                 }, 
                 {
                  "id":5,
                  "image":"..\/assets\/flower2.png",
                  "imageheight":32,
-                 "imagewidth":32,
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Flower2"
-                        }]
+                 "imagewidth":32
                 }, 
                 {
                  "id":6,
                  "image":"..\/assets\/grass_light.png",
                  "imageheight":32,
-                 "imagewidth":32,
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Grass2"
-                        }]
+                 "imagewidth":32
                 }, 
                 {
                  "id":7,
                  "image":"..\/assets\/grass_light2.png",
                  "imageheight":32,
-                 "imagewidth":32,
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Grass3"
-                        }]
+                 "imagewidth":32
                 }],
          "tilewidth":32
         }],
