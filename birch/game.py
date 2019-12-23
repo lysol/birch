@@ -197,6 +197,7 @@ class BirchGame:
         self.mouse_handlers = []
         self.mouse_press_handlers = []
         self.seed_handlers = []
+        self.player_move_handlers = []
         self.map_click_handlers = []
         self.camera_controlled = False
         self.player_controlled = False
@@ -227,6 +228,9 @@ class BirchGame:
 
     def register_tick_handler(self, handler):
         return self.engine.register_tick_handler(handler)
+
+    def register_player_move_handler(self, handler):
+        self.player_move_handlers.append(handler)
 
     def run(self):
         pyglet.clock.schedule_interval(self.update, self.sleeptime)
@@ -327,6 +331,18 @@ class BirchGame:
                     self.player.go_up()
                 if self.keys[key.S]:
                     self.player.go_down()
+            can_move = True
+            for handler in self.player_move_handlers:
+                if not handler(
+                    self.player.next_movement[0],
+                    self.player.next_movement[1],
+                    self.player.width,
+                    self.player.height
+                    ):
+                    can_move = False
+                    break
+            if not can_move:
+                self.player.stop_moving()
             self.player.apply_movement()
             self.camera = self.centered(list(self.player.position))
         delta = abs(self.camera[0] - self.last_camera[0]) + \

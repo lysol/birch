@@ -37,6 +37,7 @@ class Leaburg:
         self.world = TiledWorld(['birch/examples/leaburg/maps/dam.json'])
         self.game = BirchGame('birch/examples/leaburg/assets', world=self.world)
         self.game.register_tick_handler(self.tick_handler)
+        self.game.register_player_move_handler(self.world.collision_check)
         #self.game.register_mouse_handler(self.mouse_handler)
         #self.game.register_mouse_press_handler(self.mouse_press_handler)
         #self.game.register_map_click_handler(self.map_click_handler)

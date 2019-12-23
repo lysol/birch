@@ -3,8 +3,8 @@ import sys
 import os
 from birch.cells.blueprint import BlueprintCell
 from birch.cells.tiled_cell import TiledCell
+from birch.util import Rect
 from pyglet.graphics import Batch
-
 
 class Scene:
     def __init__(self, name, blueprint=[[[]]], tile_size=32):
@@ -135,3 +135,29 @@ class TiledWorld:
     def seed(self, x, y, cells):
         pass
 
+    def collision_check(self, px, py, pw, ph):
+        tl_x = px + 8
+        tl_y = py + 8
+        tr_x = px + pw - 8
+        tr_y = py + 8
+        br_x = tr_x
+        br_y = py + ph - 8
+        bl_x = tl_x
+        bl_y = br_y
+
+        point_checks = list(set((
+            (int(tl_x / self.scene.tile_size / 2), int(tl_y / self.scene.tile_size / 2)),
+            (int(tr_x / self.scene.tile_size / 2), int(tr_y / self.scene.tile_size / 2)),
+            (int(br_x / self.scene.tile_size / 2), int(br_y / self.scene.tile_size / 2)),
+            (int(bl_x / self.scene.tile_size / 2), int(bl_y / self.scene.tile_size / 2))
+        )))
+        for pc in point_checks:
+            try:
+                cells = self.scene.cells[pc[1]][pc[0]]
+                for cell in cells:
+                    if cell.name != 'player' and hasattr(cell, 'impassible') and \
+                        cell.impassible == True:
+                        return False
+            except IndexError:
+                continue
+        return True

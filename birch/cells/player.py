@@ -12,6 +12,9 @@ class Player(Cell):
         self.speed = 2
         self.velocity = (0, 0)
 
+    def stop_moving(self):
+        self.velocity = (0, 0)
+
     def go_up(self):
         self.velocity = (self.velocity[0], self.speed)
         if self.direction != '_u_walk':
@@ -36,15 +39,19 @@ class Player(Cell):
             self.direction = '_r_walk'
             self.set_image()
 
+    @property
+    def next_movement(self):
+        return (
+            self.position[0] + self.velocity[0],
+            self.position[1] + self.velocity[1]
+            )
+
     def apply_movement(self):
         if self.velocity == (0, 0) and self.direction.endswith('_walk'):
             self.direction = self.direction[:-5]
             self.set_image()
             return
-        self.position = (
-            self.position[0] + self.velocity[0],
-            self.position[1] + self.velocity[1]
-            )
+        self.position = self.next_movement
         self.velocity = (0, 0)
 
     def set_image(self):
