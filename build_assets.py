@@ -51,8 +51,10 @@ def build_assets(incoming_src_dir, output_dir):
                 data['structure']['size'] = other['structure']['size']
             stride = data['structure']['stride']
             size = data['structure']['size']
+            if type(size) == int:
+                size = [size, size]
             for i, name in enumerate(data['names']):
-                position = [(i % stride) * size, int(i / stride) * size]
+                position = [(i % stride) * size[0], int(i / stride) * size[1]]
                 nname = '%s_%s' % (prefix, name) if prefix != '' else name
                 cropit(im, nname, position, size)
         else:
