@@ -30,6 +30,11 @@
         "grass_light2": {
             "size": [32, 32],
             "position": [64, 32]
+        },
+        "spike": {
+            "size": [32, 32],
+            "position": [96, 32]
         }
+
     }
 }
