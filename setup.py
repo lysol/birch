@@ -3,7 +3,6 @@ from setuptools import setup, find_packages
 import distutils
 import distutils.command.build
 from distutils.core import setup, Extension
-from build_assets import build_assets
 
 
 _birch = Extension('birch._birch',
@@ -21,6 +20,7 @@ class BuildCommand(distutils.command.build.build):
         print('>>>>>> Running asset build')
         examples_path = 'birch/examples'
         listing = os.listdir(examples_path)
+        from build_assets import build_assets
         for fn in filter(lambda fn: os.path.isdir(fn), map(lambda fn: '%s/%s' % (examples_path, fn), listing)):
             print('Processing assets for example %s' % fn)
             build_assets('%s/assets_src' % fn, '%s/assets' % fn)
