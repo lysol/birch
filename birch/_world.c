@@ -247,7 +247,7 @@ PyObject *World_get(WorldObject *self, PyObject *args) {
                 continue;
             }
 
-            while (item = PyIter_Next(iterator)) {
+            while ((item = PyIter_Next(iterator))) {
                 // do the stuff here
                 PyObject *args = Py_BuildValue("iiii", x, y, w, h);
                 PyObject *res = PyObject_CallMethod(item, "intersects", "iiii", x, y, w, h);
@@ -307,7 +307,7 @@ PyObject *World_seed(WorldObject *self, PyObject *args) {
         return NULL;
     }
 
-    while (item = PyIter_Next(iterator)) {
+    while ((item = PyIter_Next(iterator))) {
         // do the stuff here
         PyObject *x = PyObject_GetAttrString(item, "x");
         PyObject *y = PyObject_GetAttrString(item, "y");
