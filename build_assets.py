@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, makedirs
 from shutil import copyfile, copytree, rmtree
 from PIL import Image
 import json
@@ -13,6 +13,11 @@ def process_manifest(indir, outdir):
 
 
 def build_assets(incoming_src_dir, output_dir):
+    # make sure it exists first
+    try:
+        makedirs(output_dir)
+    except FileExistsError:
+        pass # this is fine
 
     filenames = [infile for infile in listdir(incoming_src_dir) if infile.endswith('.json')]
 
