@@ -50,7 +50,7 @@ class Bristol:
     def __init__(self):
         self.ticks = 0
         self.perlin = Perlin(999)
-        self.game = BirchGame('birch/examples/bristol/assets')
+        self.game = BirchGame('examples/bristol/assets')
         self.game.register_tick_handler(self.tick_handler)
         self.game.register_seed_handler(self.seed_handler)
         #self.game.register_mouse_handler(self.mouse_handler)

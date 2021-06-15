@@ -9,7 +9,7 @@ from birch.cells.player import Player
 from birch.cursor import Cursor
 from birch.engine import Engine
 from birch.util import RED, BLUE, FG_COLOR, BG_COLOR, Rect
-
+from birch import ROOT
 
 class ObjectEncoder(json.JSONEncoder):
     def default(self, o):
@@ -145,9 +145,9 @@ class BirchGame:
         pyglet.options['debug_gl'] = False
         self.main_batch = pyglet.graphics.Batch()
         self.size = 1280, 720
-        self.asset_dir = asset_dir
-        md_paths = filter(lambda fn: fn.endswith('.json'), os.listdir(asset_dir))
-        self.textures = TextureStore(asset_dir, md_paths)
+        self.asset_dir = os.path.join(ROOT, asset_dir)
+        md_paths = filter(lambda fn: fn.endswith('.json'), os.listdir(self.asset_dir))
+        self.textures = TextureStore(self.asset_dir, md_paths)
         glClearColor(1.0, 1.0, 1.0, 1.0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)

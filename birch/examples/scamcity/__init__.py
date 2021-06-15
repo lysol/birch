@@ -281,7 +281,7 @@ class ScamCity:
 
     def __init__(self):
         self.ticks = 0
-        self.game = BirchGame('birch/examples/scamcity/assets')
+        self.game = BirchGame('examples/scamcity/assets')
         self.game.set_caption('birch')
         self.game.set_icon(self.textures['birch_tree'])
         self.game.textures['r_1_0'] = self.game.textures['r_0_0']

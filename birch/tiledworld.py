@@ -5,6 +5,7 @@ from birch.cells.blueprint import BlueprintCell
 from birch.cells.tiled_cell import TiledCell
 from birch.util import Rect
 from pyglet.graphics import Batch
+from birch import ROOT
 
 class Scene:
     def __init__(self, name, blueprint=[[[]]], tile_size=32):
@@ -43,6 +44,7 @@ class TiledWorld:
         self.active_scene = None
 
         for mapfile in mapfiles:
+            mapfile = os.path.join(ROOT, mapfile)
             token = os.path.basename(mapfile)
             self.maps[token] = self.load_map(mapfile)
             self.scenes[token] = Scene(token, self.maps[token])

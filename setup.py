@@ -48,5 +48,4 @@ setup(name='birch',
           ],
       zip_safe=False,
       cmdclass={"build": BuildCommand},
-      ext_modules=[_birch],
-      include_package_data=True)
+      ext_modules=[_birch])

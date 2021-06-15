@@ -34,8 +34,8 @@ class Leaburg:
 
     def __init__(self):
         self.ticks = 0
-        self.world = TiledWorld(['birch/examples/leaburg/maps/dam.json'])
-        self.game = BirchGame('birch/examples/leaburg/assets', world=self.world)
+        self.world = TiledWorld(['examples/leaburg/maps/dam.json'])
+        self.game = BirchGame('examples/leaburg/assets', world=self.world)
         self.game.register_tick_handler(self.tick_handler)
         self.game.register_player_move_handler(self.world.collision_check)
         #self.game.register_mouse_handler(self.mouse_handler)
