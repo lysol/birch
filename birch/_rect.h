@@ -1,7 +1,7 @@
 #ifndef RECT_H
 #define RECT_H
-#include </usr/include/python3.6m/Python.h>
-#include </usr/include/python3.6m/structmember.h>
+#include <Python.h>
+#include <structmember.h>
 
 #define collidepoint(rect, x, y) (x >= rect->x && x < rect->x + rect->width && \
         y >= rect->y && y < rect->y + rect->height)

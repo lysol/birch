@@ -1,8 +1,8 @@
 #ifndef BIRCH_H
 #define BIRCH_H
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include </usr/include/python3.6m/Python.h>
-#include </usr/include/python3.6m/structmember.h>
+#include <Python.h>
+#include <structmember.h>
 
 // perlin stuff
 

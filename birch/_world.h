@@ -1,7 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
-#include </usr/include/python3.6m/Python.h>
-#include </usr/include/python3.6m/structmember.h>
+#include <Python.h>
+#include <structmember.h>
 
 typedef struct {
     PyObject_HEAD

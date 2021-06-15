@@ -1,5 +1,5 @@
-#include </usr/include/python3.6m/Python.h>
-#include </usr/include/python3.6m/structmember.h>
+#include <Python.h>
+#include <structmember.h>
 #include <stdio.h>
 #include "_birch.h"
 #define CHUNK_SIZE 512

@@ -238,7 +238,7 @@ class BirchGame:
 
     def set_cursor_size(self, size):
         if self.window.cursor is None or size != self.window.cursor.width:
-            self.window.cursor = Cursor(*self.mouse, size, self.window.height, batch=self.main_batch)
+            self.window.cursor = Cursor(self.mouse[0], self.mouse[1], size, self.window.height, batch=self.main_batch)
 
     def set_cursor_pos(self):
         x, y = self.mouse
@@ -348,7 +348,7 @@ class BirchGame:
         delta = abs(self.camera[0] - self.last_camera[0]) + \
                 abs(self.camera[1] - self.last_camera[1])
         if delta > self.camera_speed * 2 or not self.first or self.kf_countdown == 0:
-            self.window.batches = self.engine.get_batches(*self.camera,
+            self.window.batches = self.engine.get_batches(self.camera[0], self.camera[1],
                     self.camera_rect.width, self.camera_rect.height)
             self.last_camera = list(self.camera)
             self.first = True
