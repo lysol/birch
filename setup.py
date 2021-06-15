@@ -21,7 +21,8 @@ class BuildCommand(distutils.command.build.build):
         examples_path = 'birch/examples'
         listing = os.listdir(examples_path)
         from build_assets import build_assets
-        for fn in filter(lambda fn: os.path.isdir(fn), map(lambda fn: '%s/%s' % (examples_path, fn), listing)):
+        for fn in filter(lambda fn: os.path.isdir(fn) and not fn.endswith('__pycache__'),
+            map(lambda fn: '%s/%s' % (examples_path, fn), listing)):
             print('Processing assets for example %s' % fn)
             build_assets('%s/assets_src' % fn, '%s/assets' % fn)
         super().run()
