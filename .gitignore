@@ -5,3 +5,4 @@ birch/examples/**/assets
 build
 dist
 birch.egg*
+.vscode
