@@ -16,7 +16,7 @@ typedef struct {
     int permutation[512];
     int p[512];
 } PerlinObject;
-double randoms[RANDCOUNT];
+extern double randoms[RANDCOUNT];
 
 void Perlin_dealloc(PerlinObject *self);
 void shuffle(int *array, size_t n);
@@ -34,7 +34,7 @@ PyObject *Perlin_perlin(PerlinObject *self, PyObject *args);
 PyObject *Perlin_perlin_octave(PerlinObject *self, PyObject *args);
 void dither_buffer(char *data, int size, int stride);
 PyObject *Perlin_noise2_bytes(PerlinObject *self, PyObject *args);
-PyTypeObject PerlinType;
+extern PyTypeObject PerlinType;
 
 // Rect stuff
 
@@ -61,7 +61,7 @@ typedef struct {
     int height;
 } RectShallow;
 
-PyTypeObject RectType;
+extern PyTypeObject RectType;
 void Rect_dealloc(RectObject *self);
 PyObject *Rect_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 int Rect_init(RectObject *self, PyObject *args, PyObject *kwds);
@@ -83,7 +83,6 @@ PyObject* Rect_get_bottomleft(RectObject* self, void* closure);
 int Rect_set_bottomleft(RectObject* self, PyObject* value, void* closure);
 PyObject* Rect_get_bottomright(RectObject* self, void* closure);
 int Rect_set_bottomright(RectObject* self, PyObject* value, void* closure);
-PyTypeObject RectType;
 
 
 // World stuff
@@ -100,16 +99,15 @@ typedef struct {
 } WorldObject;
 
 // module
-PyObject *_module;
-PyObject *graphics;
-PyObject *Batch;
-PyObject *draw;
+extern PyObject *_module;
+extern PyObject *graphics;
+extern PyObject *Batch;
+extern PyObject *draw;
 
-PyTypeObject WorldType;
+extern PyTypeObject WorldType;
 void World_dealloc(WorldObject *self);
 PyObject *World_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 int World_init(WorldObject *self, PyObject *args, PyObject *kwds);
-PyTypeObject WorldType;
 
 void insert(WorldObject *self, int ox, int oy, PyObject *sprite);
 void delete(WorldObject *self, int ox, int oy, PyObject *sprite);

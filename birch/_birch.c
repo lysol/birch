@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "_birch.h"
 
+PyObject *graphics, *Batch, *draw, *_module;
+
 static PyModuleDef birch_module = {
     PyModuleDef_HEAD_INIT,
     .m_name = "_birch",
@@ -32,7 +34,6 @@ PyMODINIT_FUNC PyInit__birch(void)
     graphics = PyImport_ImportModule("pyglet.graphics");
     Batch = PyObject_GetAttrString(graphics, "Batch");
     draw = PyObject_GetAttrString(graphics, "draw");
-
     return _module;
 }
 

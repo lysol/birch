@@ -41,10 +41,11 @@ setup(name='birch',
           'examples/**/maps/*'
           ]},
       install_requires=[
-          'pyglet',
+          'pyglet==1.5.17',
           'noise',
           'pillow',
-          'cairosvg'
+          'cairosvg',
+          'numpy'
           ],
       zip_safe=False,
       cmdclass={"build": BuildCommand},

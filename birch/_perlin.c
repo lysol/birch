@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "_birch.h"
 
+double randoms[RANDCOUNT];
+
 void Perlin_dealloc(PerlinObject *self)
 {
     Py_TYPE(self)->tp_free((PyObject *) self);
@@ -233,7 +235,7 @@ void dither_buffer(char *data, int size, int stride) {
             data[pix] = new;
             data[pix + 1] = new;
             data[pix + 2] = new;
-            data[pix + 3] = 255;
+            data[pix + 3] = (char)255;
             error = (double)old - (double)new;
             if (x != stride - 1) {
                 data[one_right]      = (uint8_t)data[one_right]      + (int)(sev * error);
