@@ -5,6 +5,7 @@ from birch._birch import Perlin
 from birch.cells.blueprint import BlueprintCell
 from birch.examples.bristol.cells.grass import ShortGrass
 from birch.examples.bristol.cells.water import Water
+from pyglet import sprite
 
 class Bristol:
 
@@ -85,6 +86,13 @@ class Bristol:
         #waters = svgcell.cell_layer(engine.textures.asset_dir + '/water/water',
         #        bounds.left, bounds.top, CHUNK_SIZE, self.make_water)
         #cells.extend(waters)
+        image_key = engine.textures.create_background(
+            int(CHUNK_SIZE / 2),
+            int(bounds.left / 2),
+            int(bounds.top / 2))
+        bg_sprite = sprite.Sprite(engine.textures[image_key], bounds.left, bounds.top)
+        bg_sprite.scale = 2
+        engine.world.set_bg(bg_sprite, bounds.left, bounds.top)
         return cells
 
     def run(self):
