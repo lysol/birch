@@ -67,7 +67,6 @@ class Bristol:
         return BlueprintCell(Water, (self.game.engine.textures, position))
 
     def seed_handler(self, engine, bounds):
-        print("seeding", bounds.left, bounds.top)
         seed_config = self.seed_config
         cells = []
         seed_keys = list(seed_config.keys())
