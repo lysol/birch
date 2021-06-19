@@ -23,7 +23,7 @@ class PopCell(Cell):
         self.demand = 0
         self.last_rci = 0
 
-    def impassible(self, cell):
+    def impassable(self, cell):
         return True
 
     def populate(self):

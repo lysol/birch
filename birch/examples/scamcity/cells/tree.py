@@ -10,7 +10,7 @@ class Tree(Cell):
         self.base_texture_name = texture_name
         self.next_update = randint(25, 50)
 
-    def impassible(self, cell):
+    def impassable(self, cell):
         return True
 
     @property

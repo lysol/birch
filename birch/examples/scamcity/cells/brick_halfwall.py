@@ -8,5 +8,5 @@ class BrickHalfWallCell(ConnectableCell):
         super().__init__('brick_halfwall', textures, position, size=[16, 16])
         self.priority = 1
 
-    def impassible(self, cell_name):
+    def impassable(self, cell_name):
         return True

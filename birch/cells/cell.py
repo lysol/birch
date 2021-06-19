@@ -13,7 +13,7 @@ class Cell(sprite.Sprite):
         self.textures = textures
         self.position = position
         self.next_update = -1
-        self._impassible = False
+        self._impassable = False
         self.id = uuid4()
         self.priority = priority
         #self.size = size if size is not None else [self.sprite.width, self.sprite.height]
@@ -133,5 +133,5 @@ class Cell(sprite.Sprite):
     def update(self, ticks, engine):
         return False
 
-    def impassible(self, cell):
-        return self._impassible
+    def impassable(self, cell):
+        return self._impassable

@@ -249,7 +249,7 @@ class ScamCity:
             tool_size, tool_size)
         cells = []
         for cell in intersected:
-            if cell.impassible(name):
+            if cell.impassable(name):
                 cells.append(cell)
 
         new_cell = None
@@ -258,7 +258,7 @@ class ScamCity:
                 self.del_cell(cell)
         elif len(cells) == 0:
             for cell in intersected:
-                if not cell.impassible:
+                if not cell.impassable:
                     self.del_cell(cell)
             if name == "r_0_0":
                 new_cell = RCell(self.textures, (x, y))

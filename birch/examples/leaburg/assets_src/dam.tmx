@@ -7,13 +7,13 @@
   </tile>
   <tile id="2">
    <properties>
-    <property name="impassible" type="bool" value="true"/>
+    <property name="impassable" type="bool" value="true"/>
    </properties>
    <image width="32" height="32" source="small_spikes.png"/>
   </tile>
   <tile id="3">
    <properties>
-    <property name="impassible" type="bool" value="true"/>
+    <property name="impassable" type="bool" value="true"/>
    </properties>
    <image width="32" height="32" source="spikes.png"/>
   </tile>
@@ -31,7 +31,7 @@
   </tile>
   <tile id="8">
    <properties>
-    <property name="impassible" type="bool" value="true"/>
+    <property name="impassable" type="bool" value="true"/>
    </properties>
    <image width="32" height="32" source="../assets/spike.png"/>
   </tile>

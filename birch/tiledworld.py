@@ -157,8 +157,8 @@ class TiledWorld:
             try:
                 cells = self.scene.cells[pc[1]][pc[0]]
                 for cell in cells:
-                    if cell.name != 'player' and hasattr(cell, 'impassible') and \
-                        cell.impassible == True:
+                    if cell.name != 'player' and hasattr(cell, 'impassable') and \
+                        cell.impassable == True:
                         return False
             except IndexError:
                 continue

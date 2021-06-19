@@ -8,7 +8,7 @@ class RoadCell(ConnectableCell):
         super().__init__('road', textures, position, size=[16, 16])
         self.priority = 2
 
-    def impassible(self, cell_name):
+    def impassable(self, cell_name):
         if cell_name == 'rail_h_0':
             return False
         return True
