@@ -60,6 +60,7 @@ class Bristol:
         self.game.camera_controlled = False
         self.game.player_controlled = True
         self.game.set_player('player')
+        self.game.player.speed = 3
         self.rivers = []
 
     def make_water(self, position):
