@@ -19,6 +19,54 @@
             "size": [32, 32],
             "position": [96, 0]
         },
+        "concrete1": {
+            "size": [32, 32],
+            "position": [128, 0]
+        },
+        "concrete2": {
+            "size": [32, 32],
+            "position": [160, 0]
+        },
+        "concreter1": {
+            "size": [32, 32],
+            "position": [192, 0]
+        },
+        "concretel1": {
+            "size": [32, 32],
+            "position": [224, 0]
+        },
+        "concretetl": {
+            "size": [32, 32],
+            "position": [256, 0]
+        },
+        "concretetr": {
+            "size": [32, 32],
+            "position": [288, 0]
+        },
+        "concretetlo": {
+            "size": [32, 32],
+            "position": [320, 0]
+        },
+        "concretetro": {
+            "size": [32, 32],
+            "position": [352, 0]
+        },        
+        "concretebt1": {
+            "size": [32, 32],
+            "position": [384, 0]
+        },
+        "concretebt2": {
+            "size": [32, 32],
+            "position": [416, 0]
+        },
+        "concreteedger1": {
+            "size": [32, 32],
+            "position": [448, 0]
+        },
+        "concreteedgel1": {
+            "size": [32, 32],
+            "position": [480, 0]
+        },
         "flower2": {
             "size": [32, 32],
             "position": [0, 32]
@@ -34,7 +82,66 @@
         "spike": {
             "size": [32, 32],
             "position": [96, 32]
+        },
+        "concrete3": {
+            "size": [32, 32],
+            "position": [128, 32]
+        },
+        "concrete4": {
+            "size": [32, 32],
+            "position": [160, 32]
+        },
+        "concretebl": {
+            "size": [32, 32],
+            "position": [256, 32]
+        },
+        "concretebr": {
+            "size": [32, 32],
+            "position": [288, 32]
+        },
+        "concreteblo": {
+            "size": [32, 32],
+            "position": [320, 32]
+        },
+        "concretebro": {
+            "size": [32, 32],
+            "position": [352, 32]
+        },
+        "concretebtb1": {
+            "size": [32, 32],
+            "position": [384, 32]
+        },
+        "concretebtb2": {
+            "size": [32, 32],
+            "position": [416, 32]
+        },
+        "concreteedger2": {
+            "size": [32, 32],
+            "position": [448, 32]
+        },
+        "concreteedgel2": {
+            "size": [32, 32],
+            "position": [480, 32]
+        },
+        "concretew1": {
+            "size": [32, 32],
+            "position": [128, 64]
+        },
+        "concretew2": {
+            "size": [32, 32],
+            "position": [160, 64]
+        },
+        "concretet1": {
+            "size": [32, 32],
+            "position": [192, 64]
+        },
+        "concretet2": {
+            "size": [32, 32],
+            "position": [224, 64]
+        },
+        "concretepass": {
+            "size": [32, 32],
+            "position": [256, 64]
         }
-
     }
 }
