@@ -64,7 +64,7 @@ class Bristol:
         self.rivers = []
 
     def make_water(self, position):
-        return BlueprintCell(Water, (engine.textures, position))
+        return BlueprintCell(Water, (self.game.engine.textures, position))
 
     def seed_handler(self, engine, bounds):
         print("seeding", bounds.left, bounds.top)
