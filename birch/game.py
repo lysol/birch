@@ -96,16 +96,24 @@ class BirchWindow(pyglet.window.Window):
         self.dispatch('resize', width, height)
 
     def on_mouse_motion(self, x, y, dx, dy):
+        if self.cursor is None:
+            return
         self.dispatch('mouse_motion', x, self.height - y, dx, -dy)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if self.cursor is None:
+            return
         self.reference_point = self.camera[0] + x, self.camera[1] + y
         self.dispatch('mouse_press', x, self.height - y, button, modifiers)
 
     def on_mouse_release(self, x, y, button, modifiers):
+        if self.cursor is None:
+            return
         self.dispatch('mouse_release', x, self.height - y, button, modifiers)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        if self.cursor is None:
+            return        
         self.dispatch('mouse_drag', x, self.height - y, dx, -dy, button, modifiers)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
@@ -187,7 +195,6 @@ class BirchGame:
         self.window.handle('mouse_drag', self.handle_mouse_drag)
         self.window.handle('draw', self.handle_draw)
         self.mouse = 0, 0
-        self.set_cursor_size(32)
         factor_w = int(self.camera_rect.width / CHUNK_SIZE) * 2
         factor_h = int(self.camera_rect.height / CHUNK_SIZE) * 2
         self.chonk = (
@@ -236,6 +243,9 @@ class BirchGame:
         pyglet.clock.schedule_interval(self.update, self.sleeptime)
         pyglet.app.run()
 
+    def enable_mouse(self):
+        self.set_cursor_size(32)
+
     def set_cursor_size(self, size):
         if self.window.cursor is None or size != self.window.cursor.width:
             self.window.cursor = Cursor(self.mouse[0], self.mouse[1], size, self.window.height, batch=self.main_batch)
@@ -257,6 +267,9 @@ class BirchGame:
         #    self.camera_rect.height)
 
     def handle_mouse(self, x, y, dx, dy):
+        if self.window.cursor is None:
+            self.mouse = -100, -100
+            return
         self.mouse = x, y
         hovered = False
         for el in self.ui_elements:
@@ -272,6 +285,8 @@ class BirchGame:
         self.window.set_mouse_visible(hovered)
 
     def handle_mouse_press(self, x, y, button, modifiers):
+        if self.window.cursor is None:
+            return
         self.mouse = x, y
         self.mouse_buttons = set(list(self.mouse_buttons) + [button])
         ui_clicked = False
@@ -292,9 +307,13 @@ class BirchGame:
             handler(x, y, button, modifiers)
 
     def handle_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        if self.window.cursor is None:
+            return
         self.handle_mouse_press(x, y, button, modifiers)
 
     def handle_mouse_release(self, x, y, button, modifiers):
+        if self.window.cursor is None:
+            return        
         self.mouse = x, y
         self.mouse_buttons = set(filter(lambda b: b != button, self.mouse_buttons))
         self.set_cursor_pos()
